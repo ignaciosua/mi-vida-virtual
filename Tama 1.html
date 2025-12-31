@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Vida Virtual - Estadísticas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 50%, #ffccd5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Pantalla de inicio */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-image: url('fondo-kawaii.jpg');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            image-rendering: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            position: relative;
+        }
+
+        .splash-screen.hide {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .splash-title {
+            font-size: 3em;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            animation: float 3s ease-in-out infinite;
+            letter-spacing: 0.05em;
+            position: relative;
+            z-index: 1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.4;
+            width: 100%;
+            padding: 0 20px;
+            max-width: 90%;
+        }
+
+        .splash-subtitle {
+            display: none;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .play-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 40%, #ffb6d9 60%, #c084fc 100%);
+            border: 6px solid rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            color: white;
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .play-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), transparent 50%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(255, 107, 157, 0.6);
+        }
+
+        .play-button:active {
+            transform: scale(1.05);
+        }
+
+        .play-icon {
+            position: relative;
+            z-index: 10;
+            margin-left: 10px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Decoraciones kawaii */
+        .splash-screen .splash-deco-1,
+        .splash-screen .splash-deco-2 {
+            display: none;
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2) rotate(180deg);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6b9d;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: none;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #a78bfa;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .stats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.2);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #6b4c9a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            font-size: 1.5em;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.1));
+        }
+
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ff6b9d;
+            text-shadow: 1px 1px 2px rgba(255, 107, 157, 0.2);
+        }
+
+        .stat-bar-container {
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(135deg, #e5e5e5 0%, #f0f0f0 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 1s ease-in-out, background 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Efecto de brillo animado */
+        .stat-bar-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        /* Colores degradados para cada barra según nivel */
+        .stat-bar-high {
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+        }
+
+        .stat-bar-medium {
+            background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%);
+        }
+
+        .stat-bar-low {
+            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+        }
+
+        .buttons-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .action-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .action-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(167, 139, 250, 0.5);
+        }
+
+        .action-button:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .button-icon {
+            font-size: 2em;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2));
+        }
+
+        .button-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Colores específicos para cada botón */
+        .btn-eat {
+            background: linear-gradient(135deg, #fbc2eb 0%, #f093fb 100%);
+        }
+
+        .btn-drink {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+        }
+
+        .btn-sleep {
+            background: linear-gradient(135deg, #d299c2 0%, #c084fc 100%);
+        }
+
+        .btn-exercise {
+            background: linear-gradient(135deg, #fdcbf1 0%, #e6dee9 100%);
+        }
+
+        .btn-selfcare {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        .btn-social {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+
+        .reset-button {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 15px;
+            font-size: 1em;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .reset-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.5);
+        }
+
+        .info-text {
+            text-align: center;
+            color: #a78bfa;
+            font-size: 0.9em;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        /* Animación de pulso para valores bajos */
+        @keyframes pulse-warning {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .warning {
+            animation: pulse-warning 2s infinite;
+        }
+
+        /* Reloj en tiempo real */
+        .clock-container {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%);
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
+        }
+
+        .date-display {
+            font-size: 1.2em;
+            color: #6b4c9a;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .time-display {
+            font-size: 2em;
+            color: #ff6b9d;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(255, 107, 157, 0.2);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Modal para submenú */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #fef3ff 100%);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 1.8em;
+            color: #ff6b9d;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .modal-subtitle {
+            color: #a78bfa;
+            font-size: 1em;
+        }
+
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-button {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 18px 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(161, 196, 253, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .option-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(161, 196, 253, 0.5);
+        }
+
+        .option-button:active {
+            transform: translateY(-1px);
+        }
+
+        .option-ml {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .option-percentage {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 0.95em;
+        }
+
+        .modal-close {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 1em;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .modal-close:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .subtitle {
+                font-size: 0.95em;
+            }
+
+            .buttons-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .time-display {
+                font-size: 1.3em;
+            }
+
+            .date-display {
+                font-size: 0.9em;
+            }
+            
+            .splash-screen {
+                background-size: contain;
+                padding: 20px;
+            }
+            
+            .splash-title {
+                font-size: 2.2em;
+                letter-spacing: 0.03em;
+                margin-bottom: 30px;
+                line-height: 1.3;
+            }
+            
+            .play-button {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5em;
+                border-width: 5px;
+            }
+
+            .stat-name {
+                font-size: 1em;
+            }
+
+            .stat-value {
+                font-size: 1.1em;
+            }
+
+            .action-button {
+                padding: 15px;
+                font-size: 1em;
+            }
+
+            .button-icon {
+                font-size: 1.5em;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .splash-title {
+                font-size: 1.8em;
+                margin-bottom: 25px;
+            }
+            
+            .play-button {
+                width: 90px;
+                height: 90px;
+                font-size: 2.2em;
+                border-width: 4px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de Inicio -->
+    <div class="splash-screen" id="splashScreen">
+        <h1 class="splash-title">✨ Tu Vida<br>Virtual ✨</h1>
+        <button class="play-button" onclick="startGame()">
+            <span class="play-icon">▶</span>
+        </button>
+    </div>
+
+    <div class="container" style="display: none;" id="mainContainer">
+        <h1>✨ Mi Vida Virtual ✨</h1>
+        <p class="subtitle">Mantén tus estadísticas equilibradas</p>
+
+        <!-- Reloj en tiempo real -->
+        <div class="clock-container">
+            <div class="date-display" id="dateDisplay"></div>
+            <div class="time-display" id="timeDisplay"></div>
+        </div>
+
+        <div class="stats-container" id="statsContainer">
+            <!-- Las estadísticas se generan dinámicamente -->
+        </div>
+
+        <div class="buttons-container">
+            <button class="action-button btn-eat" id="btnEat">
+                <span class="button-icon">🍽️</span>
+                <span class="button-text">Comer</span>
+            </button>
+            <button class="action-button btn-drink" id="btnDrink">
+                <span class="button-icon">💧</span>
+                <span class="button-text">Beber Agua</span>
+            </button>
+            <button class="action-button btn-sleep" id="btnSleep">
+                <span class="button-icon">😴</span>
+                <span class="button-text">Dormir</span>
+            </button>
+            <button class="action-button btn-exercise" id="btnExercise">
+                <span class="button-icon">🏃</span>
+                <span class="button-text">Ejercicio</span>
+            </button>
+            <button class="action-button btn-selfcare" id="btnSelfcare">
+                <span class="button-icon">💖</span>
+                <span class="button-text">Autoestima</span>
+            </button>
+            <button class="action-button btn-social" id="btnSocial">
+                <span class="button-icon">💬</span>
+                <span class="button-text">Vida Social</span>
+            </button>
+        </div>
+
+        <button class="reset-button" id="btnReset">🔄 Resetear Estadísticas</button>
+
+        <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
+    </div>
+
+    <!-- Modal para beber agua -->
+    <div id="waterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">💧 Beber Agua</div>
+                <div class="modal-subtitle">Selecciona la cantidad</div>
+            </div>
+            <div class="modal-options">
+                <!-- Los botones se generan dinámicamente según tu perfil -->
+            </div>
+            <button class="modal-close" onclick="closeWaterModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal para comer -->
+    <div id="eatModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🍽️ Comer</div>
+                <div class="modal-subtitle">Ingresa las calorías consumidas</div>
+            </div>
+            
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <div style="text-align: center; color: #6b4c9a; font-weight: 600; margin-bottom: 15px; font-size: 1.1em;">🍴 Calorías Consumidas</div>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <label style="color: #6b4c9a; font-weight: 600; font-size: 0.95em;">Calorías (kcal):</label>
+                    <input type="number" id="caloriesInput" placeholder="Ej: 500" min="1" max="5000" style="padding: 12px; border: 2px solid #e0e7ff; border-radius: 10px; font-size: 1.1em; text-align: center; font-weight: 600; color: #6b4c9a; outline: none; transition: all 0.3s ease;" onfocus="this.style.borderColor='#a78bfa'" onblur="this.style.borderColor='#e0e7ff'">
+                </div>
+                <div id="caloriesInfo" style="margin-top: 15px; padding: 12px; background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%); border-radius: 10px; text-align: center; display: none;">
+                    <div style="color: #6b4c9a; font-size: 0.9em; margin-bottom: 5px;">📊 Tu metabolismo basal: <strong id="bmrDisplay">0</strong> kcal/día</div>
+                    <div style="color: #ff6b9d; font-weight: bold; font-size: 1.1em;">Hambre +<span id="hungerIncrease">0</span>%</div>
+                </div>
+                <button onclick="calculateEatEffects()" style="width: 100%; margin-top: 12px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 10px; padding: 12px; color: white; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    🍽️ Calcular y Comer
+                </button>
+            </div>
+            
+            <button class="modal-close" onclick="closeEatModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal para dormir -->
+    <div id="sleepModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">😴 Dormir</div>
+                <div class="modal-subtitle">Calcula tus horas de sueño</div>
+            </div>
+            
+            <!-- Calculadora de horas -->
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <div style="text-align: center; color: #6b4c9a; font-weight: 600; margin-bottom: 15px; font-size: 1.1em;">⏰ Calculadora de Sueño</div>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <label style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">🌙 Hora de dormir:</label>
+                        <input type="time" id="sleepTime" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                    </div>
+                    <div>
+                        <label style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">☀️ Hora de despertar:</label>
+                        <input type="time" id="wakeTime" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                    </div>
+                    <button onclick="calculateSleep()" style="background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 10px; padding: 12px; color: white; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        ✨ Calcular y Aplicar
+                    </button>
+                </div>
+            </div>
+            
+            <button class="modal-close" onclick="closeSleepModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal para seleccionar actividad de ejercicio -->
+    <div id="exerciseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🏃 Ejercicio</div>
+                <div class="modal-subtitle">Selecciona la actividad</div>
+            </div>
+            <div class="modal-options">
+                <button class="option-button" onclick="selectActivity('🥋 Taekwondo')">
+                    <span class="option-ml">🥋 Taekwondo</span>
+                </button>
+                <button class="option-button" onclick="selectActivity('🚶 Caminar')">
+                    <span class="option-ml">🚶 Caminar</span>
+                </button>
+                <button class="option-button" onclick="selectActivity('🏃 Correr')">
+                    <span class="option-ml">🏃 Correr</span>
+                </button>
+                <button class="option-button" onclick="selectActivity('⛸️ Patinar')">
+                    <span class="option-ml">⛸️ Patinar</span>
+                </button>
+                <button class="option-button" onclick="selectActivity('🏋️ Pesas')">
+                    <span class="option-ml">🏋️ Pesas</span>
+                </button>
+            </div>
+            <button class="modal-close" onclick="closeExerciseModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal para seleccionar intensidad de ejercicio -->
+    <div id="intensityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="intensityTitle">🏃 Ejercicio</div>
+                <div class="modal-subtitle">Ingresa la duración y selecciona la intensidad</div>
+            </div>
+            
+            <!-- Input de duración -->
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <div style="text-align: center; color: #6b4c9a; font-weight: 600; margin-bottom: 15px; font-size: 1.1em;">⏱️ Duración del Entrenamiento</div>
+                <div>
+                    <label style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">Minutos:</label>
+                    <input type="number" id="taekwondoDuration" min="1" max="300" placeholder="Ej: 60" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                </div>
+                <button onclick="calculateIntensityEffects()" style="width: 100%; margin-top: 12px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 10px; padding: 12px; color: white; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ✨ Calcular Efectos
+                </button>
+            </div>
+
+            <div id="intensityOptions" style="display: none;">
+                <div class="modal-options">
+                    <!-- Los botones se generan dinámicamente -->
+                </div>
+                <div style="margin: 15px 0; padding: 15px; background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%); border-radius: 15px; text-align: center;">
+                    <div style="color: #00796b; font-weight: 600; margin-bottom: 5px;">✨ Beneficios</div>
+                    <div style="color: #00897b; font-size: 0.95em;">Salud Física +50% | Autoestima +25%</div>
+                </div>
+            </div>
+            
+            <button class="modal-close" onclick="closeIntensityModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal para caminar -->
+    <div id="walkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🚶 Caminar</div>
+                <div class="modal-subtitle">Ingresa tu actividad</div>
+            </div>
+            
+            <!-- Input de duración -->
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <div style="text-align: center; color: #6b4c9a; font-weight: 600; margin-bottom: 15px; font-size: 1.1em;">⏱️ Tu Caminata</div>
+                
+                <!-- Selector de unidad -->
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">Medido en:</label>
+                    <select id="walkUnit" onchange="updateWalkInputLabel()" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em; background: white; cursor: pointer;">
+                        <option value="minutos">⏱️ Minutos</option>
+                        <option value="pasos">👣 Pasos</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label id="walkInputLabel" style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">Minutos caminados:</label>
+                    <input type="number" id="walkDuration" min="1" placeholder="Ej: 30" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                </div>
+                <button onclick="calculateWalkEffects()" style="width: 100%; margin-top: 12px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 10px; padding: 12px; color: white; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ✨ Calcular Efectos
+                </button>
+            </div>
+
+            <div id="walkOptions" style="display: none;">
+                <div class="modal-options">
+                    <!-- Los botones se generan dinámicamente -->
+                </div>
+                <div style="margin: 15px 0; padding: 15px; background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%); border-radius: 15px; text-align: center;">
+                    <div style="color: #00796b; font-weight: 600; margin-bottom: 5px;">✨ Beneficios</div>
+                    <div style="color: #00897b; font-size: 0.95em;">Salud Física +10% | Autoestima +5%</div>
+                </div>
+            </div>
+            
+            <button class="modal-close" onclick="closeWalkModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal para correr -->
+    <div id="runModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🏃 Correr</div>
+                <div class="modal-subtitle">Ingresa los detalles de tu carrera</div>
+            </div>
+            
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <div style="text-align: center; color: #6b4c9a; font-weight: 600; margin-bottom: 15px; font-size: 1.1em;">⏱️ Tu Carrera</div>
+                
+                <!-- Selector de unidad -->
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">Medido en:</label>
+                    <select id="runUnit" onchange="updateRunInputLabel()" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em; background: white; cursor: pointer;">
+                        <option value="minutos">⏱️ Minutos</option>
+                        <option value="kilometros">📏 Kilómetros</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label id="runInputLabel" style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">Minutos:</label>
+                    <input type="number" id="runDuration" min="1" step="0.1" placeholder="Ej: 20" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                </div>
+                <button onclick="calculateRunEffects()" style="width: 100%; margin-top: 12px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 10px; padding: 12px; color: white; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ✨ Calcular Efectos
+                </button>
+            </div>
+
+            <div id="runOptions" style="display: none;">
+                <div class="modal-options">
+                    <!-- Los botones se generan dinámicamente -->
+                </div>
+                <div style="margin: 15px 0; padding: 15px; background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%); border-radius: 15px; text-align: center;">
+                    <div style="color: #00796b; font-weight: 600; margin-bottom: 5px;">✨ Beneficios</div>
+                    <div style="color: #00897b; font-size: 0.95em;">Salud Física +40% | Autoestima +20%</div>
+                </div>
+            </div>
+            
+            <button class="modal-close" onclick="closeRunModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal para patinar -->
+    <div id="skateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">⛸️ Patinar</div>
+                <div class="modal-subtitle">Ingresa la duración y nivel</div>
+            </div>
+            
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <div style="text-align: center; color: #6b4c9a; font-weight: 600; margin-bottom: 15px; font-size: 1.1em;">⏱️ Sesión de Patinaje</div>
+                <div>
+                    <label style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">Minutos:</label>
+                    <input type="number" id="skateDuration" min="1" max="300" placeholder="Ej: 45" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                </div>
+                <button onclick="calculateSkateEffects()" style="width: 100%; margin-top: 12px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 10px; padding: 12px; color: white; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ✨ Calcular Efectos
+                </button>
+            </div>
+
+            <div id="skateOptions" style="display: none;">
+                <div class="modal-options">
+                    <!-- Los botones se generan dinámicamente -->
+                </div>
+                <div style="margin: 15px 0; padding: 15px; background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%); border-radius: 15px; text-align: center;">
+                    <div style="color: #00796b; font-weight: 600; margin-bottom: 5px;">✨ Beneficios</div>
+                    <div style="color: #00897b; font-size: 0.95em;">Salud Física +35% | Autoestima +15%</div>
+                </div>
+            </div>
+            
+            <button class="modal-close" onclick="closeSkateModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal para pesas -->
+    <div id="weightsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🏋️ Pesas</div>
+                <div class="modal-subtitle">Ingresa duración y grupo muscular</div>
+            </div>
+            
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <div style="text-align: center; color: #6b4c9a; font-weight: 600; margin-bottom: 15px; font-size: 1.1em;">⏱️ Entrenamiento de Fuerza</div>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <label style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">Minutos:</label>
+                        <input type="number" id="weightsDuration" min="1" max="300" placeholder="Ej: 60" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                    </div>
+                    <div>
+                        <label style="color: #6b4c9a; font-weight: 500; display: block; margin-bottom: 5px;">Grupo muscular principal:</label>
+                        <select id="muscleGroup" style="width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                            <option value="piernas">Piernas/Glúteos (mayor gasto)</option>
+                            <option value="espalda">Espalda/Pecho (gasto moderado)</option>
+                            <option value="brazos">Brazos/Hombros (menor gasto)</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="calculateWeightsEffects()" style="width: 100%; margin-top: 12px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 10px; padding: 12px; color: white; font-weight: 600; cursor: pointer; font-size: 1em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ✨ Aplicar
+                </button>
+            </div>
+            
+            <button class="modal-close" onclick="closeWeightsModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Perfil de Usuario -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <div class="modal-title">👤 Tu Perfil Personal</div>
+                <div class="modal-subtitle">Personaliza tu experiencia</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <label style="color: #6b4c9a; font-weight: 600; display: block; margin-bottom: 8px;">👶 Edad</label>
+                    <input type="number" id="userAge" min="10" max="100" placeholder="Ej: 21" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                </div>
+                <div>
+                    <label style="color: #6b4c9a; font-weight: 600; display: block; margin-bottom: 8px;">⚧️ Género</label>
+                    <select id="userGender" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                        <option value="femenino">Femenino</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="color: #6b4c9a; font-weight: 600; display: block; margin-bottom: 8px;">📏 Altura (cm)</label>
+                    <input type="number" id="userHeight" min="100" max="250" placeholder="Ej: 160" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                </div>
+                <div>
+                    <label style="color: #6b4c9a; font-weight: 600; display: block; margin-bottom: 8px;">⚖️ Peso (kg)</label>
+                    <input type="number" id="userWeight" min="30" max="200" step="0.1" placeholder="Ej: 56" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                </div>
+            </div>
+            <button onclick="saveProfile()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 15px; padding: 18px; font-size: 1.1em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                ✨ Comenzar Mi Jornada
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Función para iniciar el juego desde la pantalla de inicio
+        function startGame() {
+            // Ocultar splash screen con animación
+            const splash = document.getElementById('splashScreen');
+            splash.classList.add('hide');
+            
+            // Después de la animación, mostrar el contenedor principal y el modal de perfil
+            setTimeout(() => {
+                splash.style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                document.getElementById('profileModal').classList.add('show');
+            }, 800);
+        }
+
+        // Perfil del usuario
+        let userProfile = {
+            age: null,
+            gender: null,
+            height: null, // cm
+            weight: null, // kg
+            bmr: 0, // Tasa Metabólica Basal
+            dailyWater: 0, // ml diarios necesarios
+            dailyCalories: 0
+        };
+
+        // Configuración de estadísticas
+        const STATS_CONFIG = {
+            hambre: {
+                name: 'Hambre',
+                icon: '🍽️',
+                decayRate: 4.2, // % por hora
+                current: 100,
+                maxDaily: 0 // Se calculará con BMR
+            },
+            sueño: {
+                name: 'Sueño',
+                icon: '😴',
+                decayRate: 4.2,
+                current: 100,
+                maxDaily: 8 // 8 horas recomendadas
+            },
+            hidratacion: {
+                name: 'Hidratación',
+                icon: '💧',
+                decayRate: 4.2,
+                current: 100,
+                maxDaily: 0 // Se calculará con peso
+            },
+            ejercicio: {
+                name: 'Salud Física',
+                icon: '🏃',
+                decayRate: 4.2,
+                current: 100,
+                maxDaily: 100
+            },
+            autoestima: {
+                name: 'Autoestima',
+                icon: '💖',
+                decayRate: 4.2,
+                current: 100,
+                maxDaily: 100
+            },
+            vidaSocial: {
+                name: 'Vida Social',
+                icon: '💬',
+                decayRate: 4.2,
+                current: 100,
+                maxDaily: 100
+            }
+        };
+
+        // MET (Metabolic Equivalent of Task) para cada actividad
+        const MET_VALUES = {
+            taekwondo: { leve: 6.0, moderado: 8.0, intenso: 10.0 },
+            caminar: { lento: 3.0, moderado: 3.5, rapido: 4.5 },
+            correr: { leve: 6.5, moderado: 9.0, intenso: 12.5 },
+            patinar: { recreativo: 6.0, moderado: 7.0, intenso: 9.0 },
+            pesas: { brazos: 5.0, espalda: 6.0, piernas: 7.0 }
+        };
+
+        // Calcular TMB (Tasa Metabólica Basal) - Fórmula Mifflin-St Jeor
+        function calculateBMR() {
+            const { age, gender, height, weight } = userProfile;
+            
+            if (!age || !height || !weight) return 0;
+            
+            // BMR = (10 × peso en kg) + (6.25 × altura en cm) - (5 × edad en años) + s
+            // s = +5 para hombres, -161 para mujeres
+            const s = gender === 'masculino' ? 5 : (gender === 'femenino' ? -161 : -78);
+            const bmr = (10 * weight) + (6.25 * height) - (5 * age) + s;
+            
+            return Math.round(bmr);
+        }
+
+        // Calcular hidratación diaria necesaria
+        function calculateDailyWater() {
+            // 30-35 ml por kg de peso corporal
+            return Math.round(userProfile.weight * 32.5);
+        }
+
+        // Calcular calorías quemadas por actividad
+        function calculateCaloriesBurned(met, durationMinutes) {
+            // Calorías = MET × peso (kg) × duración (horas)
+            const hours = durationMinutes / 60;
+            return Math.round(met * userProfile.weight * hours);
+        }
+
+        // Convertir calorías a porcentaje de hambre
+        function caloriesToHungerPercent(calories) {
+            // Porcentaje basado en BMR
+            return (calories / userProfile.bmr) * 100;
+        }
+
+        // Convertir ml a porcentaje de hidratación
+        function mlToHydrationPercent(ml) {
+            return (ml / userProfile.dailyWater) * 100;
+        }
+
+        // Guardar perfil y calcular valores
+        function saveProfile() {
+            userProfile.age = parseInt(document.getElementById('userAge').value);
+            userProfile.gender = document.getElementById('userGender').value;
+            userProfile.height = parseInt(document.getElementById('userHeight').value);
+            userProfile.weight = parseFloat(document.getElementById('userWeight').value);
+            
+            if (!userProfile.age || !userProfile.height || !userProfile.weight) {
+                alert('⚠️ Por favor completa todos los campos');
+                return;
+            }
+            
+            // Calcular valores personalizados
+            userProfile.bmr = calculateBMR();
+            userProfile.dailyWater = calculateDailyWater();
+            userProfile.dailyCalories = Math.round(userProfile.bmr * 1.2); // Factor de actividad ligera
+            
+            STATS_CONFIG.hambre.maxDaily = userProfile.bmr;
+            STATS_CONFIG.hidratacion.maxDaily = userProfile.dailyWater;
+            
+            // Guardar perfil
+            localStorage.setItem('userProfile', JSON.stringify(userProfile));
+            
+            // Cerrar modal
+            document.getElementById('profileModal').classList.remove('show');
+            
+            // Inicializar juego
+            init();
+            
+            console.log('📊 Perfil guardado:', userProfile);
+            console.log(`TMB: ${userProfile.bmr} kcal/día | Agua: ${userProfile.dailyWater}ml/día`);
+        }
+
+        // Estado del juego
+        let gameState = {
+            stats: {},
+            lastUpdate: Date.now()
+        };
+
+        // Inicializar estadísticas
+        function initStats() {
+            // Cargar perfil
+            const savedProfile = localStorage.getItem('userProfile');
+            if (savedProfile) {
+                userProfile = JSON.parse(savedProfile);
+                STATS_CONFIG.hambre.maxDaily = userProfile.bmr;
+                STATS_CONFIG.hidratacion.maxDaily = userProfile.dailyWater;
+            }
+            
+            // Cargar desde localStorage si existe
+            const saved = localStorage.getItem('gameState');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                
+                // Calcular tiempo transcurrido y aplicar decaimiento
+                const now = Date.now();
+                const hoursElapsed = (now - gameState.lastUpdate) / (1000 * 60 * 60);
+                
+                Object.keys(gameState.stats).forEach(key => {
+                    const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
+                    gameState.stats[key].current = Math.max(0, gameState.stats[key].current - decayAmount);
+                });
+                
+                gameState.lastUpdate = now;
+            } else {
+                // Inicializar nuevo juego
+                Object.keys(STATS_CONFIG).forEach(key => {
+                    gameState.stats[key] = { ...STATS_CONFIG[key] };
+                });
+            }
+            
+            saveState();
+        }
+
+        // Guardar estado
+        function saveState() {
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        // Renderizar estadísticas
+        function renderStats() {
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = '';
+
+            Object.keys(gameState.stats).forEach(key => {
+                const stat = gameState.stats[key];
+                const percentage = Math.round(stat.current);
+                
+                // Determinar clase de color según porcentaje
+                let barClass = 'stat-bar-high';
+                if (percentage < 70 && percentage >= 40) {
+                    barClass = 'stat-bar-medium';
+                } else if (percentage < 40) {
+                    barClass = 'stat-bar-low';
+                }
+
+                // Información personalizada para hambre e hidratación
+                let personalInfo = '';
+                if (key === 'hambre' && userProfile.bmr > 0) {
+                    personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
+                } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
+                    personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
+                }
+
+                const statDiv = document.createElement('div');
+                statDiv.className = `stat-item ${percentage < 20 ? 'warning' : ''}`;
+                statDiv.innerHTML = `
+                    <div class="stat-header">
+                        <div class="stat-name">
+                            <span class="stat-icon">${stat.icon}</span>
+                            ${stat.name}
+                        </div>
+                        <div class="stat-value">${percentage}%</div>
+                    </div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar-fill ${barClass}" style="width: ${percentage}%">
+                            ${percentage}%
+                        </div>
+                    </div>
+                    ${personalInfo}
+                `;
+                container.appendChild(statDiv);
+            });
+        }
+
+        // Actualizar estadísticas continuamente
+        function updateStats() {
+            const now = Date.now();
+            const hoursElapsed = (now - gameState.lastUpdate) / (1000 * 60 * 60);
+            
+            if (hoursElapsed > 0) {
+                Object.keys(gameState.stats).forEach(key => {
+                    const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
+                    gameState.stats[key].current = Math.max(0, gameState.stats[key].current - decayAmount);
+                });
+                
+                gameState.lastUpdate = now;
+                saveState();
+                renderStats();
+            }
+        }
+
+        // Resetear estadísticas
+        function resetStats() {
+            if (confirm('¿Estás seguro de que quieres resetear todas las estadísticas a 100%?')) {
+                Object.keys(STATS_CONFIG).forEach(key => {
+                    gameState.stats[key] = { ...STATS_CONFIG[key] };
+                });
+                gameState.lastUpdate = Date.now();
+                saveState();
+                renderStats();
+            }
+        }
+
+        // Actualizar reloj en tiempo real
+        function updateClock() {
+            const now = new Date();
+            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            const dayName = days[now.getDay()];
+            const day = now.getDate();
+            const month = months[now.getMonth()];
+            const year = now.getFullYear();
+            
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('dateDisplay').textContent = `${dayName}, ${day} de ${month} de ${year}`;
+            document.getElementById('timeDisplay').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // Funciones del modal de comida
+        function openEatModal() {
+            document.getElementById('caloriesInput').value = '';
+            document.getElementById('caloriesInfo').style.display = 'none';
+            document.getElementById('bmrDisplay').textContent = userProfile.bmr;
+            document.getElementById('eatModal').classList.add('show');
+            
+            // Agregar listener para actualizar en tiempo real
+            document.getElementById('caloriesInput').addEventListener('input', function() {
+                const calories = parseFloat(this.value);
+                if (calories && calories > 0) {
+                    const hungerPercent = caloriesToHungerPercent(calories);
+                    document.getElementById('hungerIncrease').textContent = hungerPercent.toFixed(1);
+                    document.getElementById('caloriesInfo').style.display = 'block';
+                } else {
+                    document.getElementById('caloriesInfo').style.display = 'none';
+                }
+            });
+        }
+
+        function closeEatModal() {
+            document.getElementById('eatModal').classList.remove('show');
+        }
+
+        function calculateEatEffects() {
+            const calories = parseFloat(document.getElementById('caloriesInput').value);
+            
+            if (!calories || calories < 1) {
+                alert('⚠️ Por favor ingresa las calorías consumidas');
+                return;
+            }
+            
+            // Calcular porcentaje de hambre basado en BMR
+            const hungerPercent = caloriesToHungerPercent(calories);
+            
+            // Aplicar los cambios
+            gameState.stats.hambre.current = Math.min(100, gameState.stats.hambre.current + hungerPercent);
+            
+            // También se reduce un poco la hidratación (al comer necesitas agua)
+            const hydrationDecrease = hungerPercent * 0.15; // 15% de las calorías afecta hidratación
+            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationDecrease);
+            
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            closeEatModal();
+            
+            console.log(`¡Comiste ${calories} kcal! +${hungerPercent.toFixed(1)}% de hambre`);
+        }
+
+        // Funciones del modal de agua
+        function openWaterModal() {
+            renderWaterModal();
+            document.getElementById('waterModal').classList.add('show');
+        }
+
+        function closeWaterModal() {
+            document.getElementById('waterModal').classList.remove('show');
+        }
+
+        function renderWaterModal() {
+            const waterAmounts = [50, 100, 250, 500];
+            const modalOptions = document.querySelector('#waterModal .modal-options');
+            
+            modalOptions.innerHTML = '';
+            
+            waterAmounts.forEach(ml => {
+                const percentage = mlToHydrationPercent(ml);
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.onclick = () => drinkWater(ml);
+                button.innerHTML = `
+                    <span class="option-ml">${ml} ml</span>
+                    <span class="option-percentage">+${percentage.toFixed(1)}%</span>
+                `;
+                modalOptions.appendChild(button);
+            });
+        }
+
+        function drinkWater(ml) {
+            // Calcular porcentaje basado en necesidad diaria personalizada
+            const percentage = mlToHydrationPercent(ml);
+            
+            // Aumentar hidratación
+            gameState.stats.hidratacion.current = Math.min(100, gameState.stats.hidratacion.current + percentage);
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            closeWaterModal();
+            
+            // Opcional: mostrar feedback visual
+            console.log(`¡Bebiste ${ml}ml de agua! +${percentage.toFixed(1)}% de hidratación`);
+        }
+
+        // Funciones del modal de dormir
+        function openSleepModal() {
+            document.getElementById('sleepModal').classList.add('show');
+        }
+
+        function closeSleepModal() {
+            document.getElementById('sleepModal').classList.remove('show');
+        }
+
+        function sleep(percentage) {
+            // Aumentar sueño
+            gameState.stats.sueño.current = Math.min(100, gameState.stats.sueño.current + percentage);
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            closeSleepModal();
+            
+            console.log(`¡Dormiste! +${percentage}% de sueño`);
+        }
+
+        function calculateSleep() {
+            const sleepTime = document.getElementById('sleepTime').value;
+            const wakeTime = document.getElementById('wakeTime').value;
+            
+            if (!sleepTime || !wakeTime) {
+                alert('⚠️ Por favor ingresa ambas horas (dormir y despertar)');
+                return;
+            }
+            
+            // Convertir las horas a minutos desde medianoche
+            const [sleepHour, sleepMin] = sleepTime.split(':').map(Number);
+            const [wakeHour, wakeMin] = wakeTime.split(':').map(Number);
+            
+            let sleepMinutes = sleepHour * 60 + sleepMin;
+            let wakeMinutes = wakeHour * 60 + wakeMin;
+            
+            // Si la hora de despertar es menor, significa que es al día siguiente
+            if (wakeMinutes <= sleepMinutes) {
+                wakeMinutes += 24 * 60; // Añadir 24 horas en minutos
+            }
+            
+            // Calcular diferencia en minutos y convertir a horas
+            const totalMinutes = wakeMinutes - sleepMinutes;
+            const hours = totalMinutes / 60;
+            
+            // Calcular porcentaje (cada hora = 11.11%)
+            const percentage = hours * 11.11;
+            
+            // Mostrar mensaje confirmando las horas
+            const hoursText = hours.toFixed(1);
+            const percentageText = percentage.toFixed(2);
+            
+            if (confirm(`¿Dormiste ${hoursText} horas?\n\nEsto añadirá +${percentageText}% a tu sueño.`)) {
+                sleep(percentage);
+            }
+        }
+
+        // Variable para almacenar la actividad seleccionada
+        let selectedActivity = '';
+
+        // Funciones del modal de ejercicio
+        function openExerciseModal() {
+            document.getElementById('exerciseModal').classList.add('show');
+        }
+
+        function closeExerciseModal() {
+            document.getElementById('exerciseModal').classList.remove('show');
+        }
+
+        function selectActivity(activity) {
+            selectedActivity = activity;
+            closeExerciseModal();
+            
+            if (activity === '🥋 Taekwondo') {
+                openIntensityModal();
+            } 
+            else if (activity === '🚶 Caminar') {
+                openWalkModal();
+            }
+            else if (activity === '🏃 Correr') {
+                openRunModal();
+            }
+            else if (activity === '⛸️ Patinar') {
+                openSkateModal();
+            }
+            else if (activity === '🏋️ Pesas') {
+                openWeightsModal();
+            }
+        }
+
+        function openIntensityModal() {
+            document.getElementById('intensityTitle').textContent = selectedActivity;
+            document.getElementById('taekwondoDuration').value = '';
+            document.getElementById('intensityOptions').style.display = 'none';
+            document.getElementById('intensityModal').classList.add('show');
+        }
+
+        function closeIntensityModal() {
+            document.getElementById('intensityModal').classList.remove('show');
+        }
+
+        function calculateIntensityEffects() {
+            const duration = parseInt(document.getElementById('taekwondoDuration').value);
+            
+            if (!duration || duration < 1) {
+                alert('⚠️ Por favor ingresa la duración del entrenamiento en minutos');
+                return;
+            }
+            
+            // Generar botones con efectos calculados
+            const intensityOptions = document.querySelector('#intensityOptions .modal-options');
+            intensityOptions.innerHTML = '';
+            
+            const intensities = [
+                { key: 'leve', icon: '😌', name: 'Leve', color: 'linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)' },
+                { key: 'moderado', icon: '💪', name: 'Moderado', color: 'linear-gradient(135deg, #ffd89b 0%, #f093fb 100%)' },
+                { key: 'intenso', icon: '🔥', name: 'Intenso', color: 'linear-gradient(135deg, #ff6b9d 0%, #c44569 100%)' }
+            ];
+            
+            intensities.forEach(intensity => {
+                const met = MET_VALUES.taekwondo[intensity.key];
+                const caloriesBurned = calculateCaloriesBurned(met, duration);
+                const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+                const waterNeeded = caloriesBurned * 1.75;
+                const hydrationPercent = mlToHydrationPercent(waterNeeded);
+                
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.style.background = intensity.color;
+                button.onclick = () => applyExercise(intensity.key, duration);
+                button.innerHTML = `
+                    <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
+                        <span class="option-ml">${intensity.icon} ${intensity.name}</span>
+                        <span style="font-size: 0.85em; opacity: 0.9;">Hambre -${hungerPercent.toFixed(1)}% | Hidratación -${hydrationPercent.toFixed(1)}%</span>
+                    </span>
+                `;
+                intensityOptions.appendChild(button);
+            });
+            
+            // Mostrar opciones
+            document.getElementById('intensityOptions').style.display = 'block';
+        }
+
+        function applyExercise(intensity, duration) {
+            const met = MET_VALUES.taekwondo[intensity];
+            
+            // Calcular calorías quemadas
+            const caloriesBurned = calculateCaloriesBurned(met, duration);
+            const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+            
+            // Calcular hidratación necesaria (aproximadamente 150-200ml por cada 100 kcal)
+            const waterNeeded = caloriesBurned * 1.75;
+            const hydrationPercent = mlToHydrationPercent(waterNeeded);
+            
+            const effect = {
+                hambre: -hungerPercent,
+                hidratacion: -hydrationPercent,
+                ejercicio: 50,
+                autoestima: 25
+            };
+            
+            // Aplicar los cambios a las estadísticas
+            gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current + effect.hambre);
+            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current + effect.hidratacion);
+            gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + effect.ejercicio);
+            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + effect.autoestima);
+            
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            closeIntensityModal();
+            
+            // Mostrar mensaje de confirmación
+            const intensityName = intensity.charAt(0).toUpperCase() + intensity.slice(1);
+            console.log(`¡${selectedActivity} - ${intensityName} (${duration} min)! ${caloriesBurned} kcal | ${Math.round(waterNeeded)}ml`);
+        }
+
+        // Funciones del modal de caminar
+        function openWalkModal() {
+            document.getElementById('walkDuration').value = '';
+            document.getElementById('walkUnit').value = 'minutos';
+            document.getElementById('walkOptions').style.display = 'none';
+            updateWalkInputLabel();
+            document.getElementById('walkModal').classList.add('show');
+        }
+
+        function closeWalkModal() {
+            document.getElementById('walkModal').classList.remove('show');
+        }
+
+        function updateWalkInputLabel() {
+            const unit = document.getElementById('walkUnit').value;
+            const label = document.getElementById('walkInputLabel');
+            const input = document.getElementById('walkDuration');
+            
+            if (unit === 'minutos') {
+                label.textContent = 'Minutos caminados:';
+                input.placeholder = 'Ej: 30';
+                input.max = '300';
+            } else {
+                label.textContent = 'Número de pasos:';
+                input.placeholder = 'Ej: 5000';
+                input.max = '50000';
+            }
+        }
+
+        function calculateWalkEffects() {
+            const unit = document.getElementById('walkUnit').value;
+            const value = parseFloat(document.getElementById('walkDuration').value);
+            
+            if (!value || value < 1) {
+                const message = unit === 'minutos' 
+                    ? '⚠️ Por favor ingresa la duración de tu caminata en minutos'
+                    : '⚠️ Por favor ingresa el número de pasos';
+                alert(message);
+                return;
+            }
+            
+            // Convertir pasos a minutos si es necesario
+            // Promedio: 100 pasos por minuto (ritmo moderado)
+            let duration = value;
+            if (unit === 'pasos') {
+                duration = value / 100; // Convertir pasos a minutos
+            }
+            
+            // Generar botones con efectos calculados según ritmo
+            const walkOptions = document.querySelector('#walkOptions .modal-options');
+            walkOptions.innerHTML = '';
+            
+            const paces = [
+                { key: 'lento', icon: '🚶', name: 'Lento (paseo)', color: 'linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)' },
+                { key: 'moderado', icon: '🚶‍♂️', name: 'Moderado (caminata)', color: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' },
+                { key: 'rapido', icon: '🚶‍♀️', name: 'Rápido (power walk)', color: 'linear-gradient(135deg, #ffd89b 0%, #f093fb 100%)' }
+            ];
+            
+            paces.forEach(pace => {
+                const met = MET_VALUES.caminar[pace.key];
+                const caloriesBurned = calculateCaloriesBurned(met, duration);
+                const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+                const waterNeeded = caloriesBurned * 1.5;
+                const hydrationPercent = mlToHydrationPercent(waterNeeded);
+                
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.style.background = pace.color;
+                button.onclick = () => applyWalk(pace.key, duration);
+                button.innerHTML = `
+                    <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
+                        <span class="option-ml">${pace.icon} ${pace.name}</span>
+                        <span style="font-size: 0.85em; opacity: 0.9;">Hambre -${hungerPercent.toFixed(1)}% | Hidratación -${hydrationPercent.toFixed(1)}%</span>
+                    </span>
+                `;
+                walkOptions.appendChild(button);
+            });
+            
+            document.getElementById('walkOptions').style.display = 'block';
+        }
+
+        function applyWalk(pace, duration) {
+            const met = MET_VALUES.caminar[pace];
+            const caloriesBurned = calculateCaloriesBurned(met, duration);
+            const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+            const waterNeeded = caloriesBurned * 1.5;
+            const hydrationPercent = mlToHydrationPercent(waterNeeded);
+            
+            gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current - hungerPercent);
+            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationPercent);
+            gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + 10);
+            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 5);
+            
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            closeWalkModal();
+            
+            console.log(`¡Caminaste ${duration} min (${pace})! ${caloriesBurned} kcal | ${Math.round(waterNeeded)}ml`);
+        }
+
+        // Funciones del modal de correr
+        function openRunModal() {
+            document.getElementById('runDuration').value = '';
+            document.getElementById('runUnit').value = 'minutos';
+            document.getElementById('runOptions').style.display = 'none';
+            updateRunInputLabel();
+            document.getElementById('runModal').classList.add('show');
+        }
+
+        function closeRunModal() {
+            document.getElementById('runModal').classList.remove('show');
+        }
+
+        function updateRunInputLabel() {
+            const unit = document.getElementById('runUnit').value;
+            const label = document.getElementById('runInputLabel');
+            const input = document.getElementById('runDuration');
+            
+            if (unit === 'minutos') {
+                label.textContent = 'Minutos:';
+                input.placeholder = 'Ej: 20';
+                input.max = '300';
+            } else {
+                label.textContent = 'Kilómetros:';
+                input.placeholder = 'Ej: 5';
+                input.max = '50';
+            }
+        }
+
+        function calculateRunEffects() {
+            const unit = document.getElementById('runUnit').value;
+            const value = parseFloat(document.getElementById('runDuration').value);
+            
+            if (!value || value < 0.1) {
+                const message = unit === 'minutos' 
+                    ? '⚠️ Por favor ingresa la duración de tu carrera en minutos'
+                    : '⚠️ Por favor ingresa la distancia en kilómetros';
+                alert(message);
+                return;
+            }
+            
+            // Convertir kilómetros a minutos si es necesario
+            // Promedio: 1 km = 6 minutos (pace moderado ~10 km/h)
+            let duration = value;
+            if (unit === 'kilometros') {
+                duration = value * 6; // Convertir km a minutos aproximados
+            }
+            
+            // Generar botones con efectos calculados según intensidad
+            const runOptions = document.querySelector('#runOptions .modal-options');
+            runOptions.innerHTML = '';
+            
+            const intensities = [
+                { key: 'leve', icon: '🏃', name: 'Leve (trote)', color: 'linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)' },
+                { key: 'moderado', icon: '🏃‍♂️', name: 'Moderado (ritmo constante)', color: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' },
+                { key: 'intenso', icon: '🔥', name: 'Intenso (sprint/HIIT)', color: 'linear-gradient(135deg, #ff6b9d 0%, #c44569 100%)' }
+            ];
+            
+            intensities.forEach(intensity => {
+                const met = MET_VALUES.correr[intensity.key];
+                const caloriesBurned = calculateCaloriesBurned(met, duration);
+                const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+                const waterNeeded = caloriesBurned * 2.0;
+                const hydrationPercent = mlToHydrationPercent(waterNeeded);
+                
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.style.background = intensity.color;
+                button.onclick = () => applyRun(intensity.key, duration);
+                button.innerHTML = `
+                    <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
+                        <span class="option-ml">${intensity.icon} ${intensity.name}</span>
+                        <span style="font-size: 0.85em; opacity: 0.9;">Hambre -${hungerPercent.toFixed(1)}% | Hidratación -${hydrationPercent.toFixed(1)}%</span>
+                    </span>
+                `;
+                runOptions.appendChild(button);
+            });
+            
+            document.getElementById('runOptions').style.display = 'block';
+        }
+
+        function applyRun(intensity, duration) {
+            const met = MET_VALUES.correr[intensity];
+            const caloriesBurned = calculateCaloriesBurned(met, duration);
+            const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+            const waterNeeded = caloriesBurned * 2.0;
+            const hydrationPercent = mlToHydrationPercent(waterNeeded);
+            
+            gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current - hungerPercent);
+            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationPercent);
+            gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + 40);
+            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 20);
+            
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            closeRunModal();
+            
+            console.log(`¡Corriste ${duration.toFixed(1)} min (${intensity})! ${caloriesBurned} kcal | ${Math.round(waterNeeded)}ml`);
+        }
+
+        // Funciones del modal de patinar
+        function openSkateModal() {
+            document.getElementById('skateDuration').value = '';
+            document.getElementById('skateOptions').style.display = 'none';
+            document.getElementById('skateModal').classList.add('show');
+        }
+
+        function closeSkateModal() {
+            document.getElementById('skateModal').classList.remove('show');
+        }
+
+        function calculateSkateEffects() {
+            const duration = parseInt(document.getElementById('skateDuration').value);
+            
+            if (!duration || duration < 1) {
+                alert('⚠️ Por favor ingresa la duración de tu sesión de patinaje en minutos');
+                return;
+            }
+            
+            const skateOptions = document.querySelector('#skateOptions .modal-options');
+            skateOptions.innerHTML = '';
+            
+            const intensities = [
+                { key: 'recreativo', icon: '⛸️', name: 'Recreativo', color: 'linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)' },
+                { key: 'moderado', icon: '⛸️', name: 'Moderado', color: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' },
+                { key: 'intenso', icon: '⛸️', name: 'Intenso', color: 'linear-gradient(135deg, #ff6b9d 0%, #c44569 100%)' }
+            ];
+            
+            intensities.forEach(intensity => {
+                const met = MET_VALUES.patinar[intensity.key];
+                const caloriesBurned = calculateCaloriesBurned(met, duration);
+                const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+                const waterNeeded = caloriesBurned * 1.6;
+                const hydrationPercent = mlToHydrationPercent(waterNeeded);
+                
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.style.background = intensity.color;
+                button.onclick = () => applySkating(intensity.key, duration);
+                button.innerHTML = `
+                    <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
+                        <span class="option-ml">${intensity.icon} ${intensity.name}</span>
+                        <span style="font-size: 0.85em; opacity: 0.9;">Hambre -${hungerPercent.toFixed(1)}% | Hidratación -${hydrationPercent.toFixed(1)}%</span>
+                    </span>
+                `;
+                skateOptions.appendChild(button);
+            });
+            
+            document.getElementById('skateOptions').style.display = 'block';
+        }
+
+        function applySkating(intensity, duration) {
+            const met = MET_VALUES.patinar[intensity];
+            const caloriesBurned = calculateCaloriesBurned(met, duration);
+            const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+            const waterNeeded = caloriesBurned * 1.6;
+            const hydrationPercent = mlToHydrationPercent(waterNeeded);
+            
+            gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current - hungerPercent);
+            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationPercent);
+            gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + 35);
+            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 15);
+            
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            closeSkateModal();
+            
+            console.log(`¡Patinaste ${duration} min (${intensity})! ${caloriesBurned} kcal | ${Math.round(waterNeeded)}ml`);
+        }
+
+        // Funciones del modal de pesas
+        function openWeightsModal() {
+            document.getElementById('weightsDuration').value = '';
+            document.getElementById('muscleGroup').value = 'piernas';
+            document.getElementById('weightsModal').classList.add('show');
+        }
+
+        function closeWeightsModal() {
+            document.getElementById('weightsModal').classList.remove('show');
+        }
+
+        function calculateWeightsEffects() {
+            const duration = parseInt(document.getElementById('weightsDuration').value);
+            const muscleGroup = document.getElementById('muscleGroup').value;
+            
+            if (!duration || duration < 1) {
+                alert('⚠️ Por favor ingresa la duración de tu entrenamiento en minutos');
+                return;
+            }
+            
+            const met = MET_VALUES.pesas[muscleGroup];
+            const caloriesBurned = calculateCaloriesBurned(met, duration);
+            const hungerPercent = caloriesToHungerPercent(caloriesBurned);
+            const waterNeeded = caloriesBurned * 1.8;
+            const hydrationPercent = mlToHydrationPercent(waterNeeded);
+            
+            const muscleNames = {
+                piernas: 'Piernas/Glúteos',
+                espalda: 'Espalda/Pecho',
+                brazos: 'Brazos/Hombros'
+            };
+            
+            if (confirm(`🏋️ Pesas - ${muscleNames[muscleGroup]} - ${duration} minutos\n\nEfectos:\n- Hambre: -${hungerPercent.toFixed(1)}%\n- Hidratación: -${hydrationPercent.toFixed(1)}%\n- Salud Física: +45%\n- Autoestima: +25%\n\n¿Aplicar?`)) {
+                gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current - hungerPercent);
+                gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationPercent);
+                gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + 45);
+                gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 25);
+                
+                gameState.lastUpdate = Date.now();
+                saveState();
+                renderStats();
+                closeWeightsModal();
+                
+                console.log(`¡Hiciste pesas ${duration} min (${muscleNames[muscleGroup]})! ${caloriesBurned} kcal | ${Math.round(waterNeeded)}ml`);
+            }
+        }
+
+        // Efectos de botones (preparados para futuras funciones)
+        function setupButtons() {
+            document.getElementById('btnEat').addEventListener('click', () => {
+                openEatModal();
+            });
+
+            document.getElementById('btnDrink').addEventListener('click', () => {
+                openWaterModal();
+            });
+
+            document.getElementById('btnSleep').addEventListener('click', () => {
+                openSleepModal();
+            });
+
+            document.getElementById('btnExercise').addEventListener('click', () => {
+                openExerciseModal();
+            });
+
+            document.getElementById('btnSelfcare').addEventListener('click', () => {
+                console.log('Autoestima - Función por implementar');
+                // Aquí irá la lógica de aumentar autoestima
+            });
+
+            document.getElementById('btnSocial').addEventListener('click', () => {
+                console.log('Vida Social - Función por implementar');
+                // Aquí irá la lógica de aumentar vida social
+            });
+
+            document.getElementById('btnReset').addEventListener('click', resetStats);
+        }
+
+        // Inicializar aplicación
+        function init() {
+            // Verificar si existe perfil
+            const savedProfile = localStorage.getItem('userProfile');
+            if (!savedProfile) {
+                // Mostrar modal de perfil
+                return;
+            }
+            
+            initStats();
+            renderStats();
+            setupButtons();
+            
+            // Inicializar y actualizar reloj cada segundo
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Actualizar estadísticas cada 10 segundos
+            setInterval(updateStats, 10000);
+            
+            // Actualizar también cuando la página recupera el foco
+            window.addEventListener('focus', () => {
+                updateStats();
+            });
+        }
+
+        // Iniciar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
