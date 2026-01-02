@@ -110,6 +110,26 @@
             width: 100%;
             padding: 0 20px;
             max-width: 90%;
+            display: none;
+        }
+        
+        /* Mostrar título solo en computadoras */
+        @media (min-width: 768px) {
+            .splash-title {
+                display: block;
+                font-size: 5em;
+                font-weight: 900;
+                background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 25%, #ffb6d9 50%, #c084fc 75%, #a78bfa 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                text-shadow: none;
+                filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.4));
+                letter-spacing: 0.1em;
+                font-family: 'Comic Sans MS', 'Segoe UI', cursive, sans-serif;
+                text-transform: uppercase;
+                padding: 20px;
+            }
         }
 
         .splash-subtitle {
@@ -879,6 +899,7 @@
 <body>
     <!-- Pantalla de Inicio -->
     <div class="splash-screen" id="splashScreen">
+        <h1 class="splash-title">✨ Mi Vida Virtual ✨</h1>
         <button class="play-button" onclick="startGame()">
             <span class="play-icon">▶</span>
         </button>
