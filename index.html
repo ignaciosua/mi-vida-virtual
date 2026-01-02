@@ -13,18 +13,15 @@
 
         html, body {
             width: 100%;
-            height: 100%;
+            min-height: 100%;
             overflow-x: hidden;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #ffb6d9;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
+            display: block;
+            padding: 20px 10px;
             position: relative;
         }
         
@@ -230,48 +227,22 @@
             width: 100%;
             max-width: 600px;
             backdrop-filter: blur(10px);
-            margin: 20px;
+            margin: 0 auto;
         }
         
-        /* Computadora: diseño en dos columnas */
+        .main-content {
+            display: block;
+        }
+        
+        /* Pantallas grandes - diseño más ancho */
         @media (min-width: 1024px) {
             .container {
-                max-width: 1200px;
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                grid-gap: 30px;
+                max-width: 900px;
                 padding: 50px;
             }
             
-            h1 {
-                grid-column: 1 / -1;
-            }
-            
-            .subtitle {
-                grid-column: 1 / -1;
-            }
-            
-            .clock-container {
-                grid-column: 1 / -1;
-            }
-            
-            .stats-container {
-                grid-column: 1 / 2;
-                margin-bottom: 0 !important;
-            }
-            
             .buttons-container {
-                grid-column: 2 / 3;
-                margin-top: 0 !important;
-                align-self: start;
-            }
-            
-            .reset-button {
-                grid-column: 1 / -1;
-            }
-            
-            .info-text {
-                grid-column: 1 / -1;
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
@@ -721,14 +692,11 @@
         @media (max-width: 600px) {
             body {
                 padding: 10px;
-                align-items: flex-start;
-                padding-top: 20px;
             }
 
             .container {
                 padding: 20px;
                 max-width: 100%;
-                margin: 10px;
                 border-radius: 20px;
             }
 
@@ -879,11 +847,6 @@
                 font-size: 1.3em;
             }
             
-            .buttons-container {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            
             .action-button {
                 flex-direction: row;
                 justify-content: flex-start;
@@ -931,35 +894,37 @@
             <div class="time-display" id="timeDisplay"></div>
         </div>
 
-        <div class="stats-container" id="statsContainer">
-            <!-- Las estadísticas se generan dinámicamente -->
-        </div>
+        <div class="main-content">
+            <div class="stats-container" id="statsContainer">
+                <!-- Las estadísticas se generan dinámicamente -->
+            </div>
 
-        <div class="buttons-container">
-            <button class="action-button btn-eat" id="btnEat">
-                <span class="button-icon">🍽️</span>
-                <span class="button-text">Comer</span>
-            </button>
-            <button class="action-button btn-drink" id="btnDrink">
-                <span class="button-icon">💧</span>
-                <span class="button-text">Beber Agua</span>
-            </button>
-            <button class="action-button btn-sleep" id="btnSleep">
-                <span class="button-icon">😴</span>
-                <span class="button-text">Dormir</span>
-            </button>
-            <button class="action-button btn-exercise" id="btnExercise">
-                <span class="button-icon">🏃</span>
-                <span class="button-text">Ejercicio</span>
-            </button>
-            <button class="action-button btn-selfcare" id="btnSelfcare">
-                <span class="button-icon">💖</span>
-                <span class="button-text">Autoestima</span>
-            </button>
-            <button class="action-button btn-social" id="btnSocial">
-                <span class="button-icon">💬</span>
-                <span class="button-text">Vida Social</span>
-            </button>
+            <div class="buttons-container">
+                <button class="action-button btn-eat" id="btnEat">
+                    <span class="button-icon">🍽️</span>
+                    <span class="button-text">Comer</span>
+                </button>
+                <button class="action-button btn-drink" id="btnDrink">
+                    <span class="button-icon">💧</span>
+                    <span class="button-text">Beber Agua</span>
+                </button>
+                <button class="action-button btn-sleep" id="btnSleep">
+                    <span class="button-icon">😴</span>
+                    <span class="button-text">Dormir</span>
+                </button>
+                <button class="action-button btn-exercise" id="btnExercise">
+                    <span class="button-icon">🏃</span>
+                    <span class="button-text">Ejercicio</span>
+                </button>
+                <button class="action-button btn-selfcare" id="btnSelfcare">
+                    <span class="button-icon">💖</span>
+                    <span class="button-text">Autoestima</span>
+                </button>
+                <button class="action-button btn-social" id="btnSocial">
+                    <span class="button-icon">💬</span>
+                    <span class="button-text">Vida Social</span>
+                </button>
+            </div>
         </div>
 
         <button class="reset-button" id="btnReset">🔄 Resetear Estadísticas</button>
