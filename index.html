@@ -1054,9 +1054,11 @@
         <!-- Reloj en tiempo real -->
         <div class="clock-container">
             <div class="life-stats-icons">
+                <span class="life-icon" onclick="toggleBirthday()" title="Días hasta tu cumpleaños">🎂</span>
                 <span class="life-icon" onclick="toggleLifeDays()" title="Días vividos">❤️</span>
                 <span class="life-icon" onclick="toggleDeathDays()" title="Días estimados restantes">💀</span>
             </div>
+            <div class="life-stat-display" id="birthdayDisplay" style="bottom: 110px;"></div>
             <div class="life-stat-display" id="lifeDaysDisplay"></div>
             <div class="life-stat-display" id="deathDaysDisplay" style="bottom: 80px;"></div>
             <div class="date-display" id="dateDisplay"></div>
@@ -1427,6 +1429,72 @@
         </div>
     </div>
 
+    <!-- Modal de Autoestima -->
+    <div id="selfcareModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">💖 Autoestima & Bienestar</div>
+                <div class="modal-subtitle">Elige una categoría</div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button onclick="openSelfcareCategory('microcuidados')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);">
+                    ✨ Microcuidados
+                </button>
+                <button onclick="openSelfcareCategory('regulacion')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);">
+                    🧘‍♀️ Regulación Emocional
+                </button>
+                <button onclick="openSelfcareCategory('impacto')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);">
+                    💪 Acciones de Impacto Fuerte
+                </button>
+            </div>
+            
+            <button class="modal-close" onclick="closeSelfcareModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Microcuidados -->
+    <div id="microcuidadosModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">✨ Microcuidados</div>
+                <div class="modal-subtitle">Pequeñas acciones, gran impacto</div>
+            </div>
+            <div id="microcuidadosOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeMicrocuidadosModal()">← Volver</button>
+        </div>
+    </div>
+
+    <!-- Modal de Regulación Emocional -->
+    <div id="regulacionModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">🧘‍♀️ Regulación Emocional</div>
+                <div class="modal-subtitle">Conecta con tus emociones</div>
+            </div>
+            <div id="regulacionOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeRegulacionModal()">← Volver</button>
+        </div>
+    </div>
+
+    <!-- Modal de Acciones de Impacto -->
+    <div id="impactoModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">💪 Acciones de Impacto Fuerte</div>
+                <div class="modal-subtitle">Grandes decisiones para tu bienestar</div>
+            </div>
+            <div id="impactoOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeImpactoModal()">← Volver</button>
+        </div>
+    </div>
+
     <script>
         // Función para iniciar el juego desde la pantalla de inicio
         function startGame() {
@@ -1461,6 +1529,47 @@
             bmr: 0, // Tasa Metabólica Basal
             dailyWater: 0, // ml diarios necesarios
             dailyCalories: 0
+        };
+        
+        // Acciones de autocuidado y su cooldown
+        const SELFCARE_ACTIONS = {
+            microcuidados: [
+                { id: 'bañarse', name: 'Bañarse conscientemente', emoji: '🚿', boost: 5, cooldown: 'daily' },
+                { id: 'cabello', name: 'Arreglarse el cabello', emoji: '💇‍♀️', boost: 5, cooldown: 'daily' },
+                { id: 'maquillarse', name: 'Maquillarse', emoji: '💄', boost: 10, cooldown: 'daily' },
+                { id: 'skincare', name: 'Skin care', emoji: '🧴', boost: 5, cooldown: 'daily' },
+                { id: 'dientes', name: 'Cepillarse los dientes', emoji: '🪥', boost: 5, cooldown: 'daily' },
+                { id: 'crema', name: 'Crema en todo el cuerpo', emoji: '🧴', boost: 15, cooldown: 'daily' },
+                { id: 'perfume', name: 'Perfume', emoji: '💐', boost: 3, cooldown: 'daily' },
+                { id: 'ropa', name: 'Ropa linda', emoji: '👗', boost: 20, cooldown: 'daily' },
+                { id: 'foto', name: 'Tomarse una foto', emoji: '📸', boost: 15, cooldown: 'none' },
+                { id: 'cama', name: 'Tender la cama', emoji: '🛏️', boost: 5, cooldown: 'daily' },
+                { id: 'limpiar', name: 'Limpiar el espacio', emoji: '🧹', boost: 15, cooldown: 'none' },
+                { id: 'cejas', name: 'Depilarse las cejas', emoji: '✨', boost: 10, cooldown: 'weekly' },
+                { id: 'depilar', name: 'Depilarse el cuerpo', emoji: '✨', boost: 15, cooldown: 'weekly' },
+                { id: 'limpieza', name: 'Limpieza profunda del cuarto', emoji: '🧽', boost: 20, cooldown: 'weekly' }
+            ],
+            regulacion: [
+                { id: 'emociones', name: 'Escribir las emociones', emoji: '📝', boost: 10, cooldown: 'none' },
+                { id: 'duele', name: 'Escribir lo que te duele', emoji: '💔', boost: 10, cooldown: 'none' },
+                { id: 'agradecer', name: 'Escribir lo que agradeces', emoji: '🙏', boost: 10, cooldown: 'none' },
+                { id: 'bonito', name: 'Decirte algo bonito', emoji: '💝', boost: 10, cooldown: 'none' },
+                { id: 'respirar', name: 'Respirar profundo 6 veces', emoji: '🌬️', boost: 2, cooldown: 'none' }
+            ],
+            impacto: [
+                { id: 'decision', name: 'Mantener tu decisión firme', emoji: '💎', boost: 10, cooldown: 'none' },
+                { id: 'opinion', name: 'Defender tu opinión', emoji: '🗣️', boost: 10, cooldown: 'none' },
+                { id: 'gusto', name: 'Hacer algo solo porque te gusta', emoji: '🎨', boost: 10, cooldown: 'none' },
+                { id: 'sol', name: 'Tomar el sol 10 min (10am)', emoji: '☀️', boost: 10, cooldown: 'daily' },
+                { id: 'ejercicio_auto', name: 'Hacer ejercicio', emoji: '💪', boost: 25, cooldown: 'daily' }
+            ]
+        };
+        
+        // Estado de cooldowns
+        let selfcareCooldowns = {
+            daily: {},
+            weekly: {},
+            lastReset: { daily: Date.now(), weekly: Date.now() }
         };
 
         // Configuración de estadísticas
@@ -1855,6 +1964,43 @@
                 const days = calculateEstimatedDaysLeft();
                 const years = Math.floor(days / 365.25);
                 display.textContent = `💀 ~${days.toLocaleString()} días (~${years} años)`;
+                display.classList.add('show');
+                
+                // Ocultar después de 3 segundos
+                setTimeout(() => display.classList.remove('show'), 3000);
+            }
+        }
+        
+        function calculateDaysUntilBirthday() {
+            if (!userProfile.birthdate) return 0;
+            const birth = new Date(userProfile.birthdate);
+            const today = new Date();
+            
+            // Próximo cumpleaños
+            const nextBirthday = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
+            
+            // Si ya pasó este año, calcular para el próximo
+            if (nextBirthday < today) {
+                nextBirthday.setFullYear(today.getFullYear() + 1);
+            }
+            
+            const diffTime = nextBirthday - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+        
+        function toggleBirthday() {
+            const display = document.getElementById('birthdayDisplay');
+            const lifeDisplay = document.getElementById('lifeDaysDisplay');
+            const deathDisplay = document.getElementById('deathDaysDisplay');
+            
+            if (display.classList.contains('show')) {
+                display.classList.remove('show');
+            } else {
+                lifeDisplay.classList.remove('show');
+                deathDisplay.classList.remove('show');
+                const days = calculateDaysUntilBirthday();
+                display.textContent = days === 0 ? '🎂 ¡Hoy es tu cumpleaños!' : `🎂 Faltan ${days} días para tu cumpleaños`;
                 display.classList.add('show');
                 
                 // Ocultar después de 3 segundos
@@ -2452,6 +2598,143 @@
                 console.log(`¡Hiciste pesas ${duration} min (${muscleNames[muscleGroup]})! ${caloriesBurned} kcal | ${Math.round(waterNeeded)}ml`);
             }
         }
+        
+        // Funciones de autoestima
+        function loadSelfcareCooldowns() {
+            const saved = localStorage.getItem('selfcareCooldowns');
+            if (saved) {
+                selfcareCooldowns = JSON.parse(saved);
+            }
+            resetCooldownsIfNeeded();
+        }
+        
+        function saveSelfcareCooldowns() {
+            localStorage.setItem('selfcareCooldowns', JSON.stringify(selfcareCooldowns));
+        }
+        
+        function resetCooldownsIfNeeded() {
+            const now = Date.now();
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            const oneWeekMs = 7 * oneDayMs;
+            
+            // Reset diarios
+            if (now - selfcareCooldowns.lastReset.daily > oneDayMs) {
+                selfcareCooldowns.daily = {};
+                selfcareCooldowns.lastReset.daily = now;
+                saveSelfcareCooldowns();
+            }
+            
+            // Reset semanales
+            if (now - selfcareCooldowns.lastReset.weekly > oneWeekMs) {
+                selfcareCooldowns.weekly = {};
+                selfcareCooldowns.lastReset.weekly = now;
+                saveSelfcareCooldowns();
+            }
+        }
+        
+        function isActionAvailable(actionId, cooldown) {
+            if (cooldown === 'none') return true;
+            if (cooldown === 'daily') return !selfcareCooldowns.daily[actionId];
+            if (cooldown === 'weekly') return !selfcareCooldowns.weekly[actionId];
+            return true;
+        }
+        
+        function markActionUsed(actionId, cooldown) {
+            if (cooldown === 'daily') {
+                selfcareCooldowns.daily[actionId] = Date.now();
+            } else if (cooldown === 'weekly') {
+                selfcareCooldowns.weekly[actionId] = Date.now();
+            }
+            saveSelfcareCooldowns();
+        }
+        
+        function openSelfcareModal() {
+            loadSelfcareCooldowns();
+            document.getElementById('selfcareModal').classList.add('show');
+        }
+        
+        function closeSelfcareModal() {
+            document.getElementById('selfcareModal').classList.remove('show');
+        }
+        
+        function openSelfcareCategory(category) {
+            closeSelfcareModal();
+            const actions = SELFCARE_ACTIONS[category];
+            let container, modal;
+            
+            if (category === 'microcuidados') {
+                container = document.getElementById('microcuidadosOptions');
+                modal = document.getElementById('microcuidadosModal');
+            } else if (category === 'regulacion') {
+                container = document.getElementById('regulacionOptions');
+                modal = document.getElementById('regulacionModal');
+            } else {
+                container = document.getElementById('impactoOptions');
+                modal = document.getElementById('impactoModal');
+            }
+            
+            container.innerHTML = '';
+            
+            actions.forEach(action => {
+                const available = isActionAvailable(action.id, action.cooldown);
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.style.opacity = available ? '1' : '0.4';
+                button.style.cursor = available ? 'pointer' : 'not-allowed';
+                button.style.background = available ? 
+                    'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)' : 
+                    'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)';
+                button.disabled = !available;
+                
+                let cooldownText = '';
+                if (action.cooldown === 'daily') cooldownText = ' (1x día)';
+                else if (action.cooldown === 'weekly') cooldownText = ' (1x semana)';
+                
+                button.innerHTML = `
+                    <span style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span style="font-size: 1.05em;">${action.emoji} ${action.name}${cooldownText}</span>
+                        <span style="font-size: 1.1em; font-weight: bold; color: #10b981;">+${action.boost}%</span>
+                    </span>
+                `;
+                
+                if (available) {
+                    button.onclick = () => applySelfcareAction(action);
+                }
+                
+                container.appendChild(button);
+            });
+            
+            modal.classList.add('show');
+        }
+        
+        function applySelfcareAction(action) {
+            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + action.boost);
+            markActionUsed(action.id, action.cooldown);
+            saveState();
+            renderStats();
+            
+            // Cerrar el modal correspondiente
+            document.getElementById('microcuidadosModal').classList.remove('show');
+            document.getElementById('regulacionModal').classList.remove('show');
+            document.getElementById('impactoModal').classList.remove('show');
+            
+            console.log(`${action.emoji} ${action.name}: Autoestima +${action.boost}%`);
+        }
+        
+        function closeMicrocuidadosModal() {
+            document.getElementById('microcuidadosModal').classList.remove('show');
+            openSelfcareModal();
+        }
+        
+        function closeRegulacionModal() {
+            document.getElementById('regulacionModal').classList.remove('show');
+            openSelfcareModal();
+        }
+        
+        function closeImpactoModal() {
+            document.getElementById('impactoModal').classList.remove('show');
+            openSelfcareModal();
+        }
 
         // Efectos de botones (preparados para futuras funciones)
         function setupButtons() {
@@ -2472,8 +2755,7 @@
             });
 
             document.getElementById('btnSelfcare').addEventListener('click', () => {
-                console.log('Autoestima - Función por implementar');
-                // Aquí irá la lógica de aumentar autoestima
+                openSelfcareModal();
             });
 
             document.getElementById('btnSocial').addEventListener('click', () => {
@@ -2496,6 +2778,7 @@
             initStats();
             renderStats();
             setupButtons();
+            loadSelfcareCooldowns();
             
             // Inicializar y actualizar reloj cada segundo
             updateClock();
