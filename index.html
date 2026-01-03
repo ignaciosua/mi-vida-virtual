@@ -532,6 +532,48 @@
             background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%);
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
+            position: relative;
+        }
+        
+        .life-stats-icons {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .life-icon {
+            cursor: pointer;
+            font-size: 1.3em;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+        }
+        
+        .life-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        .life-stat-display {
+            position: absolute;
+            top: 45px;
+            right: 15px;
+            background: linear-gradient(135deg, #fff0f5 0%, #ffe5ec 100%);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.85em;
+            color: #6b4c9a;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(255, 107, 157, 0.2);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+        
+        .life-stat-display.show {
+            opacity: 1;
         }
 
         .date-display {
@@ -1011,6 +1053,12 @@
 
         <!-- Reloj en tiempo real -->
         <div class="clock-container">
+            <div class="life-stats-icons">
+                <span class="life-icon" onclick="toggleLifeDays()" title="Días vividos">❤️</span>
+                <span class="life-icon" onclick="toggleDeathDays()" title="Días estimados restantes">💀</span>
+            </div>
+            <div class="life-stat-display" id="lifeDaysDisplay"></div>
+            <div class="life-stat-display" id="deathDaysDisplay" style="top: 75px;"></div>
             <div class="date-display" id="dateDisplay"></div>
             <div class="time-display" id="timeDisplay"></div>
         </div>
@@ -1353,7 +1401,7 @@
             <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
                 <div>
                     <label style="color: #6b4c9a; font-weight: 600; display: block; margin-bottom: 8px;">🎂 Fecha de Nacimiento</label>
-                    <input type="date" id="userBirthdate" max="" style="width: 100%; padding: 8px 10px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 0.9em; font-family: inherit; color: #6b4c9a; background: white; box-sizing: border-box; line-height: 1.2;">
+                    <input type="date" id="userBirthdate" max="" style="width: 100%; padding: 6px 8px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 0.85em; font-family: inherit; color: #6b4c9a; background: white; box-sizing: border-box; line-height: 1.1;">
                     <div id="ageDisplay" style="margin-top: 6px; color: #ff6b9d; font-weight: 600; font-size: 0.85em; text-align: center; min-height: 18px;"></div>
                 </div>
                 <div>
@@ -1756,6 +1804,62 @@
             
             document.getElementById('dateDisplay').textContent = `${dayName}, ${day} de ${month} de ${year}`;
             document.getElementById('timeDisplay').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // Funciones para calcular días vividos y días restantes
+        function calculateDaysLived() {
+            if (!userProfile.birthdate) return 0;
+            const birth = new Date(userProfile.birthdate);
+            const today = new Date();
+            const diffTime = Math.abs(today - birth);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+        
+        function calculateEstimatedDaysLeft() {
+            if (!userProfile.birthdate) return 0;
+            const birth = new Date(userProfile.birthdate);
+            const today = new Date();
+            const age = calculateAge(userProfile.birthdate);
+            const estimatedDeathAge = 72; // Media de esperanza de vida
+            const yearsLeft = Math.max(0, estimatedDeathAge - age);
+            const daysLeft = Math.floor(yearsLeft * 365.25);
+            return daysLeft;
+        }
+        
+        function toggleLifeDays() {
+            const display = document.getElementById('lifeDaysDisplay');
+            const deathDisplay = document.getElementById('deathDaysDisplay');
+            
+            if (display.classList.contains('show')) {
+                display.classList.remove('show');
+            } else {
+                deathDisplay.classList.remove('show');
+                const days = calculateDaysLived();
+                display.textContent = `❤️ ${days.toLocaleString()} días vividos`;
+                display.classList.add('show');
+                
+                // Ocultar después de 3 segundos
+                setTimeout(() => display.classList.remove('show'), 3000);
+            }
+        }
+        
+        function toggleDeathDays() {
+            const display = document.getElementById('deathDaysDisplay');
+            const lifeDisplay = document.getElementById('lifeDaysDisplay');
+            
+            if (display.classList.contains('show')) {
+                display.classList.remove('show');
+            } else {
+                lifeDisplay.classList.remove('show');
+                const days = calculateEstimatedDaysLeft();
+                const years = Math.floor(days / 365.25);
+                display.textContent = `💀 ~${days.toLocaleString()} días (~${years} años)`;
+                display.classList.add('show');
+                
+                // Ocultar después de 3 segundos
+                setTimeout(() => display.classList.remove('show'), 3000);
+            }
         }
 
         // Funciones del modal de comida
