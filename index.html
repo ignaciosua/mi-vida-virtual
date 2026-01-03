@@ -121,15 +121,28 @@
                 font-weight: 900;
                 color: #ffffff;
                 text-shadow: 
-                    3px 3px 0px rgba(0, 0, 0, 0.5),
-                    6px 6px 20px rgba(0, 0, 0, 0.4);
-                letter-spacing: 0.3em;
-                font-family: 'Arial Black', 'Arial Rounded MT Bold', 'Comic Sans MS', cursive, sans-serif;
+                    /* Borde azul claro para efecto fluffy */
+                    0 0 10px rgba(100, 200, 255, 0.5),
+                    /* Contorno grueso blanco */
+                    -3px -3px 0 rgba(255, 255, 255, 0.9),
+                    3px -3px 0 rgba(255, 255, 255, 0.9),
+                    -3px 3px 0 rgba(255, 255, 255, 0.9),
+                    3px 3px 0 rgba(255, 255, 255, 0.9),
+                    -5px -5px 0 rgba(100, 200, 255, 0.6),
+                    5px -5px 0 rgba(100, 200, 255, 0.6),
+                    -5px 5px 0 rgba(100, 200, 255, 0.6),
+                    5px 5px 0 rgba(100, 200, 255, 0.6),
+                    /* Sombra profunda */
+                    8px 8px 15px rgba(0, 0, 0, 0.4),
+                    0 12px 20px rgba(0, 0, 0, 0.3);
+                letter-spacing: 0.15em;
+                font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', cursive, sans-serif;
                 text-transform: uppercase;
-                padding: 20px;
-                transform: scale(1.8, 1.2);
+                padding: 30px 20px;
+                transform: scale(1.6, 1.3);
                 font-stretch: ultra-expanded;
-                -webkit-text-stroke: 2px rgba(255, 255, 255, 0.3);
+                filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.3));
+                border-radius: 50px;
             }
             
             /* Mejorar calidad de imagen en computadoras */
