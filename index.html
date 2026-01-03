@@ -771,6 +771,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+            margin-top: 20px;
         }
 
         .modal-close:hover {
@@ -880,9 +881,45 @@
             .clock-container {
                 padding: 12px;
             }
+            
+            .life-stats-icons {
+                bottom: 8px;
+                left: 8px;
+                gap: 6px;
+                padding: 4px 8px;
+            }
+            
+            .life-icon {
+                font-size: 0.95em;
+            }
+            
+            .life-stat-display {
+                bottom: 45px;
+                left: 10px;
+                font-size: 0.8em;
+                padding: 8px 12px;
+            }
         }
         
         @media (max-width: 400px) {
+            .life-stats-icons {
+                bottom: 5px;
+                left: 5px;
+                gap: 4px;
+                padding: 3px 6px;
+            }
+            
+            .life-icon {
+                font-size: 0.85em;
+            }
+            
+            .life-stat-display {
+                bottom: 38px;
+                left: 8px;
+                font-size: 0.75em;
+                padding: 6px 10px;
+            }
+            
             .splash-title {
                 font-size: 1.6em;
                 margin-bottom: 25px;
