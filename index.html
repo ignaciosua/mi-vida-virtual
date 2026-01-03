@@ -747,13 +747,8 @@
             }
             
             .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
             }
 
             .time-display {
@@ -848,8 +843,8 @@
             }
             
             .stats-container {
-                grid-template-columns: 1fr;
-                gap: 10px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
             
             .stat-item {
@@ -1337,8 +1332,9 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
                 <div>
-                    <label style="color: #6b4c9a; font-weight: 600; display: block; margin-bottom: 8px;">👶 Edad</label>
-                    <input type="number" id="userAge" min="10" max="120" placeholder="Ej: 21" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                    <label style="color: #6b4c9a; font-weight: 600; display: block; margin-bottom: 8px;">🎂 Fecha de Nacimiento</label>
+                    <input type="date" id="userBirthdate" max="" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #a78bfa; font-size: 1em;">
+                    <div id="ageDisplay" style="margin-top: 8px; color: #ff6b9d; font-weight: 600; font-size: 0.95em; text-align: center;"></div>
                 </div>
                 <div>
                     <label style="color: #6b4c9a; font-weight: 600; display: block; margin-bottom: 8px;">⚧️ Género</label>
@@ -1389,7 +1385,8 @@
 
         // Perfil del usuario
         let userProfile = {
-            age: null,
+            birthdate: null, // Fecha de nacimiento
+            age: null, // Se calcula automáticamente
             gender: null,
             height: null, // cm
             weight: null, // kg
@@ -1493,19 +1490,27 @@
 
         // Guardar perfil y calcular valores
         function saveProfile() {
-            userProfile.age = parseInt(document.getElementById('userAge').value);
+            const birthdate = document.getElementById('userBirthdate').value;
             userProfile.gender = document.getElementById('userGender').value;
             userProfile.height = parseInt(document.getElementById('userHeight').value);
             userProfile.weight = parseFloat(document.getElementById('userWeight').value);
             
-            if (!userProfile.age || !userProfile.height || !userProfile.weight) {
+            if (!birthdate || !userProfile.height || !userProfile.weight) {
                 alert('⚠️ Por favor completa todos los campos');
                 return;
             }
             
-            // Validar límites máximos
+            // Guardar fecha de nacimiento y calcular edad
+            userProfile.birthdate = birthdate;
+            userProfile.age = calculateAge(birthdate);
+            
+            // Validar límites
+            if (userProfile.age < 10) {
+                alert('⚠️ Debes tener al menos 10 años para usar la app');
+                return;
+            }
             if (userProfile.age > 120) {
-                alert('⚠️ La edad máxima es 120 años');
+                alert('⚠️ Verifica tu fecha de nacimiento');
                 return;
             }
             if (userProfile.height > 200) {
@@ -1537,6 +1542,40 @@
             console.log('📊 Perfil guardado:', userProfile);
             console.log(`TMB: ${userProfile.bmr} kcal/día | Agua: ${userProfile.dailyWater}ml/día`);
         }
+        
+        // Calcular edad desde fecha de nacimiento
+        function calculateAge(birthdate) {
+            const birth = new Date(birthdate);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            // Ajustar si aún no ha cumplido años este año
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+        
+        // Mostrar edad calculada cuando se selecciona fecha
+        document.addEventListener('DOMContentLoaded', () => {
+            const birthdateInput = document.getElementById('userBirthdate');
+            const ageDisplay = document.getElementById('ageDisplay');
+            
+            // Establecer fecha máxima (hoy)
+            const today = new Date().toISOString().split('T')[0];
+            birthdateInput.setAttribute('max', today);
+            
+            birthdateInput.addEventListener('change', function() {
+                if (this.value) {
+                    const age = calculateAge(this.value);
+                    ageDisplay.textContent = `✨ Tu edad: ${age} años`;
+                } else {
+                    ageDisplay.textContent = '';
+                }
+            });
+        });
         
         // Función para resetear perfil y volver al cuestionario
         function resetProfile() {
