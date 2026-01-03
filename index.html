@@ -294,22 +294,21 @@
         }
 
         .stats-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
             margin-bottom: 40px;
         }
 
         .stat-item {
             background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%);
-            padding: 15px 18px;
+            padding: 15px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 12px;
-            align-items: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .stat-item:hover {
@@ -319,33 +318,29 @@
 
         .stat-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            min-width: 140px;
         }
 
         .stat-name {
-            font-size: 1em;
+            font-size: 0.95em;
             font-weight: 600;
             color: #6b4c9a;
             display: flex;
             align-items: center;
-            gap: 8px;
-            white-space: nowrap;
+            gap: 6px;
         }
 
         .stat-icon {
-            font-size: 1.3em;
+            font-size: 1.2em;
             filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.1));
         }
 
         .stat-value {
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: bold;
             color: #ff6b9d;
             text-shadow: 1px 1px 2px rgba(255, 107, 157, 0.2);
-            min-width: 55px;
-            text-align: right;
         }
 
         .stat-bar-container {
@@ -750,6 +745,16 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
             }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
 
             .time-display {
                 font-size: 1.5em;
@@ -805,22 +810,15 @@
             }
             
             .stat-item {
-                padding: 12px 15px;
-                grid-template-columns: auto 1fr auto;
-                gap: 10px;
-            }
-            
-            .stat-header {
-                min-width: 120px;
+                padding: 12px;
             }
             
             .stat-name {
-                font-size: 0.95em;
+                font-size: 0.9em;
             }
             
             .stat-value {
-                font-size: 1.1em;
-                min-width: 50px;
+                font-size: 1em;
             }
             
             .clock-container {
@@ -849,9 +847,21 @@
                 padding: 15px;
             }
             
+            .stats-container {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
             .stat-item {
-                padding: 10px 12px;
-                gap: 8px;
+                padding: 10px;
+            }
+            
+            .stat-name {
+                font-size: 0.85em;
+            }
+            
+            .stat-value {
+                font-size: 0.95em;
             }
             
             .stat-header {
@@ -1024,6 +1034,10 @@
         </div>
 
         <button class="reset-button" id="btnReset">🔄 Resetear Estadísticas</button>
+        
+        <button class="reset-button" onclick="resetProfile()" style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); margin-top: 10px;">
+            🔄 Rehacer Perfil (Prueba)
+        </button>
 
         <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
     </div>
@@ -1523,6 +1537,18 @@
             console.log('📊 Perfil guardado:', userProfile);
             console.log(`TMB: ${userProfile.bmr} kcal/día | Agua: ${userProfile.dailyWater}ml/día`);
         }
+        
+        // Función para resetear perfil y volver al cuestionario
+        function resetProfile() {
+            if (confirm('⚠️ ¿Estás seguro? Esto borrará tu perfil y podrás volver a hacer el cuestionario.')) {
+                // Borrar perfil de localStorage
+                localStorage.removeItem('userProfile');
+                localStorage.removeItem('gameState');
+                
+                // Recargar la página para volver al inicio
+                location.reload();
+            }
+        }
 
         // Estado del juego
         let gameState = {
@@ -1599,22 +1625,24 @@
                 statDiv.className = `stat-item ${percentage < 20 ? 'warning' : ''}`;
                 statDiv.innerHTML = `
                     <div class="stat-header">
-                        <span class="stat-icon">${stat.icon}</span>
-                        <span class="stat-name">${stat.name}</span>
+                        <div class="stat-name">
+                            <span class="stat-icon">${stat.icon}</span>
+                            ${stat.name}
+                        </div>
+                        <div class="stat-value">${percentage}%</div>
                     </div>
                     <div class="stat-bar-container">
                         <div class="stat-bar-fill ${barClass}" style="width: ${percentage}%"></div>
                     </div>
-                    <div class="stat-value">${percentage}%</div>
                 `;
                 
                 // Agregar información personalizada si existe
                 if (personalInfo) {
                     const infoDiv = document.createElement('div');
-                    infoDiv.style.gridColumn = '1 / -1';
-                    infoDiv.style.fontSize = '0.8em';
+                    infoDiv.style.fontSize = '0.75em';
                     infoDiv.style.color = '#a78bfa';
-                    infoDiv.style.marginTop = '-8px';
+                    infoDiv.style.marginTop = '-5px';
+                    infoDiv.style.textAlign = 'center';
                     infoDiv.innerHTML = personalInfo.replace(/<div.*?>|<\/div>/g, '');
                     statDiv.appendChild(infoDiv);
                 }
