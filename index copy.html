@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mantén tus estadísticas de vida equilibradas">
+    <meta name="theme-color" content="#ff6b9d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mi Vida">
     <title>Mi Vida Virtual - Estadísticas</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <style>
         * {
             margin: 0;
@@ -524,6 +531,97 @@
             animation: pulse-warning 2s infinite;
         }
 
+        /* Sistema de Tabs */
+        .tabs-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            border-radius: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            flex: 1;
+            min-width: 80px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 12px 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #6b4c9a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tab-icon {
+            font-size: 1.5em;
+        }
+        
+        .tab-label {
+            font-size: 0.85em;
+        }
+        
+        .tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(167, 139, 250, 0.4);
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .tabs-container {
+                gap: 5px;
+                padding: 8px;
+            }
+            
+            .tab {
+                padding: 10px 6px;
+                min-width: 70px;
+            }
+            
+            .tab-icon {
+                font-size: 1.3em;
+            }
+            
+            .tab-label {
+                font-size: 0.75em;
+            }
+        }
+
         /* Reloj en tiempo real */
         .clock-container {
             text-align: center;
@@ -583,8 +681,6 @@
         .life-stat-display.show {
             opacity: 1;
             transform: translateY(0);
-        }
-            opacity: 1;
         }
 
         .date-display {
@@ -1117,11 +1213,33 @@
             <div class="time-display" id="timeDisplay"></div>
         </div>
 
-        <div class="main-content">
-            <div class="stats-container" id="statsContainer">
-                <!-- Las estadísticas se generan dinámicamente -->
-            </div>
+        <!-- Sistema de Tabs -->
+        <div class="tabs-container">
+            <button class="tab active" onclick="switchTab('existir')">
+                <span class="tab-icon">❤️</span>
+                <span class="tab-label">Existir</span>
+            </button>
+            <button class="tab" onclick="switchTab('cuidarme')">
+                <span class="tab-icon">🌱</span>
+                <span class="tab-label">Cuidarme</span>
+            </button>
+            <button class="tab" onclick="switchTab('crecer')">
+                <span class="tab-icon">🧠</span>
+                <span class="tab-label">Crecer</span>
+            </button>
+            <button class="tab" onclick="switchTab('crear')">
+                <span class="tab-icon">🎨</span>
+                <span class="tab-label">Crear</span>
+            </button>
+            <button class="tab" onclick="switchTab('resumen')">
+                <span class="tab-icon">📊</span>
+                <span class="tab-label">Resumen</span>
+            </button>
+        </div>
 
+        <!-- Tab: Existir -->
+        <div class="tab-content active" id="tab-existir">
+            <div class="stats-container" id="statsExistir"></div>
             <div class="buttons-container">
                 <button class="action-button btn-eat" id="btnEat">
                     <span class="button-icon">🍽️</span>
@@ -1135,6 +1253,13 @@
                     <span class="button-icon">😴</span>
                     <span class="button-text">Dormir</span>
                 </button>
+            </div>
+        </div>
+
+        <!-- Tab: Cuidarme -->
+        <div class="tab-content" id="tab-cuidarme">
+            <div class="stats-container" id="statsCuidarme"></div>
+            <div class="buttons-container">
                 <button class="action-button btn-exercise" id="btnExercise">
                     <span class="button-icon">🏃</span>
                     <span class="button-text">Ejercicio</span>
@@ -1148,6 +1273,33 @@
                     <span class="button-text">Vida Social</span>
                 </button>
             </div>
+        </div>
+
+        <!-- Tab: Crecer -->
+        <div class="tab-content" id="tab-crecer">
+            <div style="text-align: center; padding: 60px 20px; color: #a78bfa;">
+                <div style="font-size: 4em; margin-bottom: 20px;">🧠</div>
+                <h2 style="color: #6b4c9a; margin-bottom: 10px;">Sección en Construcción</h2>
+                <p>Pronto podrás gestionar tu profesión, estudio e inteligencia aquí.</p>
+            </div>
+        </div>
+
+        <!-- Tab: Crear -->
+        <div class="tab-content" id="tab-crear">
+            <div style="text-align: center; padding: 60px 20px; color: #a78bfa;">
+                <div style="font-size: 4em; margin-bottom: 20px;">🎨</div>
+                <h2 style="color: #6b4c9a; margin-bottom: 10px;">Sección en Construcción</h2>
+                <p>Pronto podrás gestionar tus proyectos creativos, TikTok y videos aquí.</p>
+            </div>
+        </div>
+
+        <!-- Tab: Resumen -->
+        <div class="tab-content" id="tab-resumen">
+            <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+                <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">📊 Balance General</h3>
+                <div id="resumenContent" style="color: #6b4c9a;"></div>
+            </div>
+            <div class="stats-container" id="statsResumen"></div>
         </div>
 
         <button class="reset-button" id="btnReset">🔄 Resetear Estadísticas</button>
@@ -1547,28 +1699,95 @@
         </div>
     </div>
 
+    <!-- Modal de Vida Social -->
+    <div id="socialModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">👥 Vida Social</div>
+                <div class="modal-subtitle">Elige una categoría</div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button onclick="openSocialCategory('familia')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);">
+                    👨‍👩‍👧‍👦 Familia
+                </button>
+                <button onclick="openSocialCategory('vinculos')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);">
+                    💞 Vínculos Seguros
+                </button>
+                <button onclick="openSocialCategory('facil')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #55efc4 0%, #00b894 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);">
+                    😊 Social Fácil
+                </button>
+            </div>
+            
+            <button class="modal-close" onclick="closeSocialModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Familia -->
+    <div id="familiaModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">👨‍👩‍👧‍👦 Familia</div>
+                <div class="modal-subtitle">Tiempo de calidad con tu familia</div>
+            </div>
+            <div id="familiaOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeFamiliaModal()">← Volver</button>
+        </div>
+    </div>
+
+    <!-- Modal de Vínculos Seguros -->
+    <div id="vinculosModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">💞 Vínculos Seguros</div>
+                <div class="modal-subtitle">Conexiones profundas</div>
+            </div>
+            <div id="vinculosOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeVinculosModal()">← Volver</button>
+        </div>
+    </div>
+
+    <!-- Modal de Social Fácil -->
+    <div id="facilModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">😊 Social Fácil</div>
+                <div class="modal-subtitle">Interacciones cotidianas</div>
+            </div>
+            <div id="facilOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeFacilModal()">← Volver</button>
+        </div>
+    </div>
+
     <script>
         // Función para iniciar el juego desde la pantalla de inicio
         function startGame() {
-            // Ocultar splash screen con animación
+            // Verificar si ya existe perfil guardado
+            const savedProfile = localStorage.getItem('userProfile');
             const splash = document.getElementById('splashScreen');
-            splash.classList.add('hide');
+            const mainContainer = document.getElementById('mainContainer');
             
-            // Esperar a que termine la animación del splash
-            setTimeout(() => {
+            if (savedProfile) {
+                // Si hay perfil, saltar directamente sin animaciones
                 splash.style.display = 'none';
-                document.getElementById('mainContainer').style.display = 'block';
+                mainContainer.style.display = 'block';
+                init();
+            } else {
+                // Si no hay perfil, mostrar animación y modal
+                splash.classList.add('hide');
                 
-                // Verificar si ya existe perfil guardado
-                const savedProfile = localStorage.getItem('userProfile');
-                if (!savedProfile) {
-                    // Si no hay perfil, mostrar modal
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    mainContainer.style.display = 'block';
                     document.getElementById('profileModal').classList.add('show');
-                } else {
-                    // Si ya hay perfil, iniciar directamente
-                    init();
-                }
-            }, 800);
+                }, 800);
+            }
         }
 
         // Perfil del usuario
@@ -1622,6 +1841,30 @@
             daily: {},
             weekly: {},
             lastReset: { daily: Date.now(), weekly: Date.now() }
+        };
+        
+        // Acciones sociales
+        const SOCIAL_ACTIONS = {
+            familia: [
+                { id: 'comer-familia', name: 'Comer con tu familia', emoji: '🍽️', boost: 10, cooldown: 'daily' },
+                { id: 'platicar-sin-celular', name: 'Platicar sin celular', emoji: '💬', boost: 12, cooldown: 'daily' },
+                { id: 'ayudar-casa', name: 'Ayudar en algo en casa', emoji: '🏠', boost: 15, cooldown: 'daily' },
+                { id: 'reir-familia', name: 'Reír con ellos', emoji: '😂', boost: 12, cooldown: 'none' },
+                { id: 'pelicula-juntos', name: 'Ver una película juntos', emoji: '🎬', boost: 20, cooldown: 'weekly' },
+                { id: 'llamar-familiar', name: 'Llamar a un familiar', emoji: '📞', boost: 8, cooldown: 'none' },
+                { id: 'abrazar', name: 'Abrazar', emoji: '🤗', boost: 5, cooldown: 'none' },
+                { id: 'beso-buenas-noches', name: 'Beso de buenas noches', emoji: '😘', boost: 5, cooldown: 'daily' }
+            ],
+            vinculos: [
+                { id: 'platica-honesta', name: 'Plática honesta', emoji: '💭', boost: 10, cooldown: 'none' },
+                { id: 'reir-amigo', name: 'Reírte', emoji: '😄', boost: 8, cooldown: 'none' },
+                { id: 'tema-dificil', name: 'Platica de un tema difícil', emoji: '🗣️', boost: 50, cooldown: 'weekly' }
+            ],
+            facil: [
+                { id: 'mensaje-casual', name: 'Mensaje casual', emoji: '💬', boost: 3, cooldown: 'none' },
+                { id: 'conversacion-breve', name: 'Conversación breve', emoji: '👋', boost: 5, cooldown: 'none' },
+                { id: 'saludar', name: 'Saludar', emoji: '😊', boost: 2, cooldown: 'none' }
+            ]
         };
 
         // Configuración de estadísticas
@@ -1866,57 +2109,152 @@
 
         // Renderizar estadísticas
         function renderStats() {
-            const container = document.getElementById('statsContainer');
-            container.innerHTML = '';
-
-            Object.keys(gameState.stats).forEach(key => {
-                const stat = gameState.stats[key];
-                const percentage = Math.round(stat.current);
-                
-                // Determinar clase de color según porcentaje
-                let barClass = 'stat-bar-high';
-                if (percentage < 70 && percentage >= 40) {
-                    barClass = 'stat-bar-medium';
-                } else if (percentage < 40) {
-                    barClass = 'stat-bar-low';
+            // Renderizar estadísticas de Existir (hambre, sueño, hidratación)
+            const existirContainer = document.getElementById('statsExistir');
+            existirContainer.innerHTML = '';
+            ['hambre', 'sueño', 'hidratacion'].forEach(key => {
+                if (gameState.stats[key]) {
+                    existirContainer.appendChild(createStatElement(key, gameState.stats[key]));
                 }
-
-                // Información personalizada para hambre e hidratación
-                let personalInfo = '';
-                if (key === 'hambre' && userProfile.bmr > 0) {
-                    personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
-                } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
-                    personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
-                }
-
-                const statDiv = document.createElement('div');
-                statDiv.className = `stat-item ${percentage < 20 ? 'warning' : ''}`;
-                statDiv.innerHTML = `
-                    <div class="stat-header">
-                        <div class="stat-name">
-                            <span class="stat-icon">${stat.icon}</span>
-                            ${stat.name}
-                        </div>
-                        <div class="stat-value">${percentage}%</div>
-                    </div>
-                    <div class="stat-bar-container">
-                        <div class="stat-bar-fill ${barClass}" style="width: ${percentage}%"></div>
-                    </div>
-                `;
-                
-                // Agregar información personalizada si existe
-                if (personalInfo) {
-                    const infoDiv = document.createElement('div');
-                    infoDiv.style.fontSize = '0.75em';
-                    infoDiv.style.color = '#a78bfa';
-                    infoDiv.style.marginTop = '-5px';
-                    infoDiv.style.textAlign = 'center';
-                    infoDiv.innerHTML = personalInfo.replace(/<div.*?>|<\/div>/g, '');
-                    statDiv.appendChild(infoDiv);
-                }
-                
-                container.appendChild(statDiv);
             });
+
+            // Renderizar estadísticas de Cuidarme (ejercicio, autoestima, vida social)
+            const cuidarmeContainer = document.getElementById('statsCuidarme');
+            cuidarmeContainer.innerHTML = '';
+            ['ejercicio', 'autoestima', 'vidaSocial'].forEach(key => {
+                if (gameState.stats[key]) {
+                    cuidarmeContainer.appendChild(createStatElement(key, gameState.stats[key]));
+                }
+            });
+
+            // Renderizar todas las estadísticas en Resumen
+            const resumenContainer = document.getElementById('statsResumen');
+            resumenContainer.innerHTML = '';
+            Object.keys(gameState.stats).forEach(key => {
+                resumenContainer.appendChild(createStatElement(key, gameState.stats[key]));
+            });
+
+            // Actualizar mensaje de resumen
+            updateResumenMessage();
+        }
+
+        // Crear elemento de estadística
+        function createStatElement(key, stat) {
+            const percentage = Math.round(stat.current);
+            
+            // Determinar clase de color según porcentaje
+            let barClass = 'stat-bar-high';
+            if (percentage < 70 && percentage >= 40) {
+                barClass = 'stat-bar-medium';
+            } else if (percentage < 40) {
+                barClass = 'stat-bar-low';
+            }
+
+            // Información personalizada para hambre e hidratación
+            let personalInfo = '';
+            if (key === 'hambre' && userProfile.bmr > 0) {
+                personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
+            } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
+                personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
+            }
+
+            const statDiv = document.createElement('div');
+            statDiv.className = `stat-item ${percentage < 20 ? 'warning' : ''}`;
+            statDiv.innerHTML = `
+                <div class="stat-header">
+                    <div class="stat-name">
+                        <span class="stat-icon">${stat.icon}</span>
+                        ${stat.name}
+                    </div>
+                    <div class="stat-value">${percentage}%</div>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar-fill ${barClass}" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            
+            // Agregar información personalizada si existe
+            if (personalInfo) {
+                const infoDiv = document.createElement('div');
+                infoDiv.style.fontSize = '0.75em';
+                infoDiv.style.color = '#a78bfa';
+                infoDiv.style.marginTop = '-5px';
+                infoDiv.style.textAlign = 'center';
+                infoDiv.innerHTML = personalInfo.replace(/<div[^>]*>|<\/div>/g, '');
+                statDiv.appendChild(infoDiv);
+            }
+            
+            return statDiv;
+        }
+
+        // Actualizar mensaje de resumen
+        function updateResumenMessage() {
+            const resumenContent = document.getElementById('resumenContent');
+            const stats = gameState.stats;
+            
+            let messages = [];
+            let criticalStats = [];
+            let goodStats = [];
+            
+            Object.keys(stats).forEach(key => {
+                const percentage = Math.round(stats[key].current);
+                const name = stats[key].name;
+                
+                if (percentage < 30) {
+                    criticalStats.push(`⚠️ <strong>${name}</strong> está muy bajo (${percentage}%)`);
+                } else if (percentage < 50) {
+                    messages.push(`⚡ <strong>${name}</strong> necesita atención (${percentage}%)`);
+                } else if (percentage >= 80) {
+                    goodStats.push(`✅ <strong>${name}</strong> está excelente (${percentage}%)`);
+                }
+            });
+            
+            let html = '';
+            
+            if (criticalStats.length > 0) {
+                html += '<div style="background: rgba(255, 107, 157, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 4px solid #ff6b9d;">';
+                html += '<h4 style="color: #ff6b9d; margin-bottom: 10px;">🚨 Necesita Atención Urgente</h4>';
+                html += criticalStats.join('<br>');
+                html += '</div>';
+            }
+            
+            if (messages.length > 0) {
+                html += '<div style="background: rgba(167, 139, 250, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 4px solid #a78bfa;">';
+                html += '<h4 style="color: #a78bfa; margin-bottom: 10px;">💡 Recomendaciones</h4>';
+                html += messages.join('<br>');
+                html += '</div>';
+            }
+            
+            if (goodStats.length > 0) {
+                html += '<div style="background: rgba(168, 224, 99, 0.1); padding: 15px; border-radius: 15px; border-left: 4px solid #a8e063;">';
+                html += '<h4 style="color: #56ab2f; margin-bottom: 10px;">🎉 ¡Excelente Trabajo!</h4>';
+                html += goodStats.join('<br>');
+                html += '</div>';
+            }
+            
+            if (html === '') {
+                html = '<div style="text-align: center; padding: 20px;"><p>✨ Todo está en equilibrio. ¡Sigue así!</p></div>';
+            }
+            
+            resumenContent.innerHTML = html;
+        }
+
+        // Función para cambiar de tab
+        function switchTab(tabName) {
+            // Remover clase active de todos los tabs y contenidos
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Agregar clase active al tab clickeado
+            const tabs = document.querySelectorAll('.tab');
+            const tabNames = ['existir', 'cuidarme', 'crecer', 'crear', 'resumen'];
+            const index = tabNames.indexOf(tabName);
+            if (index !== -1) {
+                tabs[index].classList.add('active');
+            }
+            
+            // Mostrar contenido correspondiente
+            document.getElementById(`tab-${tabName}`).classList.add('active');
         }
 
         // Actualizar estadísticas continuamente
@@ -2787,6 +3125,85 @@
             document.getElementById('impactoModal').classList.remove('show');
             openSelfcareModal();
         }
+        
+        // Funciones de Vida Social
+        function openSocialModal() {
+            document.getElementById('socialModal').classList.add('show');
+        }
+        
+        function closeSocialModal() {
+            document.getElementById('socialModal').classList.remove('show');
+        }
+        
+        function openSocialCategory(category) {
+            closeSocialModal();
+            
+            const actions = SOCIAL_ACTIONS[category];
+            let modalId, optionsId;
+            
+            if (category === 'familia') {
+                modalId = 'familiaModal';
+                optionsId = 'familiaOptions';
+            } else if (category === 'vinculos') {
+                modalId = 'vinculosModal';
+                optionsId = 'vinculosOptions';
+            } else if (category === 'facil') {
+                modalId = 'facilModal';
+                optionsId = 'facilOptions';
+            }
+            
+            const container = document.getElementById(optionsId);
+            container.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = document.createElement('button');
+                button.style.cssText = 'width: 100%; padding: 12px 15px; background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); border: none; border-radius: 12px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(161, 196, 253, 0.3); display: flex; justify-content: space-between; align-items: center;';
+                
+                button.innerHTML = `
+                    <span style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.3em;">${action.emoji}</span>
+                        <span>${action.name}</span>
+                    </span>
+                    <span style="background: rgba(255, 255, 255, 0.3); padding: 5px 12px; border-radius: 10px; font-size: 0.9em;">+${action.boost}%</span>
+                `;
+                
+                button.onclick = () => applySocialAction(action);
+                container.appendChild(button);
+            });
+            
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function applySocialAction(action) {
+            // Aumentar vida social
+            gameState.stats.vidaSocial.current = Math.min(100, gameState.stats.vidaSocial.current + action.boost);
+            
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            
+            // Cerrar todos los modales sociales
+            document.getElementById('familiaModal').classList.remove('show');
+            document.getElementById('vinculosModal').classList.remove('show');
+            document.getElementById('facilModal').classList.remove('show');
+            
+            console.log(`${action.emoji} ${action.name}: +${action.boost}% vida social`);
+        }
+        
+        function closeFamiliaModal() {
+            document.getElementById('familiaModal').classList.remove('show');
+            openSocialModal();
+        }
+        
+        function closeVinculosModal() {
+            document.getElementById('vinculosModal').classList.remove('show');
+            openSocialModal();
+        }
+        
+        function closeFacilModal() {
+            document.getElementById('facilModal').classList.remove('show');
+            openSocialModal();
+        }
 
         // Efectos de botones (preparados para futuras funciones)
         function setupButtons() {
@@ -2811,8 +3228,7 @@
             });
 
             document.getElementById('btnSocial').addEventListener('click', () => {
-                console.log('Vida Social - Función por implementar');
-                // Aquí irá la lógica de aumentar vida social
+                openSocialModal();
             });
 
             document.getElementById('btnReset').addEventListener('click', resetStats);
@@ -2847,10 +3263,18 @@
 
         // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
-            const savedProfile = localStorage.getItem('userProfile');
-            if (savedProfile) {
-                // Si ya hay perfil guardado, iniciar automáticamente
-                startGame();
+            // Siempre iniciar el juego (startGame verifica si hay perfil)
+            startGame();
+            
+            // Registrar Service Worker para funcionalidad offline
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('❌ Error al registrar Service Worker:', error);
+                    });
             }
         });
     </script>
