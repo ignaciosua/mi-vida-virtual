@@ -1550,25 +1550,26 @@
     <script>
         // Función para iniciar el juego desde la pantalla de inicio
         function startGame() {
-            // Ocultar splash screen con animación
+            // Verificar si ya existe perfil guardado
+            const savedProfile = localStorage.getItem('userProfile');
             const splash = document.getElementById('splashScreen');
-            splash.classList.add('hide');
+            const mainContainer = document.getElementById('mainContainer');
             
-            // Esperar a que termine la animación del splash
-            setTimeout(() => {
+            if (savedProfile) {
+                // Si hay perfil, saltar directamente sin animaciones
                 splash.style.display = 'none';
-                document.getElementById('mainContainer').style.display = 'block';
+                mainContainer.style.display = 'block';
+                init();
+            } else {
+                // Si no hay perfil, mostrar animación y modal
+                splash.classList.add('hide');
                 
-                // Verificar si ya existe perfil guardado
-                const savedProfile = localStorage.getItem('userProfile');
-                if (!savedProfile) {
-                    // Si no hay perfil, mostrar modal
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    mainContainer.style.display = 'block';
                     document.getElementById('profileModal').classList.add('show');
-                } else {
-                    // Si ya hay perfil, iniciar directamente
-                    init();
-                }
-            }, 800);
+                }, 800);
+            }
         }
 
         // Perfil del usuario
@@ -2847,11 +2848,8 @@
 
         // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
-            const savedProfile = localStorage.getItem('userProfile');
-            if (savedProfile) {
-                // Si ya hay perfil guardado, iniciar automáticamente
-                startGame();
-            }
+            // Siempre iniciar el juego (startGame verifica si hay perfil)
+            startGame();
         });
     </script>
 </body>
