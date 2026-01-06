@@ -1300,11 +1300,15 @@
 
         <!-- Tab: Crear -->
         <div class="tab-content" id="tab-crear">
-            <div style="text-align: center; padding: 60px 20px; color: #a78bfa;">
-                <div style="font-size: 4em; margin-bottom: 20px;">🎨</div>
-                <h2 style="color: #6b4c9a; margin-bottom: 10px;">Sección en Construcción</h2>
-                <p>Pronto podrás gestionar tus proyectos creativos, TikTok y videos aquí.</p>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #6b4c9a; margin-bottom: 15px;">📚 Mi Biblioteca</h2>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="openLibraryCategory('libros')" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">📖 Libros</button>
+                    <button onclick="openLibraryCategory('peliculas')" style="padding: 10px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">🎬 Películas</button>
+                    <button onclick="openLibraryCategory('series')" style="padding: 10px 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">📺 Series</button>
+                </div>
             </div>
+            <div id="libraryContent" style="padding: 15px;"></div>
         </div>
 
         <!-- Tab: Resumen -->
@@ -2404,22 +2408,44 @@
             const resumenContent = document.getElementById('resumenContent');
             const stats = gameState.stats;
             
-            let messages = [];
+            let recommendations = [];
             let criticalStats = [];
             let goodStats = [];
             
+            // Generar recomendaciones específicas según cada estadística
             Object.keys(stats).forEach(key => {
                 const percentage = Math.round(stats[key].current);
                 const name = stats[key].name;
                 
                 if (percentage < 30) {
                     criticalStats.push(`⚠️ <strong>${name}</strong> está muy bajo (${percentage}%)`);
+                    
+                    // Agregar recomendación específica
+                    if (key === 'hambre') recommendations.push('🍽️ Come algo nutritivo pronto');
+                    if (key === 'sueño') recommendations.push('😴 Descansa o toma una siesta');
+                    if (key === 'hidratacion') recommendations.push('💧 Bebe agua inmediatamente');
+                    if (key === 'ejercicio') recommendations.push('🏃 Haz una caminata o estiramiento');
+                    if (key === 'autoestima') recommendations.push('💝 Practica microcuidados o regulación emocional');
+                    if (key === 'vidaSocial') recommendations.push('👥 Contacta a alguien cercano');
                 } else if (percentage < 50) {
-                    messages.push(`⚡ <strong>${name}</strong> necesita atención (${percentage}%)`);
-                } else if (percentage >= 80) {
+                    if (key === 'hambre') recommendations.push('🥗 Considera comer algo ligero');
+                    if (key === 'sueño') recommendations.push('🌙 Planea dormir temprano hoy');
+                    if (key === 'hidratacion') recommendations.push('🚰 Hidrátate regularmente');
+                    if (key === 'ejercicio') recommendations.push('💪 Haz una actividad física breve');
+                    if (key === 'autoestima') recommendations.push('✨ Dedica tiempo a cuidarte');
+                    if (key === 'vidaSocial') recommendations.push('💬 Platica con alguien');
+                } else if (percentage >= 80 && key !== 'idiomas' && key !== 'aprendizaje' && key !== 'contenido' && key !== 'profesion') {
                     goodStats.push(`✅ <strong>${name}</strong> está excelente (${percentage}%)`);
                 }
             });
+            
+            // Recomendaciones generales para mantener balance
+            if (criticalStats.length === 0 && recommendations.length === 0) {
+                recommendations.push('🔄 Mantén tu rutina actual');
+                recommendations.push('📚 Considera aprender algo nuevo');
+                recommendations.push('🎯 Establece metas pequeñas diarias');
+                recommendations.push('💭 Reflexiona sobre tu progreso');
+            }
             
             let html = '';
             
@@ -2430,10 +2456,10 @@
                 html += '</div>';
             }
             
-            if (messages.length > 0) {
+            if (recommendations.length > 0) {
                 html += '<div style="background: rgba(167, 139, 250, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 4px solid #a78bfa;">';
-                html += '<h4 style="color: #a78bfa; margin-bottom: 10px;">💡 Recomendaciones</h4>';
-                html += messages.join('<br>');
+                html += '<h4 style="color: #a78bfa; margin-bottom: 10px;">💡 Para Mantener tu Balance</h4>';
+                html += recommendations.map(r => `• ${r}`).join('<br>');
                 html += '</div>';
             }
             
@@ -2442,10 +2468,6 @@
                 html += '<h4 style="color: #56ab2f; margin-bottom: 10px;">🎉 ¡Excelente Trabajo!</h4>';
                 html += goodStats.join('<br>');
                 html += '</div>';
-            }
-            
-            if (html === '') {
-                html = '<div style="text-align: center; padding: 20px;"><p>✨ Todo está en equilibrio. ¡Sigue así!</p></div>';
             }
             
             resumenContent.innerHTML = html;
@@ -3624,10 +3646,278 @@
             });
         }
 
+        // ===== SISTEMA DE BIBLIOTECA =====
+        
+        let library = {
+            libros: [],
+            peliculas: [],
+            series: []
+        };
+        
+        let currentLibraryCategory = 'libros';
+        let libraryFilters = {
+            search: '',
+            letter: '',
+            rating: 0
+        };
+        
+        // Cargar biblioteca desde localStorage
+        function loadLibrary() {
+            const saved = localStorage.getItem('library');
+            if (saved) {
+                library = JSON.parse(saved);
+            }
+        }
+        
+        // Guardar biblioteca en localStorage
+        function saveLibrary() {
+            localStorage.setItem('library', JSON.stringify(library));
+        }
+        
+        // Abrir categoría de biblioteca
+        function openLibraryCategory(category) {
+            currentLibraryCategory = category;
+            libraryFilters = { search: '', letter: '', rating: 0 };
+            renderLibraryContent();
+        }
+        
+        // Renderizar contenido de biblioteca
+        function renderLibraryContent() {
+            const container = document.getElementById('libraryContent');
+            const items = library[currentLibraryCategory] || [];
+            
+            // Filtrar items
+            let filteredItems = items.filter(item => {
+                let matchSearch = true;
+                let matchLetter = true;
+                let matchRating = true;
+                
+                if (libraryFilters.search) {
+                    const search = libraryFilters.search.toLowerCase();
+                    matchSearch = item.title.toLowerCase().includes(search) || 
+                                 (item.author && item.author.toLowerCase().includes(search));
+                }
+                
+                if (libraryFilters.letter) {
+                    matchLetter = item.title.toLowerCase().startsWith(libraryFilters.letter.toLowerCase());
+                }
+                
+                if (libraryFilters.rating > 0) {
+                    matchRating = item.rating === libraryFilters.rating;
+                }
+                
+                return matchSearch && matchLetter && matchRating;
+            });
+            
+            // Ordenar por título
+            filteredItems.sort((a, b) => a.title.localeCompare(b.title));
+            
+            const categoryNames = {
+                libros: 'Libros',
+                peliculas: 'Películas',
+                series: 'Series'
+            };
+            
+            let html = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; color: white;">
+                    <h3 style="margin-bottom: 15px;">📚 ${categoryNames[currentLibraryCategory]}</h3>
+                    
+                    <!-- Barra de búsqueda -->
+                    <input type="text" id="librarySearch" placeholder="🔍 Buscar por título o autor..." 
+                           style="width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 0.95em; margin-bottom: 15px;"
+                           value="${libraryFilters.search}" oninput="updateLibrarySearch(this.value)">
+                    
+                    <!-- Filtros alfabéticos -->
+                    <div style="margin-bottom: 15px; overflow-x: auto; white-space: nowrap; padding: 10px 0;">
+                        <button onclick="filterByLetter('')" style="padding: 8px 12px; margin: 0 5px; background: ${libraryFilters.letter === '' ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.letter === '' ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Todas</button>
+                        ${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => 
+                            `<button onclick="filterByLetter('${letter}')" style="padding: 8px 12px; margin: 0 3px; background: ${libraryFilters.letter === letter ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.letter === letter ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">${letter}</button>`
+                        ).join('')}
+                    </div>
+                    
+                    <!-- Filtros por rating -->
+                    <div style="margin-bottom: 15px;">
+                        <button onclick="filterByRating(0)" style="padding: 8px 15px; margin: 0 5px; background: ${libraryFilters.rating === 0 ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === 0 ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">Todas ⭐</button>
+                        ${[5,4,3,2,1].map(rating => 
+                            `<button onclick="filterByRating(${rating})" style="padding: 8px 15px; margin: 0 5px; background: ${libraryFilters.rating === rating ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === rating ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">${'⭐'.repeat(rating)}</button>`
+                        ).join('')}
+                    </div>
+                    
+                    <button onclick="openAddItemModal()" style="width: 100%; padding: 15px; background: white; color: #667eea; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
+                        ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : 'Serie'}
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+            `;
+            
+            if (filteredItems.length === 0) {
+                html += '<p style="text-align: center; color: #a78bfa; grid-column: 1/-1; padding: 40px;">No hay elementos que mostrar. ¡Agrega uno!</p>';
+            } else {
+                filteredItems.forEach((item, index) => {
+                    html += `
+                        <div style="background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">` : ''}
+                            <h4 style="color: #667eea; margin-bottom: 5px;">${item.title}</h4>
+                            ${item.author ? `<p style="color: #a78bfa; font-size: 0.9em; margin-bottom: 10px;">por ${item.author}</p>` : ''}
+                            <div style="color: #fbbf24; margin-bottom: 10px;">${'⭐'.repeat(item.rating || 0)}${'☆'.repeat(5 - (item.rating || 0))}</div>
+                            ${item.description ? `<p style="color: #6b7280; font-size: 0.85em; line-height: 1.4; margin-bottom: 10px;">${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}</p>` : ''}
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="viewLibraryItem(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">Ver</button>
+                                <button onclick="deleteLibraryItem(${index})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Actualizar búsqueda
+        function updateLibrarySearch(value) {
+            libraryFilters.search = value;
+            renderLibraryContent();
+        }
+        
+        // Filtrar por letra
+        function filterByLetter(letter) {
+            libraryFilters.letter = letter;
+            renderLibraryContent();
+        }
+        
+        // Filtrar por rating
+        function filterByRating(rating) {
+            libraryFilters.rating = rating;
+            renderLibraryContent();
+        }
+        
+        // Abrir modal para agregar item
+        function openAddItemModal() {
+            const categoryName = currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : 'Serie';
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>➕ Agregar ${categoryName}</h3>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="itemTitle" placeholder="Título *" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                        ${currentLibraryCategory === 'libros' ? '<input type="text" id="itemAuthor" placeholder="Autor *" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">' : ''}
+                        <input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                        <textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;"></textarea>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
+                            <div id="ratingSelector" style="font-size: 2em; cursor: pointer;">
+                                ${'<span onclick="selectRating(1)">☆</span><span onclick="selectRating(2)">☆</span><span onclick="selectRating(3)">☆</span><span onclick="selectRating(4)">☆</span><span onclick="selectRating(5)">☆</span>'}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveLibraryItem()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="closeLibraryModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            window.currentItemRating = 0;
+        }
+        
+        // Seleccionar rating
+        function selectRating(rating) {
+            window.currentItemRating = rating;
+            const stars = document.querySelectorAll('#ratingSelector span');
+            stars.forEach((star, index) => {
+                star.textContent = index < rating ? '⭐' : '☆';
+            });
+        }
+        
+        // Guardar item de biblioteca
+        function saveLibraryItem() {
+            const title = document.getElementById('itemTitle').value.trim();
+            const author = document.getElementById('itemAuthor')?.value.trim() || '';
+            const imageUrl = document.getElementById('itemImageUrl').value.trim();
+            const description = document.getElementById('itemDescription').value.trim();
+            const rating = window.currentItemRating || 0;
+            
+            if (!title) {
+                alert('⚠️ Por favor ingresa un título');
+                return;
+            }
+            
+            if (currentLibraryCategory === 'libros' && !author) {
+                alert('⚠️ Por favor ingresa el autor del libro');
+                return;
+            }
+            
+            const item = {
+                title,
+                author,
+                imageUrl,
+                description,
+                rating,
+                dateAdded: new Date().toISOString()
+            };
+            
+            library[currentLibraryCategory].push(item);
+            saveLibrary();
+            closeLibraryModal();
+            renderLibraryContent();
+        }
+        
+        // Ver detalle de item
+        function viewLibraryItem(index) {
+            const item = library[currentLibraryCategory][index];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>${item.title}</h3>
+                    </div>
+                    <div class="modal-body">
+                        ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">` : ''}
+                        ${item.author ? `<p style="color: #a78bfa; font-size: 1.1em; margin-bottom: 10px;"><strong>Autor:</strong> ${item.author}</p>` : ''}
+                        <div style="color: #fbbf24; font-size: 1.5em; margin-bottom: 15px;">${'⭐'.repeat(item.rating || 0)}${'☆'.repeat(5 - (item.rating || 0))}</div>
+                        ${item.description ? `<p style="color: #4b5563; line-height: 1.6; margin-bottom: 15px;">${item.description}</p>` : ''}
+                        <p style="color: #9ca3af; font-size: 0.85em;">Agregado el ${new Date(item.dateAdded).toLocaleDateString()}</p>
+                    </div>
+                    <button onclick="closeLibraryModal()" class="modal-close">✕ Cerrar</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Eliminar item
+        function deleteLibraryItem(index) {
+            if (confirm('¿Estás seguro de eliminar este elemento?')) {
+                library[currentLibraryCategory].splice(index, 1);
+                saveLibrary();
+                renderLibraryContent();
+            }
+        }
+        
+        // Cerrar modal de biblioteca
+        function closeLibraryModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#itemTitle') || modal.querySelector('.modal-header h3')) {
+                    modal.remove();
+                }
+            });
+        }
+
         // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
             // Siempre iniciar el juego (startGame verifica si hay perfil)
             startGame();
+            
+            // Cargar biblioteca
+            loadLibrary();
             
             // Registrar Service Worker para funcionalidad offline
             if ('serviceWorker' in navigator) {
