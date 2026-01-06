@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mi-vida-virtual-v1';
+const CACHE_NAME = 'mi-vida-virtual-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
   );
+  // Forzar activación inmediata cuando hay nueva versión
   self.skipWaiting();
 });
 
@@ -31,38 +32,55 @@ self.addEventListener('activate', event => {
       );
     })
   );
+  // Tomar control de todas las páginas inmediatamente
   self.clients.claim();
 });
 
-// Interceptar peticiones y servir desde cache (offline-first)
+// Interceptar peticiones con estrategia Network-First para index.html
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Si está en cache, devolverlo
-        if (response) {
+  // Para el archivo principal, intentar red primero para obtener actualizaciones
+  if (event.request.url.includes('index.html') || event.request.url.endsWith('/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Si hay respuesta de red, actualizar cache y devolver
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
           return response;
-        }
-        
-        // Si no está en cache, hacer la petición a la red
-        return fetch(event.request).then(response => {
-          // Si la respuesta es válida, cachearla
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+        })
+        .catch(() => {
+          // Si falla la red, usar cache
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // Para otros archivos, usar cache primero (más rápido)
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          if (response) {
             return response;
           }
           
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-          
-          return response;
-        });
-      })
-      .catch(() => {
-        // Si falla todo, devolver la página principal del cache
-        return caches.match('./index.html');
-      })
-  );
+          return fetch(event.request).then(response => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+            
+            return response;
+          });
+        })
+        .catch(() => {
+          return caches.match('./index.html');
+        })
+    );
+  }
 });
