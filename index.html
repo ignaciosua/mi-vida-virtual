@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Mi Vida">
     <title>Mi Vida Virtual - Estadísticas</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon.png">
     <style>
         * {
             margin: 0;
@@ -1316,12 +1316,6 @@
             <div class="stats-container" id="statsResumen"></div>
         </div>
 
-        <button class="reset-button" id="btnReset">🔄 Resetear Estadísticas</button>
-        
-        <button class="reset-button" onclick="resetProfile()" style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); margin-top: 10px;">
-            🔄 Rehacer Perfil (Prueba)
-        </button>
-
         <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
     </div>
 
@@ -2253,6 +2247,13 @@
             const saved = localStorage.getItem('gameState');
             if (saved) {
                 gameState = JSON.parse(saved);
+                
+                // Asegurar que todas las estadísticas existen (incluyendo nuevas)
+                Object.keys(STATS_CONFIG).forEach(key => {
+                    if (!gameState.stats[key]) {
+                        gameState.stats[key] = { ...STATS_CONFIG[key] };
+                    }
+                });
                 
                 // Calcular tiempo transcurrido y aplicar decaimiento
                 const now = Date.now();
