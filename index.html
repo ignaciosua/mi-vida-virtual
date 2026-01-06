@@ -682,8 +682,6 @@
             opacity: 1;
             transform: translateY(0);
         }
-            opacity: 1;
-        }
 
         .date-display {
             font-size: 1.2em;
@@ -2182,7 +2180,7 @@
                 infoDiv.style.color = '#a78bfa';
                 infoDiv.style.marginTop = '-5px';
                 infoDiv.style.textAlign = 'center';
-                infoDiv.innerHTML = personalInfo.replace(/<div.*?>|<\\/div>/g, '');
+                infoDiv.innerHTML = personalInfo.replace(/<div[^>]*>|<\/div>/g, '');
                 statDiv.appendChild(infoDiv);
             }
             
@@ -2247,8 +2245,15 @@
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            // Agregar clase active al tab y contenido seleccionado
-            event.target.closest('.tab').classList.add('active');
+            // Agregar clase active al tab clickeado
+            const tabs = document.querySelectorAll('.tab');
+            const tabNames = ['existir', 'cuidarme', 'crecer', 'crear', 'resumen'];
+            const index = tabNames.indexOf(tabName);
+            if (index !== -1) {
+                tabs[index].classList.add('active');
+            }
+            
+            // Mostrar contenido correspondiente
             document.getElementById(`tab-${tabName}`).classList.add('active');
         }
 
