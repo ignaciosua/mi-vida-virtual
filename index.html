@@ -1554,6 +1554,72 @@
         </div>
     </div>
 
+    <!-- Modal de Vida Social -->
+    <div id="socialModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">👥 Vida Social</div>
+                <div class="modal-subtitle">Elige una categoría</div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button onclick="openSocialCategory('familia')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);">
+                    👨‍👩‍👧‍👦 Familia
+                </button>
+                <button onclick="openSocialCategory('vinculos')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);">
+                    💞 Vínculos Seguros
+                </button>
+                <button onclick="openSocialCategory('facil')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #55efc4 0%, #00b894 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);">
+                    😊 Social Fácil
+                </button>
+            </div>
+            
+            <button class="modal-close" onclick="closeSocialModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Familia -->
+    <div id="familiaModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">👨‍👩‍👧‍👦 Familia</div>
+                <div class="modal-subtitle">Tiempo de calidad con tu familia</div>
+            </div>
+            <div id="familiaOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeFamiliaModal()">← Volver</button>
+        </div>
+    </div>
+
+    <!-- Modal de Vínculos Seguros -->
+    <div id="vinculosModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">💞 Vínculos Seguros</div>
+                <div class="modal-subtitle">Conexiones profundas</div>
+            </div>
+            <div id="vinculosOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeVinculosModal()">← Volver</button>
+        </div>
+    </div>
+
+    <!-- Modal de Social Fácil -->
+    <div id="facilModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">😊 Social Fácil</div>
+                <div class="modal-subtitle">Interacciones cotidianas</div>
+            </div>
+            <div id="facilOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeFacilModal()">← Volver</button>
+        </div>
+    </div>
+
     <script>
         // Función para iniciar el juego desde la pantalla de inicio
         function startGame() {
@@ -1630,6 +1696,30 @@
             daily: {},
             weekly: {},
             lastReset: { daily: Date.now(), weekly: Date.now() }
+        };
+        
+        // Acciones sociales
+        const SOCIAL_ACTIONS = {
+            familia: [
+                { id: 'comer-familia', name: 'Comer con tu familia', emoji: '🍽️', boost: 10, cooldown: 'daily' },
+                { id: 'platicar-sin-celular', name: 'Platicar sin celular', emoji: '💬', boost: 12, cooldown: 'daily' },
+                { id: 'ayudar-casa', name: 'Ayudar en algo en casa', emoji: '🏠', boost: 15, cooldown: 'daily' },
+                { id: 'reir-familia', name: 'Reír con ellos', emoji: '😂', boost: 12, cooldown: 'none' },
+                { id: 'pelicula-juntos', name: 'Ver una película juntos', emoji: '🎬', boost: 20, cooldown: 'weekly' },
+                { id: 'llamar-familiar', name: 'Llamar a un familiar', emoji: '📞', boost: 8, cooldown: 'none' },
+                { id: 'abrazar', name: 'Abrazar', emoji: '🤗', boost: 5, cooldown: 'none' },
+                { id: 'beso-buenas-noches', name: 'Beso de buenas noches', emoji: '😘', boost: 5, cooldown: 'daily' }
+            ],
+            vinculos: [
+                { id: 'platica-honesta', name: 'Plática honesta', emoji: '💭', boost: 10, cooldown: 'none' },
+                { id: 'reir-amigo', name: 'Reírte', emoji: '😄', boost: 8, cooldown: 'none' },
+                { id: 'tema-dificil', name: 'Platica de un tema difícil', emoji: '🗣️', boost: 50, cooldown: 'weekly' }
+            ],
+            facil: [
+                { id: 'mensaje-casual', name: 'Mensaje casual', emoji: '💬', boost: 3, cooldown: 'none' },
+                { id: 'conversacion-breve', name: 'Conversación breve', emoji: '👋', boost: 5, cooldown: 'none' },
+                { id: 'saludar', name: 'Saludar', emoji: '😊', boost: 2, cooldown: 'none' }
+            ]
         };
 
         // Configuración de estadísticas
@@ -2795,6 +2885,85 @@
             document.getElementById('impactoModal').classList.remove('show');
             openSelfcareModal();
         }
+        
+        // Funciones de Vida Social
+        function openSocialModal() {
+            document.getElementById('socialModal').classList.add('show');
+        }
+        
+        function closeSocialModal() {
+            document.getElementById('socialModal').classList.remove('show');
+        }
+        
+        function openSocialCategory(category) {
+            closeSocialModal();
+            
+            const actions = SOCIAL_ACTIONS[category];
+            let modalId, optionsId;
+            
+            if (category === 'familia') {
+                modalId = 'familiaModal';
+                optionsId = 'familiaOptions';
+            } else if (category === 'vinculos') {
+                modalId = 'vinculosModal';
+                optionsId = 'vinculosOptions';
+            } else if (category === 'facil') {
+                modalId = 'facilModal';
+                optionsId = 'facilOptions';
+            }
+            
+            const container = document.getElementById(optionsId);
+            container.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = document.createElement('button');
+                button.style.cssText = 'width: 100%; padding: 12px 15px; background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); border: none; border-radius: 12px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(161, 196, 253, 0.3); display: flex; justify-content: space-between; align-items: center;';
+                
+                button.innerHTML = `
+                    <span style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.3em;">${action.emoji}</span>
+                        <span>${action.name}</span>
+                    </span>
+                    <span style="background: rgba(255, 255, 255, 0.3); padding: 5px 12px; border-radius: 10px; font-size: 0.9em;">+${action.boost}%</span>
+                `;
+                
+                button.onclick = () => applySocialAction(action);
+                container.appendChild(button);
+            });
+            
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function applySocialAction(action) {
+            // Aumentar vida social
+            gameState.stats.vidaSocial.current = Math.min(100, gameState.stats.vidaSocial.current + action.boost);
+            
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            
+            // Cerrar todos los modales sociales
+            document.getElementById('familiaModal').classList.remove('show');
+            document.getElementById('vinculosModal').classList.remove('show');
+            document.getElementById('facilModal').classList.remove('show');
+            
+            console.log(`${action.emoji} ${action.name}: +${action.boost}% vida social`);
+        }
+        
+        function closeFamiliaModal() {
+            document.getElementById('familiaModal').classList.remove('show');
+            openSocialModal();
+        }
+        
+        function closeVinculosModal() {
+            document.getElementById('vinculosModal').classList.remove('show');
+            openSocialModal();
+        }
+        
+        function closeFacilModal() {
+            document.getElementById('facilModal').classList.remove('show');
+            openSocialModal();
+        }
 
         // Efectos de botones (preparados para futuras funciones)
         function setupButtons() {
@@ -2819,8 +2988,7 @@
             });
 
             document.getElementById('btnSocial').addEventListener('click', () => {
-                console.log('Vida Social - Función por implementar');
-                // Aquí irá la lógica de aumentar vida social
+                openSocialModal();
             });
 
             document.getElementById('btnReset').addEventListener('click', resetStats);
