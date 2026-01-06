@@ -2322,6 +2322,7 @@
         // Crear elemento de estadística
         function createStatElement(key, stat) {
             const percentage = Math.round(stat.current);
+            const isGrowthStat = ['idiomas', 'aprendizaje', 'contenido', 'profesion'].includes(key);
             
             // Determinar clase de color según porcentaje
             let barClass = 'stat-bar-high';
@@ -2329,6 +2330,11 @@
                 barClass = 'stat-bar-medium';
             } else if (percentage < 40) {
                 barClass = 'stat-bar-low';
+            }
+            
+            // Para estadísticas de crecimiento, usar siempre verde
+            if (isGrowthStat) {
+                barClass = 'stat-bar-high';
             }
 
             // Información personalizada para hambre e hidratación
@@ -2338,9 +2344,18 @@
             } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
                 personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
             }
+            
+            // Para estadísticas de crecimiento, mostrar que no tienen límite
+            if (isGrowthStat) {
+                personalInfo = `<div style="font-size: 0.75em; color: #56ab2f; margin-top: 5px;">✨ Progreso sin límite</div>`;
+            }
 
             const statDiv = document.createElement('div');
-            statDiv.className = `stat-item ${percentage < 20 ? 'warning' : ''}`;
+            statDiv.className = `stat-item ${!isGrowthStat && percentage < 20 ? 'warning' : ''}`;
+            
+            // Para stats de crecimiento que pueden pasar del 100%, ajustar el ancho de la barra
+            const barWidth = isGrowthStat ? Math.min(percentage, 100) : percentage;
+            
             statDiv.innerHTML = `
                 <div class="stat-header">
                     <div class="stat-name">
@@ -2350,7 +2365,7 @@
                     <div class="stat-value">${percentage}%</div>
                 </div>
                 <div class="stat-bar-container">
-                    <div class="stat-bar-fill ${barClass}" style="width: ${percentage}%"></div>
+                    <div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div>
                 </div>
             `;
             
@@ -2358,7 +2373,7 @@
             if (personalInfo) {
                 const infoDiv = document.createElement('div');
                 infoDiv.style.fontSize = '0.75em';
-                infoDiv.style.color = '#a78bfa';
+                infoDiv.style.color = isGrowthStat ? '#56ab2f' : '#a78bfa';
                 infoDiv.style.marginTop = '-5px';
                 infoDiv.style.textAlign = 'center';
                 infoDiv.innerHTML = personalInfo.replace(/<div[^>]*>|<\/div>/g, '');
@@ -3502,7 +3517,8 @@
             if (!gameState.stats[statKey]) {
                 gameState.stats[statKey] = { ...STATS_CONFIG[statKey] };
             }
-            gameState.stats[statKey].current = Math.min(100, gameState.stats[statKey].current + action.boost);
+            // Sin límite máximo para estadísticas de crecimiento
+            gameState.stats[statKey].current = gameState.stats[statKey].current + action.boost;
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3515,7 +3531,7 @@
             document.getElementById('enfermeriaModal').classList.remove('show');
             document.getElementById('farmacologiaModal').classList.remove('show');
             
-            console.log(`${action.emoji} ${action.name}: ${STATS_CONFIG[statKey].name} +${action.boost}%`);
+            console.log(`${action.emoji} ${action.name}: ${STATS_CONFIG[statKey].name} +${action.boost}% (Total: ${Math.round(gameState.stats[statKey].current)}%)`);
         }
 
         // Efectos de botones (preparados para futuras funciones)
