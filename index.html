@@ -2337,11 +2337,21 @@
             if (isGrowthStat) {
                 barClass = 'stat-bar-high';
             }
+            
+            // Para hambre que excede 100%, usar color rojo de advertencia
+            if (key === 'hambre' && percentage > 100) {
+                barClass = 'stat-bar-low';
+            }
 
             // Información personalizada para hambre e hidratación
             let personalInfo = '';
             if (key === 'hambre' && userProfile.bmr > 0) {
-                personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
+                if (percentage > 100) {
+                    const exceso = Math.round(percentage - 100);
+                    personalInfo = `<div style="font-size: 0.85em; color: #ef4444; margin-top: 5px; font-weight: bold;">⚠️ ¡Exceso de ${exceso}%! Estás superando la cantidad máxima necesaria</div>`;
+                } else {
+                    personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
+                }
             } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
                 personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
             }
@@ -2352,10 +2362,10 @@
             }
 
             const statDiv = document.createElement('div');
-            statDiv.className = `stat-item ${!isGrowthStat && percentage < 20 ? 'warning' : ''}`;
+            statDiv.className = `stat-item ${(!isGrowthStat && percentage < 20) || (key === 'hambre' && percentage > 100) ? 'warning' : ''}`;
             
-            // Para stats de crecimiento que pueden pasar del 100%, ajustar el ancho de la barra
-            const barWidth = isGrowthStat ? Math.min(percentage, 100) : percentage;
+            // Para stats de crecimiento y hambre que pueden pasar del 100%, ajustar el ancho de la barra
+            const barWidth = (isGrowthStat || key === 'hambre') ? Math.min(percentage, 100) : percentage;
             
             statDiv.innerHTML = `
                 <div class="stat-header">
@@ -2374,7 +2384,12 @@
             if (personalInfo) {
                 const infoDiv = document.createElement('div');
                 infoDiv.style.fontSize = '0.75em';
-                infoDiv.style.color = isGrowthStat ? '#56ab2f' : '#a78bfa';
+                // Color dinámico según el tipo de mensaje
+                if (key === 'hambre' && percentage > 100) {
+                    infoDiv.style.color = '#ef4444'; // Rojo para advertencia
+                } else {
+                    infoDiv.style.color = isGrowthStat ? '#56ab2f' : '#a78bfa';
+                }
                 infoDiv.style.marginTop = '-5px';
                 infoDiv.style.textAlign = 'center';
                 infoDiv.innerHTML = personalInfo.replace(/<div[^>]*>|<\/div>/g, '');
@@ -2630,8 +2645,8 @@
             // Calcular porcentaje de hambre basado en BMR
             const hungerPercent = caloriesToHungerPercent(calories);
             
-            // Aplicar los cambios
-            gameState.stats.hambre.current = Math.min(100, gameState.stats.hambre.current + hungerPercent);
+            // Aplicar los cambios (permitir exceder 100%)
+            gameState.stats.hambre.current = gameState.stats.hambre.current + hungerPercent;
             
             // También se reduce un poco la hidratación (al comer necesitas agua)
             const hydrationDecrease = hungerPercent * 0.15; // 15% de las calorías afecta hidratación

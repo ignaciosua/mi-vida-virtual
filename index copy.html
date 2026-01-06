@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Mi Vida">
     <title>Mi Vida Virtual - Estadísticas</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon.png">
     <style>
         * {
             margin: 0;
@@ -1277,10 +1277,24 @@
 
         <!-- Tab: Crecer -->
         <div class="tab-content" id="tab-crecer">
-            <div style="text-align: center; padding: 60px 20px; color: #a78bfa;">
-                <div style="font-size: 4em; margin-bottom: 20px;">🧠</div>
-                <h2 style="color: #6b4c9a; margin-bottom: 10px;">Sección en Construcción</h2>
-                <p>Pronto podrás gestionar tu profesión, estudio e inteligencia aquí.</p>
+            <div class="stats-container" id="statsCrecer"></div>
+            <div class="buttons-container">
+                <button class="action-button" id="btnIdiomas" style="background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%);">
+                    <span class="button-icon">🌍</span>
+                    <span class="button-text">Idiomas</span>
+                </button>
+                <button class="action-button" id="btnAprendizaje" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <span class="button-icon">📚</span>
+                    <span class="button-text">Aprendizaje</span>
+                </button>
+                <button class="action-button" id="btnContenido" style="background: linear-gradient(135deg, #fdcbf1 0%, #e6dee9 100%);">
+                    <span class="button-icon">🎬</span>
+                    <span class="button-text">Contenido</span>
+                </button>
+                <button class="action-button" id="btnProfesion" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);">
+                    <span class="button-icon">👩‍⚕️</span>
+                    <span class="button-text">Profesión</span>
+                </button>
             </div>
         </div>
 
@@ -1301,12 +1315,6 @@
             </div>
             <div class="stats-container" id="statsResumen"></div>
         </div>
-
-        <button class="reset-button" id="btnReset">🔄 Resetear Estadísticas</button>
-        
-        <button class="reset-button" onclick="resetProfile()" style="background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); margin-top: 10px;">
-            🔄 Rehacer Perfil (Prueba)
-        </button>
 
         <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
     </div>
@@ -1765,6 +1773,98 @@
         </div>
     </div>
 
+    <!-- Modales de Crecimiento -->
+    <!-- Modal de Idiomas -->
+    <div id="idiomasModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">🌍 Idiomas</div>
+                <div class="modal-subtitle">Practica y mejora tus habilidades</div>
+            </div>
+            <div id="idiomasOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeIdiomasModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Aprendizaje -->
+    <div id="aprendizajeModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">📚 Aprendizaje</div>
+                <div class="modal-subtitle">Expande tu conocimiento</div>
+            </div>
+            <div id="aprendizajeOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeAprendizajeModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Contenido -->
+    <div id="contenidoModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">🎬 Contenido</div>
+                <div class="modal-subtitle">Crea y comparte</div>
+            </div>
+            <div id="contenidoOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeContenidoModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Profesión -->
+    <div id="profesionModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">👩‍⚕️ Profesión</div>
+                <div class="modal-subtitle">Elige tu área de estudio</div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button onclick="openProfesionCategory('enfermeria')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(168, 237, 234, 0.3);">
+                    💉 Enfermería
+                </button>
+                <button onclick="openProfesionCategory('farmacologia')" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); border: none; border-radius: 12px; font-size: 1.05em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);">
+                    💊 Farmacología
+                </button>
+            </div>
+            
+            <button class="modal-close" onclick="closeProfesionModal()">✕ Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal de Enfermería -->
+    <div id="enfermeriaModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">💉 Enfermería</div>
+                <div class="modal-subtitle">Estudia y refuerza conceptos</div>
+            </div>
+            <div id="enfermeriaOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeEnfermeriaModal()">← Volver</button>
+        </div>
+    </div>
+
+    <!-- Modal de Farmacología -->
+    <div id="farmacologiaModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <div class="modal-title">💊 Farmacología</div>
+                <div class="modal-subtitle">Domina los fármacos</div>
+            </div>
+            <div id="farmacologiaOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <!-- Se generan dinámicamente -->
+            </div>
+            <button class="modal-close" onclick="closeFarmacologiaModal()">← Volver</button>
+        </div>
+    </div>
+
     <script>
         // Función para iniciar el juego desde la pantalla de inicio
         function startGame() {
@@ -1809,7 +1909,7 @@
                 { id: 'cabello', name: 'Arreglarse el cabello', emoji: '💇‍♀️', boost: 5, cooldown: 'daily' },
                 { id: 'maquillarse', name: 'Maquillarse', emoji: '💄', boost: 10, cooldown: 'daily' },
                 { id: 'skincare', name: 'Skin care', emoji: '🧴', boost: 5, cooldown: 'daily' },
-                { id: 'dientes', name: 'Cepillarse los dientes', emoji: '🪥', boost: 5, cooldown: 'daily' },
+                { id: 'dientes', name: 'Cepillarse los dientes', emoji: '🪥', boost: 5, cooldown: 'none' },
                 { id: 'crema', name: 'Crema en todo el cuerpo', emoji: '🧴', boost: 15, cooldown: 'daily' },
                 { id: 'perfume', name: 'Perfume', emoji: '💐', boost: 3, cooldown: 'daily' },
                 { id: 'ropa', name: 'Ropa linda', emoji: '👗', boost: 20, cooldown: 'daily' },
@@ -1866,6 +1966,44 @@
                 { id: 'saludar', name: 'Saludar', emoji: '😊', boost: 2, cooldown: 'none' }
             ]
         };
+        
+        // Acciones de crecimiento
+        const GROWTH_ACTIONS = {
+            aprendizaje: [
+                { id: 'leer-libros', name: 'Leer libros', emoji: '📖', boost: 2, cooldown: 'none' },
+                { id: 'videos-educativos', name: 'Ver videos educativos', emoji: '🎥', boost: 1, cooldown: 'none' },
+                { id: 'investigar', name: 'Investigar temas', emoji: '🔍', boost: 3, cooldown: 'none' },
+                { id: 'apuntes', name: 'Tomar apuntes', emoji: '📝', boost: 4, cooldown: 'none' },
+                { id: 'aprender-nuevo', name: 'Aprender algo nuevo', emoji: '✨', boost: 4, cooldown: 'none' }
+            ],
+            contenido: [
+                { id: 'ideas', name: 'Ideas', emoji: '💡', boost: 2, cooldown: 'none' },
+                { id: 'grabar', name: 'Grabar', emoji: '🎥', boost: 3, cooldown: 'none' },
+                { id: 'editar', name: 'Editar', emoji: '✂️', boost: 4, cooldown: 'none' },
+                { id: 'publicar', name: 'Publicar', emoji: '📤', boost: 2, cooldown: 'none' }
+            ],
+            enfermeria: [
+                { id: 'repasar-temas', name: 'Repasar temas', emoji: '📖', boost: 2, cooldown: 'none' },
+                { id: 'revisar-apuntes', name: 'Revisar apuntes', emoji: '📝', boost: 2, cooldown: 'none' },
+                { id: 'casos-clinicos', name: 'Pensar casos clínicos', emoji: '🧠', boost: 2, cooldown: 'none' },
+                { id: 'ordenar-material', name: 'Ordenar material', emoji: '📄', boost: 1, cooldown: 'none' },
+                { id: 'investigar-dudas', name: 'Investigar dudas', emoji: '🔍', boost: 2, cooldown: 'none' }
+            ],
+            farmacologia: [
+                { id: 'repasar-farmacos', name: 'Repasar fármacos', emoji: '💊', boost: 3, cooldown: 'none' },
+                { id: 'estudiar-farmacos', name: 'Estudiar fármacos', emoji: '📊', boost: 5, cooldown: 'none' },
+                { id: 'ver-explicacion', name: 'Ver explicación sencilla', emoji: '🎥', boost: 2, cooldown: 'none' },
+                { id: 'apuntes-farma', name: 'Apuntes', emoji: '🧠', boost: 3, cooldown: 'none' }
+            ],
+            idiomas: [
+                { id: 'leer-ingles', name: 'Leer en inglés', emoji: '📖', boost: 2, cooldown: 'none' },
+                { id: 'escuchar-audio', name: 'Escuchar audio', emoji: '🎧', boost: 2, cooldown: 'none' },
+                { id: 'practicar-palabras', name: 'Practicar palabras', emoji: '🗣️', boost: 2, cooldown: 'none' },
+                { id: 'escribir-frases', name: 'Escribir frases', emoji: '📝', boost: 3, cooldown: 'none' },
+                { id: 'ver-series', name: 'Ver series', emoji: '🎥', boost: 3, cooldown: 'none' },
+                { id: 'app-idiomas', name: 'Usar app de idiomas (10 min)', emoji: '📱', boost: 2, cooldown: 'none' }
+            ]
+        };
 
         // Configuración de estadísticas
         const STATS_CONFIG = {
@@ -1909,6 +2047,34 @@
                 icon: '💬',
                 decayRate: 4.2,
                 current: 100,
+                maxDaily: 100
+            },
+            idiomas: {
+                name: 'Idiomas',
+                icon: '🌍',
+                decayRate: 0, // No decae
+                current: 0,
+                maxDaily: 100
+            },
+            aprendizaje: {
+                name: 'Aprendizaje',
+                icon: '📚',
+                decayRate: 0, // No decae
+                current: 0,
+                maxDaily: 100
+            },
+            contenido: {
+                name: 'Contenido',
+                icon: '🎬',
+                decayRate: 0, // No decae
+                current: 0,
+                maxDaily: 100
+            },
+            profesion: {
+                name: 'Profesión',
+                icon: '👩‍⚕️',
+                decayRate: 0, // No decae
+                current: 0,
                 maxDaily: 100
             }
         };
@@ -2082,6 +2248,13 @@
             if (saved) {
                 gameState = JSON.parse(saved);
                 
+                // Asegurar que todas las estadísticas existen (incluyendo nuevas)
+                Object.keys(STATS_CONFIG).forEach(key => {
+                    if (!gameState.stats[key]) {
+                        gameState.stats[key] = { ...STATS_CONFIG[key] };
+                    }
+                });
+                
                 // Calcular tiempo transcurrido y aplicar decaimiento
                 const now = Date.now();
                 const hoursElapsed = (now - gameState.lastUpdate) / (1000 * 60 * 60);
@@ -2127,6 +2300,15 @@
                 }
             });
 
+            // Renderizar estadísticas de Crecer (idiomas, aprendizaje, contenido, profesión)
+            const crecerContainer = document.getElementById('statsCrecer');
+            crecerContainer.innerHTML = '';
+            ['idiomas', 'aprendizaje', 'contenido', 'profesion'].forEach(key => {
+                if (gameState.stats[key]) {
+                    crecerContainer.appendChild(createStatElement(key, gameState.stats[key]));
+                }
+            });
+
             // Renderizar todas las estadísticas en Resumen
             const resumenContainer = document.getElementById('statsResumen');
             resumenContainer.innerHTML = '';
@@ -2141,6 +2323,7 @@
         // Crear elemento de estadística
         function createStatElement(key, stat) {
             const percentage = Math.round(stat.current);
+            const isGrowthStat = ['idiomas', 'aprendizaje', 'contenido', 'profesion'].includes(key);
             
             // Determinar clase de color según porcentaje
             let barClass = 'stat-bar-high';
@@ -2148,6 +2331,11 @@
                 barClass = 'stat-bar-medium';
             } else if (percentage < 40) {
                 barClass = 'stat-bar-low';
+            }
+            
+            // Para estadísticas de crecimiento, usar siempre verde
+            if (isGrowthStat) {
+                barClass = 'stat-bar-high';
             }
 
             // Información personalizada para hambre e hidratación
@@ -2157,9 +2345,18 @@
             } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
                 personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
             }
+            
+            // Para estadísticas de crecimiento, mostrar que no tienen límite
+            if (isGrowthStat) {
+                personalInfo = `<div style="font-size: 0.75em; color: #56ab2f; margin-top: 5px;">✨ Progreso sin límite</div>`;
+            }
 
             const statDiv = document.createElement('div');
-            statDiv.className = `stat-item ${percentage < 20 ? 'warning' : ''}`;
+            statDiv.className = `stat-item ${!isGrowthStat && percentage < 20 ? 'warning' : ''}`;
+            
+            // Para stats de crecimiento que pueden pasar del 100%, ajustar el ancho de la barra
+            const barWidth = isGrowthStat ? Math.min(percentage, 100) : percentage;
+            
             statDiv.innerHTML = `
                 <div class="stat-header">
                     <div class="stat-name">
@@ -2169,7 +2366,7 @@
                     <div class="stat-value">${percentage}%</div>
                 </div>
                 <div class="stat-bar-container">
-                    <div class="stat-bar-fill ${barClass}" style="width: ${percentage}%"></div>
+                    <div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div>
                 </div>
             `;
             
@@ -2177,7 +2374,7 @@
             if (personalInfo) {
                 const infoDiv = document.createElement('div');
                 infoDiv.style.fontSize = '0.75em';
-                infoDiv.style.color = '#a78bfa';
+                infoDiv.style.color = isGrowthStat ? '#56ab2f' : '#a78bfa';
                 infoDiv.style.marginTop = '-5px';
                 infoDiv.style.textAlign = 'center';
                 infoDiv.innerHTML = personalInfo.replace(/<div[^>]*>|<\/div>/g, '');
@@ -3067,14 +3264,17 @@
             
             actions.forEach(action => {
                 const available = isActionAvailable(action.id, action.cooldown);
+                
+                // Ocultar botones que ya se usaron (no están disponibles)
+                if (!available) {
+                    return; // No mostrar el botón
+                }
+                
                 const button = document.createElement('button');
                 button.className = 'option-button';
-                button.style.opacity = available ? '1' : '0.4';
-                button.style.cursor = available ? 'pointer' : 'not-allowed';
-                button.style.background = available ? 
-                    'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)' : 
-                    'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)';
-                button.disabled = !available;
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+                button.style.background = 'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)';
                 
                 let cooldownText = '';
                 if (action.cooldown === 'daily') cooldownText = ' (1x día)';
@@ -3087,9 +3287,7 @@
                     </span>
                 `;
                 
-                if (available) {
-                    button.onclick = () => applySelfcareAction(action);
-                }
+                button.onclick = () => applySelfcareAction(action);
                 
                 container.appendChild(button);
             });
@@ -3204,6 +3402,139 @@
             document.getElementById('facilModal').classList.remove('show');
             openSocialModal();
         }
+        
+        // Funciones de Crecimiento
+        function openIdiomasModal() {
+            const actions = GROWTH_ACTIONS.idiomas;
+            const container = document.getElementById('idiomasOptions');
+            container.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = createGrowthButton(action, 'idiomas');
+                container.appendChild(button);
+            });
+            
+            document.getElementById('idiomasModal').classList.add('show');
+        }
+        
+        function closeIdiomasModal() {
+            document.getElementById('idiomasModal').classList.remove('show');
+        }
+        
+        function openAprendizajeModal() {
+            const actions = GROWTH_ACTIONS.aprendizaje;
+            const container = document.getElementById('aprendizajeOptions');
+            container.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = createGrowthButton(action, 'aprendizaje');
+                container.appendChild(button);
+            });
+            
+            document.getElementById('aprendizajeModal').classList.add('show');
+        }
+        
+        function closeAprendizajeModal() {
+            document.getElementById('aprendizajeModal').classList.remove('show');
+        }
+        
+        function openContenidoModal() {
+            const actions = GROWTH_ACTIONS.contenido;
+            const container = document.getElementById('contenidoOptions');
+            container.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = createGrowthButton(action, 'contenido');
+                container.appendChild(button);
+            });
+            
+            document.getElementById('contenidoModal').classList.add('show');
+        }
+        
+        function closeContenidoModal() {
+            document.getElementById('contenidoModal').classList.remove('show');
+        }
+        
+        function openProfesionModal() {
+            document.getElementById('profesionModal').classList.add('show');
+        }
+        
+        function closeProfesionModal() {
+            document.getElementById('profesionModal').classList.remove('show');
+        }
+        
+        function openProfesionCategory(category) {
+            closeProfesionModal();
+            
+            const actions = GROWTH_ACTIONS[category];
+            let modalId, optionsId;
+            
+            if (category === 'enfermeria') {
+                modalId = 'enfermeriaModal';
+                optionsId = 'enfermeriaOptions';
+            } else if (category === 'farmacologia') {
+                modalId = 'farmacologiaModal';
+                optionsId = 'farmacologiaOptions';
+            }
+            
+            const container = document.getElementById(optionsId);
+            container.innerHTML = '';
+            
+            actions.forEach(action => {
+                const button = createGrowthButton(action, 'profesion');
+                container.appendChild(button);
+            });
+            
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function closeEnfermeriaModal() {
+            document.getElementById('enfermeriaModal').classList.remove('show');
+            openProfesionModal();
+        }
+        
+        function closeFarmacologiaModal() {
+            document.getElementById('farmacologiaModal').classList.remove('show');
+            openProfesionModal();
+        }
+        
+        function createGrowthButton(action, statKey) {
+            const button = document.createElement('button');
+            button.style.cssText = 'width: 100%; padding: 12px 15px; background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); border: none; border-radius: 12px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(161, 196, 253, 0.3); display: flex; justify-content: space-between; align-items: center;';
+            
+            button.innerHTML = `
+                <span style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.3em;">${action.emoji}</span>
+                    <span>${action.name}</span>
+                </span>
+                <span style="background: rgba(255, 255, 255, 0.3); padding: 5px 12px; border-radius: 10px; font-size: 0.9em;">+${action.boost}%</span>
+            `;
+            
+            button.onclick = () => applyGrowthAction(action, statKey);
+            return button;
+        }
+        
+        function applyGrowthAction(action, statKey) {
+            // Aumentar estadística de crecimiento (sin límite de 100%)
+            if (!gameState.stats[statKey]) {
+                gameState.stats[statKey] = { ...STATS_CONFIG[statKey] };
+            }
+            // Sin límite máximo para estadísticas de crecimiento
+            gameState.stats[statKey].current = gameState.stats[statKey].current + action.boost;
+            
+            gameState.lastUpdate = Date.now();
+            saveState();
+            renderStats();
+            
+            // Cerrar todos los modales de crecimiento
+            document.getElementById('idiomasModal').classList.remove('show');
+            document.getElementById('aprendizajeModal').classList.remove('show');
+            document.getElementById('contenidoModal').classList.remove('show');
+            document.getElementById('enfermeriaModal').classList.remove('show');
+            document.getElementById('farmacologiaModal').classList.remove('show');
+            
+            console.log(`${action.emoji} ${action.name}: ${STATS_CONFIG[statKey].name} +${action.boost}% (Total: ${Math.round(gameState.stats[statKey].current)}%)`);
+        }
 
         // Efectos de botones (preparados para futuras funciones)
         function setupButtons() {
@@ -3229,6 +3560,23 @@
 
             document.getElementById('btnSocial').addEventListener('click', () => {
                 openSocialModal();
+            });
+            
+            // Botones de Crecer
+            document.getElementById('btnIdiomas').addEventListener('click', () => {
+                openIdiomasModal();
+            });
+            
+            document.getElementById('btnAprendizaje').addEventListener('click', () => {
+                openAprendizajeModal();
+            });
+            
+            document.getElementById('btnContenido').addEventListener('click', () => {
+                openContenidoModal();
+            });
+            
+            document.getElementById('btnProfesion').addEventListener('click', () => {
+                openProfesionModal();
             });
 
             document.getElementById('btnReset').addEventListener('click', resetStats);
