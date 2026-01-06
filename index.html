@@ -1909,7 +1909,7 @@
                 { id: 'cabello', name: 'Arreglarse el cabello', emoji: '💇‍♀️', boost: 5, cooldown: 'daily' },
                 { id: 'maquillarse', name: 'Maquillarse', emoji: '💄', boost: 10, cooldown: 'daily' },
                 { id: 'skincare', name: 'Skin care', emoji: '🧴', boost: 5, cooldown: 'daily' },
-                { id: 'dientes', name: 'Cepillarse los dientes', emoji: '🪥', boost: 5, cooldown: 'daily' },
+                { id: 'dientes', name: 'Cepillarse los dientes', emoji: '🪥', boost: 5, cooldown: 'none' },
                 { id: 'crema', name: 'Crema en todo el cuerpo', emoji: '🧴', boost: 15, cooldown: 'daily' },
                 { id: 'perfume', name: 'Perfume', emoji: '💐', boost: 3, cooldown: 'daily' },
                 { id: 'ropa', name: 'Ropa linda', emoji: '👗', boost: 20, cooldown: 'daily' },
@@ -3264,14 +3264,17 @@
             
             actions.forEach(action => {
                 const available = isActionAvailable(action.id, action.cooldown);
+                
+                // Ocultar botones que ya se usaron (no están disponibles)
+                if (!available) {
+                    return; // No mostrar el botón
+                }
+                
                 const button = document.createElement('button');
                 button.className = 'option-button';
-                button.style.opacity = available ? '1' : '0.4';
-                button.style.cursor = available ? 'pointer' : 'not-allowed';
-                button.style.background = available ? 
-                    'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)' : 
-                    'linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)';
-                button.disabled = !available;
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+                button.style.background = 'linear-gradient(135deg, #a78bfa 0%, #c084fc 100%)';
                 
                 let cooldownText = '';
                 if (action.cooldown === 'daily') cooldownText = ' (1x día)';
@@ -3284,9 +3287,7 @@
                     </span>
                 `;
                 
-                if (available) {
-                    button.onclick = () => applySelfcareAction(action);
-                }
+                button.onclick = () => applySelfcareAction(action);
                 
                 container.appendChild(button);
             });
