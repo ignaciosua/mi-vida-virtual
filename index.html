@@ -531,6 +531,97 @@
             animation: pulse-warning 2s infinite;
         }
 
+        /* Sistema de Tabs */
+        .tabs-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            border-radius: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            flex: 1;
+            min-width: 80px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 12px 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #6b4c9a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tab-icon {
+            font-size: 1.5em;
+        }
+        
+        .tab-label {
+            font-size: 0.85em;
+        }
+        
+        .tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(167, 139, 250, 0.4);
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .tabs-container {
+                gap: 5px;
+                padding: 8px;
+            }
+            
+            .tab {
+                padding: 10px 6px;
+                min-width: 70px;
+            }
+            
+            .tab-icon {
+                font-size: 1.3em;
+            }
+            
+            .tab-label {
+                font-size: 0.75em;
+            }
+        }
+
         /* Reloj en tiempo real */
         .clock-container {
             text-align: center;
@@ -1124,11 +1215,33 @@
             <div class="time-display" id="timeDisplay"></div>
         </div>
 
-        <div class="main-content">
-            <div class="stats-container" id="statsContainer">
-                <!-- Las estadísticas se generan dinámicamente -->
-            </div>
+        <!-- Sistema de Tabs -->
+        <div class="tabs-container">
+            <button class="tab active" onclick="switchTab('existir')">
+                <span class="tab-icon">❤️</span>
+                <span class="tab-label">Existir</span>
+            </button>
+            <button class="tab" onclick="switchTab('cuidarme')">
+                <span class="tab-icon">🌱</span>
+                <span class="tab-label">Cuidarme</span>
+            </button>
+            <button class="tab" onclick="switchTab('crecer')">
+                <span class="tab-icon">🧠</span>
+                <span class="tab-label">Crecer</span>
+            </button>
+            <button class="tab" onclick="switchTab('crear')">
+                <span class="tab-icon">🎨</span>
+                <span class="tab-label">Crear</span>
+            </button>
+            <button class="tab" onclick="switchTab('resumen')">
+                <span class="tab-icon">📊</span>
+                <span class="tab-label">Resumen</span>
+            </button>
+        </div>
 
+        <!-- Tab: Existir -->
+        <div class="tab-content active" id="tab-existir">
+            <div class="stats-container" id="statsExistir"></div>
             <div class="buttons-container">
                 <button class="action-button btn-eat" id="btnEat">
                     <span class="button-icon">🍽️</span>
@@ -1142,6 +1255,13 @@
                     <span class="button-icon">😴</span>
                     <span class="button-text">Dormir</span>
                 </button>
+            </div>
+        </div>
+
+        <!-- Tab: Cuidarme -->
+        <div class="tab-content" id="tab-cuidarme">
+            <div class="stats-container" id="statsCuidarme"></div>
+            <div class="buttons-container">
                 <button class="action-button btn-exercise" id="btnExercise">
                     <span class="button-icon">🏃</span>
                     <span class="button-text">Ejercicio</span>
@@ -1155,6 +1275,33 @@
                     <span class="button-text">Vida Social</span>
                 </button>
             </div>
+        </div>
+
+        <!-- Tab: Crecer -->
+        <div class="tab-content" id="tab-crecer">
+            <div style="text-align: center; padding: 60px 20px; color: #a78bfa;">
+                <div style="font-size: 4em; margin-bottom: 20px;">🧠</div>
+                <h2 style="color: #6b4c9a; margin-bottom: 10px;">Sección en Construcción</h2>
+                <p>Pronto podrás gestionar tu profesión, estudio e inteligencia aquí.</p>
+            </div>
+        </div>
+
+        <!-- Tab: Crear -->
+        <div class="tab-content" id="tab-crear">
+            <div style="text-align: center; padding: 60px 20px; color: #a78bfa;">
+                <div style="font-size: 4em; margin-bottom: 20px;">🎨</div>
+                <h2 style="color: #6b4c9a; margin-bottom: 10px;">Sección en Construcción</h2>
+                <p>Pronto podrás gestionar tus proyectos creativos, TikTok y videos aquí.</p>
+            </div>
+        </div>
+
+        <!-- Tab: Resumen -->
+        <div class="tab-content" id="tab-resumen">
+            <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+                <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">📊 Balance General</h3>
+                <div id="resumenContent" style="color: #6b4c9a;"></div>
+            </div>
+            <div class="stats-container" id="statsResumen"></div>
         </div>
 
         <button class="reset-button" id="btnReset">🔄 Resetear Estadísticas</button>
@@ -1964,57 +2111,145 @@
 
         // Renderizar estadísticas
         function renderStats() {
-            const container = document.getElementById('statsContainer');
-            container.innerHTML = '';
-
-            Object.keys(gameState.stats).forEach(key => {
-                const stat = gameState.stats[key];
-                const percentage = Math.round(stat.current);
-                
-                // Determinar clase de color según porcentaje
-                let barClass = 'stat-bar-high';
-                if (percentage < 70 && percentage >= 40) {
-                    barClass = 'stat-bar-medium';
-                } else if (percentage < 40) {
-                    barClass = 'stat-bar-low';
+            // Renderizar estadísticas de Existir (hambre, sueño, hidratación)
+            const existirContainer = document.getElementById('statsExistir');
+            existirContainer.innerHTML = '';
+            ['hambre', 'sueño', 'hidratacion'].forEach(key => {
+                if (gameState.stats[key]) {
+                    existirContainer.appendChild(createStatElement(key, gameState.stats[key]));
                 }
-
-                // Información personalizada para hambre e hidratación
-                let personalInfo = '';
-                if (key === 'hambre' && userProfile.bmr > 0) {
-                    personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
-                } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
-                    personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
-                }
-
-                const statDiv = document.createElement('div');
-                statDiv.className = `stat-item ${percentage < 20 ? 'warning' : ''}`;
-                statDiv.innerHTML = `
-                    <div class="stat-header">
-                        <div class="stat-name">
-                            <span class="stat-icon">${stat.icon}</span>
-                            ${stat.name}
-                        </div>
-                        <div class="stat-value">${percentage}%</div>
-                    </div>
-                    <div class="stat-bar-container">
-                        <div class="stat-bar-fill ${barClass}" style="width: ${percentage}%"></div>
-                    </div>
-                `;
-                
-                // Agregar información personalizada si existe
-                if (personalInfo) {
-                    const infoDiv = document.createElement('div');
-                    infoDiv.style.fontSize = '0.75em';
-                    infoDiv.style.color = '#a78bfa';
-                    infoDiv.style.marginTop = '-5px';
-                    infoDiv.style.textAlign = 'center';
-                    infoDiv.innerHTML = personalInfo.replace(/<div.*?>|<\/div>/g, '');
-                    statDiv.appendChild(infoDiv);
-                }
-                
-                container.appendChild(statDiv);
             });
+
+            // Renderizar estadísticas de Cuidarme (ejercicio, autoestima, vida social)
+            const cuidarmeContainer = document.getElementById('statsCuidarme');
+            cuidarmeContainer.innerHTML = '';
+            ['ejercicio', 'autoestima', 'vidaSocial'].forEach(key => {
+                if (gameState.stats[key]) {
+                    cuidarmeContainer.appendChild(createStatElement(key, gameState.stats[key]));
+                }
+            });
+
+            // Renderizar todas las estadísticas en Resumen
+            const resumenContainer = document.getElementById('statsResumen');
+            resumenContainer.innerHTML = '';
+            Object.keys(gameState.stats).forEach(key => {
+                resumenContainer.appendChild(createStatElement(key, gameState.stats[key]));
+            });
+
+            // Actualizar mensaje de resumen
+            updateResumenMessage();
+        }
+
+        // Crear elemento de estadística
+        function createStatElement(key, stat) {
+            const percentage = Math.round(stat.current);
+            
+            // Determinar clase de color según porcentaje
+            let barClass = 'stat-bar-high';
+            if (percentage < 70 && percentage >= 40) {
+                barClass = 'stat-bar-medium';
+            } else if (percentage < 40) {
+                barClass = 'stat-bar-low';
+            }
+
+            // Información personalizada para hambre e hidratación
+            let personalInfo = '';
+            if (key === 'hambre' && userProfile.bmr > 0) {
+                personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
+            } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
+                personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
+            }
+
+            const statDiv = document.createElement('div');
+            statDiv.className = `stat-item ${percentage < 20 ? 'warning' : ''}`;
+            statDiv.innerHTML = `
+                <div class="stat-header">
+                    <div class="stat-name">
+                        <span class="stat-icon">${stat.icon}</span>
+                        ${stat.name}
+                    </div>
+                    <div class="stat-value">${percentage}%</div>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar-fill ${barClass}" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            
+            // Agregar información personalizada si existe
+            if (personalInfo) {
+                const infoDiv = document.createElement('div');
+                infoDiv.style.fontSize = '0.75em';
+                infoDiv.style.color = '#a78bfa';
+                infoDiv.style.marginTop = '-5px';
+                infoDiv.style.textAlign = 'center';
+                infoDiv.innerHTML = personalInfo.replace(/<div.*?>|<\\/div>/g, '');
+                statDiv.appendChild(infoDiv);
+            }
+            
+            return statDiv;
+        }
+
+        // Actualizar mensaje de resumen
+        function updateResumenMessage() {
+            const resumenContent = document.getElementById('resumenContent');
+            const stats = gameState.stats;
+            
+            let messages = [];
+            let criticalStats = [];
+            let goodStats = [];
+            
+            Object.keys(stats).forEach(key => {
+                const percentage = Math.round(stats[key].current);
+                const name = stats[key].name;
+                
+                if (percentage < 30) {
+                    criticalStats.push(`⚠️ <strong>${name}</strong> está muy bajo (${percentage}%)`);
+                } else if (percentage < 50) {
+                    messages.push(`⚡ <strong>${name}</strong> necesita atención (${percentage}%)`);
+                } else if (percentage >= 80) {
+                    goodStats.push(`✅ <strong>${name}</strong> está excelente (${percentage}%)`);
+                }
+            });
+            
+            let html = '';
+            
+            if (criticalStats.length > 0) {
+                html += '<div style="background: rgba(255, 107, 157, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 4px solid #ff6b9d;">';
+                html += '<h4 style="color: #ff6b9d; margin-bottom: 10px;">🚨 Necesita Atención Urgente</h4>';
+                html += criticalStats.join('<br>');
+                html += '</div>';
+            }
+            
+            if (messages.length > 0) {
+                html += '<div style="background: rgba(167, 139, 250, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 4px solid #a78bfa;">';
+                html += '<h4 style="color: #a78bfa; margin-bottom: 10px;">💡 Recomendaciones</h4>';
+                html += messages.join('<br>');
+                html += '</div>';
+            }
+            
+            if (goodStats.length > 0) {
+                html += '<div style="background: rgba(168, 224, 99, 0.1); padding: 15px; border-radius: 15px; border-left: 4px solid #a8e063;">';
+                html += '<h4 style="color: #56ab2f; margin-bottom: 10px;">🎉 ¡Excelente Trabajo!</h4>';
+                html += goodStats.join('<br>');
+                html += '</div>';
+            }
+            
+            if (html === '') {
+                html = '<div style="text-align: center; padding: 20px;"><p>✨ Todo está en equilibrio. ¡Sigue así!</p></div>';
+            }
+            
+            resumenContent.innerHTML = html;
+        }
+
+        // Función para cambiar de tab
+        function switchTab(tabName) {
+            // Remover clase active de todos los tabs y contenidos
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Agregar clase active al tab y contenido seleccionado
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
         }
 
         // Actualizar estadísticas continuamente
