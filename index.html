@@ -1342,6 +1342,16 @@
         </div>
 
         <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
+        
+        <!-- Botón de backup accesible -->
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button onclick="exportBackup()" style="flex: 1; background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.3);">
+                📥 Descargar Backup
+            </button>
+            <button onclick="importBackup()" style="flex: 1; background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">
+                📤 Restaurar Backup
+            </button>
+        </div>
     </div>
 
     <!-- Modal para beber agua -->
@@ -4395,6 +4405,87 @@
             });
         }
 
+        // ===== SISTEMA DE BACKUP Y PERSISTENCIA =====
+        
+        // Exportar backup como archivo descargable
+        function exportBackup() {
+            const backup = {
+                version: '1.0',
+                date: new Date().toISOString(),
+                userProfile: localStorage.getItem('userProfile'),
+                gameState: localStorage.getItem('gameState'),
+                selfcareCooldowns: localStorage.getItem('selfcareCooldowns'),
+                library: localStorage.getItem('library')
+            };
+            
+            const dataStr = JSON.stringify(backup, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `mi-vida-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Backup descargado exitosamente. Guárdalo en un lugar seguro.');
+            console.log('📥 Backup exportado');
+        }
+        
+        // Importar backup desde archivo
+        function importBackup() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const backup = JSON.parse(event.target.result);
+                        
+                        if (!backup.version || !backup.userProfile) {
+                            alert('❌ Archivo de backup inválido');
+                            return;
+                        }
+                        
+                        if (!confirm('⚠️ ¿Estás segura? Esto reemplazará todos tus datos actuales con el backup.')) {
+                            return;
+                        }
+                        
+                        // Restaurar datos
+                        if (backup.userProfile) localStorage.setItem('userProfile', backup.userProfile);
+                        if (backup.gameState) localStorage.setItem('gameState', backup.gameState);
+                        if (backup.selfcareCooldowns) localStorage.setItem('selfcareCooldowns', backup.selfcareCooldowns);
+                        if (backup.library) localStorage.setItem('library', backup.library);
+                        
+                        alert('✅ Backup restaurado exitosamente. La página se recargará.');
+                        location.reload();
+                        
+                    } catch (error) {
+                        alert('❌ Error al leer el archivo de backup: ' + error.message);
+                        console.error('Error al restaurar backup:', error);
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        // Guardar todo antes de cerrar o cambiar de pestaña
+        function saveBeforeExit() {
+            saveState();
+            saveSelfcareCooldowns();
+            saveLibrary();
+            console.log('💾 Datos guardados automáticamente');
+        }
+
         // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
             // Iniciar el reloj INMEDIATAMENTE
@@ -4406,6 +4497,30 @@
             
             // Cargar biblioteca
             loadLibrary();
+            
+            // ===== GUARDADO AUTOMÁTICO MEJORADO =====
+            
+            // Guardar antes de cerrar la pestaña
+            window.addEventListener('beforeunload', (e) => {
+                saveBeforeExit();
+            });
+            
+            // Guardar cuando la pestaña pierde visibilidad (cambias de app en móvil)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    saveBeforeExit();
+                }
+            });
+            
+            // Guardar cuando la página pierde el foco
+            window.addEventListener('blur', () => {
+                saveBeforeExit();
+            });
+            
+            // Guardar periódicamente cada 30 segundos
+            setInterval(() => {
+                saveBeforeExit();
+            }, 30000);
             
             // Registrar Service Worker para funcionalidad offline
             if ('serviceWorker' in navigator) {
