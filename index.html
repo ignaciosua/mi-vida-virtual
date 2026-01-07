@@ -1227,9 +1227,9 @@
                 <span class="tab-icon">🧠</span>
                 <span class="tab-label">Crecer</span>
             </button>
-            <button class="tab" onclick="switchTab('crear')">
-                <span class="tab-icon">🎨</span>
-                <span class="tab-label">Crear</span>
+            <button class="tab" onclick="switchTab('biblioteca')">
+                <span class="tab-icon">📚</span>
+                <span class="tab-label">Biblioteca</span>
             </button>
             <button class="tab" onclick="switchTab('resumen')">
                 <span class="tab-icon">📊</span>
@@ -1298,8 +1298,8 @@
             </div>
         </div>
 
-        <!-- Tab: Crear -->
-        <div class="tab-content" id="tab-crear">
+        <!-- Tab: Biblioteca -->
+        <div class="tab-content" id="tab-biblioteca">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h2 style="color: #6b4c9a; margin-bottom: 15px;">📚 Mi Biblioteca</h2>
                 <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
@@ -1969,16 +1969,11 @@
         // Acciones de autocuidado y su cooldown
         const SELFCARE_ACTIONS = {
             microcuidados: [
-                { id: 'bañarse', name: 'Bañarse conscientemente', emoji: '🚿', boost: 5, cooldown: 'daily' },
                 { id: 'cabello', name: 'Arreglarse el cabello', emoji: '💇‍♀️', boost: 5, cooldown: 'daily' },
-                { id: 'maquillarse', name: 'Maquillarse', emoji: '💄', boost: 10, cooldown: 'daily' },
                 { id: 'skincare', name: 'Skin care', emoji: '🧴', boost: 5, cooldown: 'daily' },
                 { id: 'dientes', name: 'Cepillarse los dientes', emoji: '🪥', boost: 5, cooldown: 'none' },
                 { id: 'crema', name: 'Crema en todo el cuerpo', emoji: '🧴', boost: 15, cooldown: 'daily' },
-                { id: 'perfume', name: 'Perfume', emoji: '💐', boost: 3, cooldown: 'daily' },
-                { id: 'ropa', name: 'Ropa linda', emoji: '👗', boost: 20, cooldown: 'daily' },
                 { id: 'foto', name: 'Tomarse una foto', emoji: '📸', boost: 15, cooldown: 'none' },
-                { id: 'cama', name: 'Tender la cama', emoji: '🛏️', boost: 5, cooldown: 'daily' },
                 { id: 'limpiar', name: 'Limpiar el espacio', emoji: '🧹', boost: 15, cooldown: 'none' },
                 { id: 'cejas', name: 'Depilarse las cejas', emoji: '✨', boost: 10, cooldown: 'weekly' },
                 { id: 'depilar', name: 'Depilarse el cuerpo', emoji: '✨', boost: 15, cooldown: 'weekly' },
@@ -2305,9 +2300,11 @@
                 cafe: 0
             },
             dailyChecks: {
-                hygiene: false,
-                grooming: false,
-                tidiness: false,
+                bañarme: { done: false, boost: 5, emoji: '🚿', name: 'Bañarme' },
+                tenderCama: { done: false, boost: 5, emoji: '🛏️', name: 'Tender la cama' },
+                ropaLinda: { done: false, boost: 20, emoji: '👗', name: 'Ropa linda' },
+                perfume: { done: false, boost: 3, emoji: '💐', name: 'Perfume' },
+                maquillarse: { done: false, boost: 10, emoji: '💄', name: 'Maquillarse' },
                 lastReset: new Date().toDateString()
             },
             completedSuggestions: [],
@@ -2554,14 +2551,16 @@
             const today = new Date().toDateString();
             if (gameState.dailyChecks.lastReset !== today) {
                 gameState.dailyChecks = {
-                    hygiene: false,
-                    grooming: false,
-                    tidiness: false,
+                    bañarme: { done: false, boost: 5, emoji: '🚿', name: 'Bañarme' },
+                    tenderCama: { done: false, boost: 5, emoji: '🛏️', name: 'Tender la cama' },
+                    ropaLinda: { done: false, boost: 20, emoji: '👗', name: 'Ropa linda' },
+                    perfume: { done: false, boost: 3, emoji: '💐', name: 'Perfume' },
+                    maquillarse: { done: false, boost: 10, emoji: '💄', name: 'Maquillarse' },
                     lastReset: today
                 };
                 gameState.completedSuggestions = [];
                 saveState();
-                console.log('🔄 Checks diarios y sugerencias reseteados (nuevo día)');
+                console.log('🔄 Checks diarios reseteados (nuevo día)');
             }
         }
         
@@ -2571,16 +2570,15 @@
             const container = document.getElementById('dailyChecksContainer');
             if (!container) return;
             
-            const checks = [
-                { id: 'hygiene', label: 'Higiene básica', icon: '🚿', desc: 'Dientes, baño' },
-                { id: 'grooming', label: 'Arreglo personal', icon: '💄', desc: 'Cabello, maquillaje' },
-                { id: 'tidiness', label: 'Orden mínimo', icon: '🛏️', desc: 'Tender cama' }
-            ];
+            const checksOrder = ['bañarme', 'tenderCama', 'ropaLinda', 'perfume', 'maquillarse'];
             
-            container.innerHTML = checks.map(check => {
-                const isChecked = gameState.dailyChecks[check.id];
+            container.innerHTML = checksOrder.map(checkId => {
+                const check = gameState.dailyChecks[checkId];
+                if (!check) return '';
+                
+                const isChecked = check.done;
                 return `
-                    <div onclick="toggleDailyCheck('${check.id}')" style="
+                    <div onclick="toggleDailyCheck('${checkId}')" style="
                         display: flex;
                         align-items: center;
                         gap: 12px;
@@ -2606,10 +2604,10 @@
                         ">
                             ${isChecked ? '✓' : ''}
                         </div>
-                        <div style="font-size: 1.3em; flex-shrink: 0;">${check.icon}</div>
+                        <div style="font-size: 1.3em; flex-shrink: 0;">${check.emoji}</div>
                         <div style="flex: 1;">
-                            <div style="font-weight: 600; color: ${isChecked ? '#fff' : '#388e3c'}; font-size: 0.95em;">${check.label}</div>
-                            <div style="font-size: 0.75em; color: ${isChecked ? 'rgba(255,255,255,0.9)' : '#757575'}; margin-top: 2px;">${check.desc}</div>
+                            <div style="font-weight: 600; color: ${isChecked ? '#fff' : '#388e3c'}; font-size: 0.95em;">${check.name}</div>
+                            <div style="font-size: 0.75em; color: ${isChecked ? 'rgba(255,255,255,0.9)' : '#757575'}; margin-top: 2px;">+${check.boost}% autoestima</div>
                         </div>
                     </div>
                 `;
@@ -2618,13 +2616,20 @@
         
         // Toggle check diario
         function toggleDailyCheck(checkId) {
-            const wasChecked = gameState.dailyChecks[checkId];
-            gameState.dailyChecks[checkId] = !wasChecked;
+            const check = gameState.dailyChecks[checkId];
+            if (!check) return;
+            
+            const wasChecked = check.done;
+            check.done = !wasChecked;
             
             if (!wasChecked) {
                 // Completado: aumentar autoestima
-                gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 3);
-                console.log(`✓ Check completado: ${checkId} (+3% autoestima)`);
+                gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + check.boost);
+                console.log(`✓ Check completado: ${check.name} (+${check.boost}% autoestima)`);
+            } else {
+                // Desmarcado: quitar autoestima
+                gameState.stats.autoestima.current = Math.max(0, gameState.stats.autoestima.current - check.boost);
+                console.log(`✗ Check desmarcado: ${check.name} (-${check.boost}% autoestima)`);
             }
             
             saveState();
@@ -2915,7 +2920,7 @@
             
             // Agregar clase active al tab clickeado
             const tabs = document.querySelectorAll('.tab');
-            const tabNames = ['existir', 'cuidarme', 'crecer', 'crear', 'resumen'];
+            const tabNames = ['existir', 'cuidarme', 'crecer', 'biblioteca', 'resumen'];
             const index = tabNames.indexOf(tabName);
             if (index !== -1) {
                 tabs[index].classList.add('active');
@@ -2923,6 +2928,11 @@
             
             // Mostrar contenido correspondiente
             document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Si es biblioteca, renderizar contenido
+            if (tabName === 'biblioteca') {
+                renderLibraryContent();
+            }
         }
 
         // Actualizar estadísticas continuamente
@@ -4120,6 +4130,7 @@
             setupButtons();
             loadSelfcareCooldowns();
             resetDailyChecksIfNeeded();
+            renderDailyChecks();
             
             // Inicializar y actualizar reloj cada segundo
             updateClock();
@@ -4128,12 +4139,20 @@
             // Actualizar estadísticas cada 10 segundos
             setInterval(updateStats, 10000);
             
+            // Verificar medianoche cada minuto para resetear checks
+            setInterval(() => {
+                resetDailyChecksIfNeeded();
+                renderDailyChecks();
+            }, 60000);
+            
             // Actualizar balance general
             updateBalanceGeneral();
             
             // Actualizar también cuando la página recupera el foco
             window.addEventListener('focus', () => {
                 updateStats();
+                resetDailyChecksIfNeeded();
+                renderDailyChecks();
             });
             
             console.log('✅ Juego inicializado correctamente');
