@@ -1313,9 +1313,30 @@
 
         <!-- Tab: Resumen -->
         <div class="tab-content" id="tab-resumen">
+            <!-- Bloque 1: Base del día -->
+            <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(168, 224, 99, 0.2);">
+                <h4 style="color: #388e3c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🌱</span> Base del día</h4>
+                <div id="dailyChecksContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+            
+            <!-- Bloque 2: Rutina sugerida -->
+            <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.2);">
+                <h4 style="color: #1976d2; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🧭</span> Rutina sugerida (Hoy)</h4>
+                <div id="suggestedRoutineContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+            
+            <!-- Bloque 3: Prioridades personalizadas -->
+            <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.2);">
+                <h4 style="color: #f57c00; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 8px;"><span>✨</span> Hoy quiero priorizar</span>
+                    <button onclick="openFavoritesSelector()" style="background: linear-gradient(135deg, #ff9800 0%, #fb8c00 100%); border: none; border-radius: 12px; padding: 8px 15px; color: white; font-size: 0.85em; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);">+ Elegir</button>
+                </h4>
+                <div id="favoritesContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+            
+            <!-- Estadísticas resumidas -->
             <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
-                <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">📊 Balance General</h3>
-                <div id="resumenContent" style="color: #6b4c9a;"></div>
+                <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">📊 Todas las Estadísticas</h3>
             </div>
             <div class="stats-container" id="statsResumen"></div>
         </div>
@@ -2272,7 +2293,15 @@
                 azucarada: 0,
                 refresco: 0,
                 cafe: 0
-            }
+            },
+            dailyChecks: {
+                hygiene: false,
+                grooming: false,
+                tidiness: false,
+                lastReset: new Date().toDateString()
+            },
+            completedSuggestions: [],
+            favorites: []
         };
 
         // Inicializar estadísticas
@@ -2298,6 +2327,24 @@
                         refresco: 0,
                         cafe: 0
                     };
+                }
+                
+                // Migrar estructura de balance general
+                if (!gameState.dailyChecks) {
+                    gameState.dailyChecks = {
+                        hygiene: false,
+                        grooming: false,
+                        tidiness: false,
+                        lastReset: new Date().toDateString()
+                    };
+                }
+                
+                if (!gameState.completedSuggestions) {
+                    gameState.completedSuggestions = [];
+                }
+                
+                if (!gameState.favorites) {
+                    gameState.favorites = [];
                 }
                 
                 // Asegurar que todas las estadísticas existen (incluyendo nuevas)
@@ -2368,8 +2415,8 @@
                 resumenContainer.appendChild(createStatElement(key, gameState.stats[key]));
             });
 
-            // Actualizar mensaje de resumen
-            updateResumenMessage();
+            // Actualizar balance general
+            updateBalanceGeneral();
         }
 
         // Crear elemento de estadística
@@ -2490,74 +2537,364 @@
             return statDiv;
         }
 
-        // Actualizar mensaje de resumen
-        function updateResumenMessage() {
-            const resumenContent = document.getElementById('resumenContent');
+        // ===== SISTEMA DE BALANCE GENERAL =====
+        
+        // Resetear checks diarios si cambió el día
+        function resetDailyChecksIfNeeded() {
+            const today = new Date().toDateString();
+            if (gameState.dailyChecks.lastReset !== today) {
+                gameState.dailyChecks = {
+                    hygiene: false,
+                    grooming: false,
+                    tidiness: false,
+                    lastReset: today
+                };
+                gameState.completedSuggestions = [];
+                saveState();
+                console.log('🔄 Checks diarios y sugerencias reseteados (nuevo día)');
+            }
+        }
+        
+        // Renderizar checks diarios
+        function renderDailyChecks() {
+            resetDailyChecksIfNeeded();
+            const container = document.getElementById('dailyChecksContainer');
+            if (!container) return;
+            
+            const checks = [
+                { id: 'hygiene', label: 'Higiene básica', icon: '🚿', desc: 'Dientes, baño' },
+                { id: 'grooming', label: 'Arreglo personal', icon: '💄', desc: 'Cabello, maquillaje' },
+                { id: 'tidiness', label: 'Orden mínimo', icon: '🛏️', desc: 'Tender cama' }
+            ];
+            
+            container.innerHTML = checks.map(check => {
+                const isChecked = gameState.dailyChecks[check.id];
+                return `
+                    <div onclick="toggleDailyCheck('${check.id}')" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 12px;
+                        background: ${isChecked ? 'linear-gradient(135deg, #a8e063 0%, #56ab2f 100%)' : 'rgba(255, 255, 255, 0.7)'};
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        border: 2px solid ${isChecked ? '#56ab2f' : '#e0e0e0'};
+                        box-shadow: ${isChecked ? '0 4px 12px rgba(168, 224, 99, 0.4)' : '0 2px 6px rgba(0,0,0,0.05)'};
+                    ">
+                        <div style="
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            background: ${isChecked ? '#fff' : 'transparent'};
+                            border: 2px solid ${isChecked ? '#56ab2f' : '#9e9e9e'};
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 0.9em;
+                            flex-shrink: 0;
+                        ">
+                            ${isChecked ? '✓' : ''}
+                        </div>
+                        <div style="font-size: 1.3em; flex-shrink: 0;">${check.icon}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: ${isChecked ? '#fff' : '#388e3c'}; font-size: 0.95em;">${check.label}</div>
+                            <div style="font-size: 0.75em; color: ${isChecked ? 'rgba(255,255,255,0.9)' : '#757575'}; margin-top: 2px;">${check.desc}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Toggle check diario
+        function toggleDailyCheck(checkId) {
+            const wasChecked = gameState.dailyChecks[checkId];
+            gameState.dailyChecks[checkId] = !wasChecked;
+            
+            if (!wasChecked) {
+                // Completado: aumentar autoestima
+                gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 3);
+                console.log(`✓ Check completado: ${checkId} (+3% autoestima)`);
+            }
+            
+            saveState();
+            renderDailyChecks();
+            renderStats();
+        }
+        
+        // Mapa de acciones disponibles
+        const ACTION_MAP = {
+            hambre: { label: 'Comer', icon: '🍽️', action: 'openEatModal()' },
+            hidratacion: { label: 'Beber', icon: '💧', action: 'openWaterModal()' },
+            sueño: { label: 'Dormir', icon: '😴', action: 'openSleepModal()' },
+            ejercicio: { label: 'Ejercicio', icon: '🏃', action: 'openExerciseModal()' },
+            autoestima: { label: 'Autocuidado', icon: '💝', action: 'openSelfcareModal()' },
+            vidaSocial: { label: 'Socializar', icon: '👥', action: 'openSocialModal()' },
+            aprendizaje: { label: 'Aprender', icon: '📚', action: 'openAprendizajeModal()' },
+            idiomas: { label: 'Idiomas', icon: '🌍', action: 'openIdiomasModal()' },
+            contenido: { label: 'Crear contenido', icon: '✍️', action: 'openContenidoModal()' },
+            profesion: { label: 'Profesión', icon: '👩‍⚕️', action: 'openProfesionModal()' }
+        };
+        
+        // Generar sugerencias inteligentes
+        function generateSmartSuggestions() {
             const stats = gameState.stats;
+            const suggestions = [];
             
-            let recommendations = [];
-            let criticalStats = [];
-            let goodStats = [];
+            // Obtener stats ordenadas por prioridad (más bajas primero)
+            const sortedStats = Object.keys(stats)
+                .filter(key => !['hambre'].includes(key)) // Excluir hambre de sugerencias
+                .map(key => ({ key, value: stats[key].current, name: stats[key].name }))
+                .sort((a, b) => a.value - b.value);
             
-            // Generar recomendaciones específicas según cada estadística
-            Object.keys(stats).forEach(key => {
-                const percentage = Math.round(stats[key].current);
-                const name = stats[key].name;
+            // Generar 2-4 sugerencias basadas en stats más bajas
+            let count = 0;
+            for (const stat of sortedStats) {
+                if (count >= 4) break;
                 
-                if (percentage < 30) {
-                    criticalStats.push(`⚠️ <strong>${name}</strong> está muy bajo (${percentage}%)`);
-                    
-                    // Agregar recomendación específica
-                    if (key === 'hambre') recommendations.push('🍽️ Come algo nutritivo pronto');
-                    if (key === 'sueño') recommendations.push('😴 Descansa o toma una siesta');
-                    if (key === 'hidratacion') recommendations.push('💧 Bebe agua inmediatamente');
-                    if (key === 'ejercicio') recommendations.push('🏃 Haz una caminata o estiramiento');
-                    if (key === 'autoestima') recommendations.push('💝 Practica microcuidados o regulación emocional');
-                    if (key === 'vidaSocial') recommendations.push('👥 Contacta a alguien cercano');
-                } else if (percentage < 50) {
-                    if (key === 'hambre') recommendations.push('🥗 Considera comer algo ligero');
-                    if (key === 'sueño') recommendations.push('🌙 Planea dormir temprano hoy');
-                    if (key === 'hidratacion') recommendations.push('🚰 Hidrátate regularmente');
-                    if (key === 'ejercicio') recommendations.push('💪 Haz una actividad física breve');
-                    if (key === 'autoestima') recommendations.push('✨ Dedica tiempo a cuidarte');
-                    if (key === 'vidaSocial') recommendations.push('💬 Platica con alguien');
-                } else if (percentage >= 80 && key !== 'idiomas' && key !== 'aprendizaje' && key !== 'contenido' && key !== 'profesion') {
-                    goodStats.push(`✅ <strong>${name}</strong> está excelente (${percentage}%)`);
+                // Solo sugerir si está por debajo de 60% y no fue completada hoy
+                if (stat.value < 60 && !gameState.completedSuggestions.includes(stat.key)) {
+                    const action = ACTION_MAP[stat.key];
+                    if (action) {
+                        suggestions.push({
+                            key: stat.key,
+                            label: action.label,
+                            icon: action.icon,
+                            action: action.action,
+                            stat: stat.name,
+                            value: Math.round(stat.value)
+                        });
+                        count++;
+                    }
                 }
-            });
-            
-            // Recomendaciones generales para mantener balance
-            if (criticalStats.length === 0 && recommendations.length === 0) {
-                recommendations.push('🔄 Mantén tu rutina actual');
-                recommendations.push('📚 Considera aprender algo nuevo');
-                recommendations.push('🎯 Establece metas pequeñas diarias');
-                recommendations.push('💭 Reflexiona sobre tu progreso');
             }
             
-            let html = '';
-            
-            if (criticalStats.length > 0) {
-                html += '<div style="background: rgba(255, 107, 157, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 4px solid #ff6b9d;">';
-                html += '<h4 style="color: #ff6b9d; margin-bottom: 10px;">🚨 Necesita Atención Urgente</h4>';
-                html += criticalStats.join('<br>');
-                html += '</div>';
+            // Si no hay sugerencias críticas, agregar mantenimiento
+            if (suggestions.length === 0) {
+                const maintenanceActions = ['hidratacion', 'ejercicio', 'autoestima', 'aprendizaje']
+                    .filter(key => !gameState.completedSuggestions.includes(key))
+                    .slice(0, 2);
+                
+                maintenanceActions.forEach(key => {
+                    const action = ACTION_MAP[key];
+                    if (action) {
+                        suggestions.push({
+                            key,
+                            label: action.label,
+                            icon: action.icon,
+                            action: action.action,
+                            stat: stats[key].name,
+                            value: Math.round(stats[key].current)
+                        });
+                    }
+                });
             }
             
-            if (recommendations.length > 0) {
-                html += '<div style="background: rgba(167, 139, 250, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 4px solid #a78bfa;">';
-                html += '<h4 style="color: #a78bfa; margin-bottom: 10px;">💡 Para Mantener tu Balance</h4>';
-                html += recommendations.map(r => `• ${r}`).join('<br>');
-                html += '</div>';
+            return suggestions;
+        }
+        
+        // Renderizar rutina sugerida
+        function renderSuggestedRoutine() {
+            const container = document.getElementById('suggestedRoutineContainer');
+            if (!container) return;
+            
+            const suggestions = generateSmartSuggestions();
+            
+            if (suggestions.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #42a5f5; font-size: 0.9em; padding: 10px;">✨ ¡Todo en orden! Sigue así</div>';
+                return;
             }
             
-            if (goodStats.length > 0) {
-                html += '<div style="background: rgba(168, 224, 99, 0.1); padding: 15px; border-radius: 15px; border-left: 4px solid #a8e063;">';
-                html += '<h4 style="color: #56ab2f; margin-bottom: 10px;">🎉 ¡Excelente Trabajo!</h4>';
-                html += goodStats.join('<br>');
-                html += '</div>';
+            container.innerHTML = suggestions.map(sugg => `
+                <div onclick="executeSuggestion('${sugg.key}', '${sugg.action}')" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 12px 15px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+                    border-radius: 12px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    border: 2px solid #90caf9;
+                    box-shadow: 0 2px 8px rgba(66, 165, 245, 0.2);
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(66, 165, 245, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(66, 165, 245, 0.2)'">
+                    <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                        <div style="font-size: 1.5em;">${sugg.icon}</div>
+                        <div>
+                            <div style="font-weight: 600; color: #1565c0; font-size: 0.95em;">${sugg.label}</div>
+                            <div style="font-size: 0.75em; color: #616161; margin-top: 2px;">Afecta: ${sugg.stat} (${sugg.value}%)</div>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); color: white; padding: 6px 12px; border-radius: 8px; font-size: 0.8em; font-weight: 600;">Hacer</div>
+                </div>
+            `).join('');
+        }
+        
+        // Ejecutar sugerencia
+        function executeSuggestion(key, actionFn) {
+            // Marcar como completada
+            if (!gameState.completedSuggestions.includes(key)) {
+                gameState.completedSuggestions.push(key);
+                saveState();
             }
             
-            resumenContent.innerHTML = html;
+            // Ejecutar acción
+            eval(actionFn);
+            
+            // Re-renderizar después de un momento
+            setTimeout(() => {
+                renderSuggestedRoutine();
+            }, 500);
+        }
+        
+        // Renderizar favoritos
+        function renderFavorites() {
+            const container = document.getElementById('favoritesContainer');
+            if (!container) return;
+            
+            if (!gameState.favorites || gameState.favorites.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #f57c00; font-size: 0.9em; padding: 10px;">Toca "+ Elegir" para seleccionar tus acciones favoritas</div>';
+                return;
+            }
+            
+            container.innerHTML = gameState.favorites.map(key => {
+                const action = ACTION_MAP[key];
+                if (!action) return '';
+                
+                const stat = gameState.stats[key];
+                const value = stat ? Math.round(stat.current) : 0;
+                
+                return `
+                    <div onclick="${action.action}" style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 12px 15px;
+                        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        border: 2px solid #ffb74d;
+                        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 152, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(255, 152, 0, 0.2)'">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="font-size: 1.5em;">${action.icon}</div>
+                            <div>
+                                <div style="font-weight: 600; color: #e65100; font-size: 0.95em;">${action.label}</div>
+                                ${stat ? `<div style="font-size: 0.75em; color: #616161; margin-top: 2px;">${stat.name}: ${value}%</div>` : ''}
+                            </div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 6px 12px; border-radius: 8px; font-size: 0.8em; font-weight: 600;">→</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Abrir selector de favoritos
+        function openFavoritesSelector() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <div class="modal-title">✨ Elegir Favoritos</div>
+                        <div class="modal-subtitle">Selecciona hasta 6 acciones (${gameState.favorites.length}/6)</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; padding: 10px 5px;">
+                        ${Object.keys(ACTION_MAP).map(key => {
+                            const action = ACTION_MAP[key];
+                            const isSelected = gameState.favorites.includes(key);
+                            return `
+                                <div onclick="toggleFavorite('${key}')" id="fav-${key}" style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 12px;
+                                    padding: 12px;
+                                    background: ${isSelected ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)' : 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)'};
+                                    border-radius: 12px;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    border: 2px solid ${isSelected ? '#f57c00' : '#e0e0e0'};
+                                ">
+                                    <div style="
+                                        width: 24px;
+                                        height: 24px;
+                                        border-radius: 50%;
+                                        background: ${isSelected ? '#fff' : 'transparent'};
+                                        border: 2px solid ${isSelected ? '#f57c00' : '#9e9e9e'};
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 0.9em;
+                                        flex-shrink: 0;
+                                    ">
+                                        ${isSelected ? '✓' : ''}
+                                    </div>
+                                    <div style="font-size: 1.3em;">${action.icon}</div>
+                                    <div style="font-weight: 600; color: ${isSelected ? '#fff' : '#424242'}; flex: 1;">${action.label}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <button class="modal-close" onclick="closeFavoritesSelector()">✓ Guardar</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Toggle favorito
+        function toggleFavorite(key) {
+            const index = gameState.favorites.indexOf(key);
+            
+            if (index > -1) {
+                // Remover
+                gameState.favorites.splice(index, 1);
+            } else {
+                // Agregar si no excede el límite
+                if (gameState.favorites.length < 6) {
+                    gameState.favorites.push(key);
+                } else {
+                    alert('⚠️ Máximo 6 favoritos. Deselecciona uno primero.');
+                    return;
+                }
+            }
+            
+            saveState();
+            
+            // Actualizar visual del modal
+            const action = ACTION_MAP[key];
+            const isSelected = gameState.favorites.includes(key);
+            const elem = document.getElementById(`fav-${key}`);
+            if (elem) {
+                elem.style.background = isSelected ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)' : 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)';
+                elem.style.borderColor = isSelected ? '#f57c00' : '#e0e0e0';
+                elem.querySelector('div:nth-child(1)').style.background = isSelected ? '#fff' : 'transparent';
+                elem.querySelector('div:nth-child(1)').style.borderColor = isSelected ? '#f57c00' : '#9e9e9e';
+                elem.querySelector('div:nth-child(1)').textContent = isSelected ? '✓' : '';
+                elem.querySelector('div:nth-child(3)').style.color = isSelected ? '#fff' : '#424242';
+            }
+            
+            // Actualizar contador
+            const subtitle = document.querySelector('.modal-subtitle');
+            if (subtitle) {
+                subtitle.textContent = `Selecciona hasta 6 acciones (${gameState.favorites.length}/6)`;
+            }
+        }
+        
+        // Cerrar selector de favoritos
+        function closeFavoritesSelector() {
+            const modal = document.querySelector('.modal.show');
+            if (modal) {
+                modal.remove();
+                renderFavorites();
+            }
+        }
+        
+        // Actualizar todos los bloques del balance general
+        function updateBalanceGeneral() {
+            renderDailyChecks();
+            renderSuggestedRoutine();
+            renderFavorites();
         }
 
         // Función para cambiar de tab
@@ -3772,6 +4109,7 @@
             renderStats();
             setupButtons();
             loadSelfcareCooldowns();
+            resetDailyChecksIfNeeded();
             
             // Inicializar y actualizar reloj cada segundo
             updateClock();
@@ -3779,6 +4117,9 @@
             
             // Actualizar estadísticas cada 10 segundos
             setInterval(updateStats, 10000);
+            
+            // Actualizar balance general
+            updateBalanceGeneral();
             
             // Actualizar también cuando la página recupera el foco
             window.addEventListener('focus', () => {
