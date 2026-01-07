@@ -1327,12 +1327,31 @@
     <div id="waterModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">💧 Beber Agua</div>
-                <div class="modal-subtitle">Selecciona la cantidad</div>
+                <div class="modal-title">💧 Registrar Bebida</div>
+                <div class="modal-subtitle">Ingresa cantidad y tipo</div>
             </div>
-            <div class="modal-options">
-                <!-- Los botones se generan dinámicamente según tu perfil -->
+            
+            <!-- Input manual de ml -->
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <label style="display: block; font-weight: 600; color: #6b4c9a; margin-bottom: 10px; font-size: 1.05em;">📏 Cantidad en ml:</label>
+                <input type="number" id="drinkAmount" placeholder="Ej: 250" min="1" max="2000" style="width: 100%; padding: 12px; border: 2px solid #c084fc; border-radius: 10px; font-size: 1.1em; text-align: center;">
             </div>
+            
+            <!-- Selector de tipo de bebida -->
+            <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border-radius: 15px;">
+                <label style="display: block; font-weight: 600; color: #6b4c9a; margin-bottom: 10px; font-size: 1.05em;">🥤 Tipo de bebida:</label>
+                <select id="drinkType" style="width: 100%; padding: 12px; border: 2px solid #c084fc; border-radius: 10px; font-size: 1.05em; background: white;">
+                    <option value="agua">💧 Agua natural</option>
+                    <option value="azucarada">🧃 Bebida azucarada</option>
+                    <option value="refresco">🥤 Refresco</option>
+                    <option value="cafe">☕ Café / té con leche</option>
+                </select>
+            </div>
+            
+            <button onclick="registerDrink()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 15px; padding: 18px; font-size: 1.1em; font-weight: 600; color: white; cursor: pointer; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                ✓ Registrar
+            </button>
+            
             <button class="modal-close" onclick="closeWaterModal()">✕ Cerrar</button>
         </div>
     </div>
@@ -2247,7 +2266,13 @@
         // Estado del juego
         let gameState = {
             stats: {},
-            lastUpdate: Date.now()
+            lastUpdate: Date.now(),
+            hydrationBreakdown: {
+                agua: 0,
+                azucarada: 0,
+                refresco: 0,
+                cafe: 0
+            }
         };
 
         // Inicializar estadísticas
@@ -2264,6 +2289,16 @@
             const saved = localStorage.getItem('gameState');
             if (saved) {
                 gameState = JSON.parse(saved);
+                
+                // Migrar datos antiguos sin desglose
+                if (!gameState.hydrationBreakdown) {
+                    gameState.hydrationBreakdown = {
+                        agua: 0,
+                        azucarada: 0,
+                        refresco: 0,
+                        cafe: 0
+                    };
+                }
                 
                 // Asegurar que todas las estadísticas existen (incluyendo nuevas)
                 Object.keys(STATS_CONFIG).forEach(key => {
@@ -2370,7 +2405,21 @@
                     personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
                 }
             } else if (key === 'hidratacion' && userProfile.dailyWater > 0) {
-                personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>`;
+                const breakdown = gameState.hydrationBreakdown;
+                const total = breakdown.agua + breakdown.azucarada + breakdown.refresco + breakdown.cafe;
+                const feedback = getHydrationFeedback();
+                
+                personalInfo = `
+                    <div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.dailyWater} ml</div>
+                    ${total > 0 ? `
+                        <div style="font-size: 0.8em; margin-top: 8px; line-height: 1.4;">
+                            <div style="color: #3b82f6;">💧 Agua natural: ${breakdown.agua} ml</div>
+                            <div style="color: #f97316;">🧃 Bebidas azucaradas: ${breakdown.azucarada} ml</div>
+                            <div style="color: #ef4444;">🥤 Refresco: ${breakdown.refresco} ml</div>
+                            <div style="color: #8b5cf6;">☕ Café/té: ${breakdown.cafe} ml</div>
+                        </div>
+                        ${feedback ? `<div style="font-size: 0.85em; color: #6b4c9a; margin-top: 8px; font-weight: 600; background: rgba(167, 139, 250, 0.1); padding: 8px; border-radius: 8px;">${feedback}</div>` : ''}
+                    ` : ''}`;
             }
             
             // Para estadísticas de crecimiento, mostrar que no tienen límite
@@ -2384,6 +2433,33 @@
             // Para stats de crecimiento y hambre que pueden pasar del 100%, ajustar el ancho de la barra
             const barWidth = (isGrowthStat || key === 'hambre') ? Math.min(percentage, 100) : percentage;
             
+            // Crear barra especial para hidratación con desglose por colores
+            let barHTML = '';
+            if (key === 'hidratacion' && userProfile.dailyWater > 0) {
+                const breakdown = gameState.hydrationBreakdown;
+                const total = breakdown.agua + breakdown.azucarada + breakdown.refresco + breakdown.cafe;
+                
+                if (total > 0) {
+                    const aguaPct = (breakdown.agua / userProfile.dailyWater) * 100;
+                    const azucaradaPct = (breakdown.azucarada / userProfile.dailyWater) * 100;
+                    const refrescoPct = (breakdown.refresco / userProfile.dailyWater) * 100;
+                    const cafePct = (breakdown.cafe / userProfile.dailyWater) * 100;
+                    
+                    barHTML = `
+                        <div class="stat-bar-container">
+                            <div style="width: ${Math.min(aguaPct, 100)}%; height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); position: absolute; left: 0; border-radius: 10px 0 0 10px;"></div>
+                            <div style="width: ${Math.min(azucaradaPct, 100 - aguaPct)}%; height: 100%; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); position: absolute; left: ${Math.min(aguaPct, 100)}%; border-radius: ${aguaPct >= 100 ? '10px' : '0'};"></div>
+                            <div style="width: ${Math.min(refrescoPct, 100 - aguaPct - azucaradaPct)}%; height: 100%; background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); position: absolute; left: ${Math.min(aguaPct + azucaradaPct, 100)}%; border-radius: ${(aguaPct + azucaradaPct) >= 100 ? '10px' : '0'};"></div>
+                            <div style="width: ${Math.min(cafePct, 100 - aguaPct - azucaradaPct - refrescoPct)}%; height: 100%; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); position: absolute; left: ${Math.min(aguaPct + azucaradaPct + refrescoPct, 100)}%; border-radius: ${(aguaPct + azucaradaPct + refrescoPct) >= 100 ? '10px' : '0 10px 10px 0'};"></div>
+                        </div>
+                    `;
+                } else {
+                    barHTML = `<div class="stat-bar-container"><div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div></div>`;
+                }
+            } else {
+                barHTML = `<div class="stat-bar-container"><div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div></div>`;
+            }
+            
             statDiv.innerHTML = `
                 <div class="stat-header">
                     <div class="stat-name">
@@ -2392,9 +2468,7 @@
                     </div>
                     <div class="stat-value">${percentage}%</div>
                 </div>
-                <div class="stat-bar-container">
-                    <div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div>
-                </div>
+                ${barHTML}
             `;
             
             // Agregar información personalizada si existe
@@ -2514,6 +2588,19 @@
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
                     gameState.stats[key].current = Math.max(0, gameState.stats[key].current - decayAmount);
                 });
+                
+                // Resetear desglose de hidratación si cambió el día
+                const lastUpdateDate = new Date(gameState.lastUpdate).toDateString();
+                const currentDate = new Date(now).toDateString();
+                if (lastUpdateDate !== currentDate) {
+                    gameState.hydrationBreakdown = {
+                        agua: 0,
+                        azucarada: 0,
+                        refresco: 0,
+                        cafe: 0
+                    };
+                    console.log('🔄 Desglose de hidratación reseteado (nuevo día)');
+                }
                 
                 gameState.lastUpdate = now;
                 saveState();
@@ -2702,46 +2789,80 @@
 
         // Funciones del modal de agua
         function openWaterModal() {
-            renderWaterModal();
             document.getElementById('waterModal').classList.add('show');
+            // Limpiar inputs
+            document.getElementById('drinkAmount').value = '';
+            document.getElementById('drinkType').value = 'agua';
         }
 
         function closeWaterModal() {
             document.getElementById('waterModal').classList.remove('show');
         }
 
-        function renderWaterModal() {
-            const waterAmounts = [50, 100, 250, 500];
-            const modalOptions = document.querySelector('#waterModal .modal-options');
+        function registerDrink() {
+            const ml = parseInt(document.getElementById('drinkAmount').value);
+            const type = document.getElementById('drinkType').value;
             
-            modalOptions.innerHTML = '';
+            if (!ml || ml <= 0) {
+                alert('⚠️ Por favor ingresa una cantidad válida');
+                return;
+            }
             
-            waterAmounts.forEach(ml => {
-                const percentage = mlToHydrationPercent(ml);
-                const button = document.createElement('button');
-                button.className = 'option-button';
-                button.onclick = () => drinkWater(ml);
-                button.innerHTML = `
-                    <span class="option-ml">${ml} ml</span>
-                    <span class="option-percentage">+${percentage.toFixed(1)}%</span>
-                `;
-                modalOptions.appendChild(button);
-            });
-        }
-
-        function drinkWater(ml) {
+            if (ml > 2000) {
+                alert('⚠️ Cantidad muy alta. Máximo 2000 ml por registro');
+                return;
+            }
+            
             // Calcular porcentaje basado en necesidad diaria personalizada
             const percentage = mlToHydrationPercent(ml);
             
-            // Aumentar hidratación
+            // Aumentar hidratación total
             gameState.stats.hidratacion.current = Math.min(100, gameState.stats.hidratacion.current + percentage);
+            
+            // Registrar en desglose por tipo
+            gameState.hydrationBreakdown[type] = (gameState.hydrationBreakdown[type] || 0) + ml;
+            
             gameState.lastUpdate = Date.now();
             saveState();
             renderStats();
             closeWaterModal();
             
-            // Opcional: mostrar feedback visual
-            console.log(`¡Bebiste ${ml}ml de agua! +${percentage.toFixed(1)}% de hidratación`);
+            // Obtener nombre del tipo
+            const typeNames = {
+                agua: 'agua natural',
+                azucarada: 'bebida azucarada',
+                refresco: 'refresco',
+                cafe: 'café/té con leche'
+            };
+            
+            console.log(`✓ Registrado: ${ml}ml de ${typeNames[type]} (+${percentage.toFixed(1)}%)`);
+        }
+        
+        // Obtener mensaje de feedback según proporciones
+        function getHydrationFeedback() {
+            const breakdown = gameState.hydrationBreakdown;
+            const total = breakdown.agua + breakdown.azucarada + breakdown.refresco + breakdown.cafe;
+            
+            if (total === 0) return '';
+            
+            const aguaPct = (breakdown.agua / total) * 100;
+            const azucarPct = ((breakdown.azucarada + breakdown.refresco) / total) * 100;
+            const refrescoPct = (breakdown.refresco / total) * 100;
+            
+            // Mensajes según proporciones
+            if (aguaPct >= 80) {
+                return '💙 ¡Excelente! Priorizaste agua natural';
+            } else if (aguaPct >= 60) {
+                return '👍 Buen equilibrio, priorizaste agua';
+            } else if (refrescoPct >= 40) {
+                return '⚠️ Mucho refresco hoy, intenta reducir mañana';
+            } else if (azucarPct >= 50) {
+                return '⚡ Llegaste a la meta, pero con alto consumo de azúcar';
+            } else if (aguaPct >= 40) {
+                return '💧 Vas bien, pero podrías tomar más agua natural';
+            } else {
+                return '🥤 Intenta aumentar el agua natural gradualmente';
+            }
         }
 
         // Funciones del modal de dormir
