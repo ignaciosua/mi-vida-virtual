@@ -3935,6 +3935,10 @@
 
         // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
+            // Iniciar el reloj INMEDIATAMENTE
+            updateClock();
+            setInterval(updateClock, 1000);
+            
             // Siempre iniciar el juego (startGame verifica si hay perfil)
             startGame();
             
