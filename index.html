@@ -1209,8 +1209,8 @@
             <div class="life-stat-display" id="birthdayDisplay" style="bottom: 110px;"></div>
             <div class="life-stat-display" id="lifeDaysDisplay"></div>
             <div class="life-stat-display" id="deathDaysDisplay" style="bottom: 80px;"></div>
-            <div class="date-display" id="dateDisplay"></div>
-            <div class="time-display" id="timeDisplay"></div>
+            <div class="date-display" id="dateDisplay">🗓️ Cargando fecha...</div>
+            <div class="time-display" id="timeDisplay">⏰ --:--:--</div>
         </div>
 
         <!-- Sistema de Tabs -->
@@ -1872,15 +1872,20 @@
     <script>
         // Función para iniciar el juego desde la pantalla de inicio
         function startGame() {
+            console.log('🎮 Iniciando juego...');
+            
             // Verificar si ya existe perfil guardado
             const savedProfile = localStorage.getItem('userProfile');
             const splash = document.getElementById('splashScreen');
             const mainContainer = document.getElementById('mainContainer');
             
+            console.log('👤 Perfil guardado:', savedProfile ? 'Sí' : 'No');
+            
             if (savedProfile) {
                 // Si hay perfil, saltar directamente sin animaciones
                 splash.style.display = 'none';
                 mainContainer.style.display = 'block';
+                console.log('📦 Contenedor principal mostrado');
                 init();
             } else {
                 // Si no hay perfil, mostrar animación y modal
@@ -1890,6 +1895,7 @@
                     splash.style.display = 'none';
                     mainContainer.style.display = 'block';
                     document.getElementById('profileModal').classList.add('show');
+                    console.log('📝 Modal de perfil mostrado');
                 }, 800);
             }
         }
@@ -2177,6 +2183,9 @@
             
             // Cerrar modal
             document.getElementById('profileModal').classList.remove('show');
+            
+            // Mostrar el contenedor principal si estaba oculto
+            document.getElementById('mainContainer').style.display = 'block';
             
             // Inicializar juego
             init();
@@ -2505,6 +2514,8 @@
                 gameState.lastUpdate = now;
                 saveState();
                 renderStats();
+                
+                console.log(`⏱️ Estadísticas actualizadas. Horas transcurridas: ${hoursElapsed.toFixed(2)}`);
             }
         }
 
@@ -2535,8 +2546,11 @@
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             
-            document.getElementById('dateDisplay').textContent = `${dayName}, ${day} de ${month} de ${year}`;
-            document.getElementById('timeDisplay').textContent = `${hours}:${minutes}:${seconds}`;
+            const dateElement = document.getElementById('dateDisplay');
+            const timeElement = document.getElementById('timeDisplay');
+            
+            if (dateElement) dateElement.textContent = `📅 ${dayName}, ${day} de ${month} de ${year}`;
+            if (timeElement) timeElement.textContent = `⏰ ${hours}:${minutes}:${seconds}`;
         }
         
         // Funciones para calcular días vividos y días restantes
@@ -3625,6 +3639,7 @@
             const savedProfile = localStorage.getItem('userProfile');
             if (!savedProfile) {
                 // Mostrar modal de perfil
+                document.getElementById('profileModal').classList.add('show');
                 return;
             }
             
@@ -3644,6 +3659,9 @@
             window.addEventListener('focus', () => {
                 updateStats();
             });
+            
+            console.log('✅ Juego inicializado correctamente');
+            console.log('⏰ Reloj activado');
         }
 
         // ===== SISTEMA DE BIBLIOTECA =====
