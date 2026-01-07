@@ -1896,6 +1896,10 @@
                     mainContainer.style.display = 'block';
                     document.getElementById('profileModal').classList.add('show');
                     console.log('📝 Modal de perfil mostrado');
+                    
+                    // Iniciar el reloj aunque no haya perfil
+                    updateClock();
+                    setInterval(updateClock, 1000);
                 }, 800);
             }
         }
