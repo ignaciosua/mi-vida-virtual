@@ -2681,8 +2681,8 @@
             // Calcular porcentaje de hambre basado en BMR
             const hungerPercent = caloriesToHungerPercent(calories);
             
-            // Aplicar los cambios (permitir exceder 100%)
-            gameState.stats.hambre.current = gameState.stats.hambre.current + hungerPercent;
+            // Aplicar los cambios (limitar entre 0 y 100)
+            gameState.stats.hambre.current = Math.min(100, Math.max(0, gameState.stats.hambre.current + hungerPercent));
             
             // También se reduce un poco la hidratación (al comer necesitas agua)
             const hydrationDecrease = hungerPercent * 0.15; // 15% de las calorías afecta hidratación
@@ -3570,8 +3570,8 @@
             if (!gameState.stats[statKey]) {
                 gameState.stats[statKey] = { ...STATS_CONFIG[statKey] };
             }
-            // Sin límite máximo para estadísticas de crecimiento
-            gameState.stats[statKey].current = gameState.stats[statKey].current + action.boost;
+            // Sin límite máximo para estadísticas de crecimiento, pero sí mínimo de 0
+            gameState.stats[statKey].current = Math.max(0, gameState.stats[statKey].current + action.boost);
             
             gameState.lastUpdate = Date.now();
             saveState();
