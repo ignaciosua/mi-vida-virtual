@@ -1920,9 +1920,30 @@
     </div>
 
     <script>
+        // Verificar si localStorage está disponible (detectar modo privado Safari)
+        function checkLocalStorageAvailable() {
+            try {
+                const test = '__storage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                console.warn('⚠️ localStorage no disponible - posible modo privado');
+                // Mostrar advertencia al usuario
+                const warning = document.createElement('div');
+                warning.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #ff6b9d; color: white; padding: 12px; text-align: center; z-index: 99999; font-size: 0.9em; font-weight: 600;';
+                warning.innerHTML = '⚠️ IMPORTANTE: Activa "Permitir cookies" en Safari para que se guarden tus datos';
+                document.body.prepend(warning);
+                return false;
+            }
+        }
+        
         // Función para iniciar el juego desde la pantalla de inicio
         function startGame() {
             console.log('🎮 Iniciando juego...');
+            
+            // Verificar localStorage primero
+            checkLocalStorageAvailable();
             
             // Verificar si ya existe perfil guardado
             const savedProfile = localStorage.getItem('userProfile');
@@ -2381,9 +2402,22 @@
             saveState();
         }
 
-        // Guardar estado
+        // Guardar estado (mejorado para Safari)
         function saveState() {
-            localStorage.setItem('gameState', JSON.stringify(gameState));
+            try {
+                localStorage.setItem('gameState', JSON.stringify(gameState));
+                // Guardar timestamp de última actualización
+                localStorage.setItem('lastSave', new Date().toISOString());
+                console.log('💾 Estado guardado');
+            } catch (e) {
+                console.error('⚠️ Error guardando estado:', e);
+                // Si falla, intentar limpiar datos antiguos
+                if (e.name === 'QuotaExceededError') {
+                    console.log('🧹 Limpiando datos antiguos...');
+                    localStorage.removeItem('oldData');
+                    localStorage.setItem('gameState', JSON.stringify(gameState));
+                }
+            }
         }
 
         // Renderizar estadísticas
@@ -4503,6 +4537,47 @@
             saveSelfcareCooldowns();
             saveLibrary();
             console.log('💾 Datos guardados automáticamente');
+        }
+        
+        // Registrar service worker y detectar actualizaciones
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado');
+                        
+                        // Verificar actualizaciones cada 5 minutos
+                        setInterval(() => {
+                            registration.update();
+                        }, 5 * 60 * 1000);
+                        
+                        // Detectar cuando hay actualización disponible
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Hay actualización disponible
+                                    mostrarBotonActualizar();
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => {
+                        console.log('❌ Error al registrar Service Worker:', err);
+                    });
+            });
+        }
+        
+        // Mostrar botón de actualización
+        function mostrarBotonActualizar() {
+            const boton = document.createElement('div');
+            boton.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); color: white; padding: 15px 30px; border-radius: 25px; box-shadow: 0 8px 25px rgba(66, 165, 245, 0.5); cursor: pointer; z-index: 99999; font-weight: 600; animation: bounce 2s infinite;';
+            boton.innerHTML = '🔄 Nueva versión disponible - Toca para actualizar';
+            boton.onclick = () => {
+                window.location.reload();
+            };
+            document.body.appendChild(boton);
         }
 
         // Iniciar cuando el DOM esté listo
