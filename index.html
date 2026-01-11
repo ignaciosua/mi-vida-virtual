@@ -1223,6 +1223,10 @@
                 <span class="tab-icon">🌱</span>
                 <span class="tab-label">Cuidarme</span>
             </button>
+            <button class="tab" onclick="switchTab('ejercicio')">
+                <span class="tab-icon">🏃</span>
+                <span class="tab-label">Ejercicio</span>
+            </button>
             <button class="tab" onclick="switchTab('crecer')">
                 <span class="tab-icon">🧠</span>
                 <span class="tab-label">Crecer</span>
@@ -1264,10 +1268,6 @@
         <div class="tab-content" id="tab-cuidarme">
             <div class="stats-container" id="statsCuidarme"></div>
             <div class="buttons-container">
-                <button class="action-button btn-exercise" id="btnExercise">
-                    <span class="button-icon">🏃</span>
-                    <span class="button-text">Ejercicio</span>
-                </button>
                 <button class="action-button btn-selfcare" id="btnSelfcare">
                     <span class="button-icon">💖</span>
                     <span class="button-text">Autoestima</span>
@@ -1275,6 +1275,17 @@
                 <button class="action-button btn-social" id="btnSocial">
                     <span class="button-icon">💬</span>
                     <span class="button-text">Vida Social</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab: Ejercicio -->
+        <div class="tab-content" id="tab-ejercicio">
+            <div class="stats-container" id="statsEjercicio"></div>
+            <div class="buttons-container">
+                <button class="action-button btn-exercise" id="btnExercise">
+                    <span class="button-icon">🏃</span>
+                    <span class="button-text">Ejercicio</span>
                 </button>
             </div>
         </div>
@@ -2473,14 +2484,23 @@
                 }
             });
 
-            // Renderizar estadísticas de Cuidarme (ejercicio, autoestima, vida social)
+            // Renderizar estadísticas de Cuidarme (autoestima, vida social)
             const cuidarmeContainer = document.getElementById('statsCuidarme');
             cuidarmeContainer.innerHTML = '';
-            ['ejercicio', 'autoestima', 'vidaSocial'].forEach(key => {
+            ['autoestima', 'vidaSocial'].forEach(key => {
                 if (gameState.stats[key]) {
                     cuidarmeContainer.appendChild(createStatElement(key, gameState.stats[key]));
                 }
             });
+
+            // Renderizar estadísticas de Ejercicio
+            const ejercicioContainer = document.getElementById('statsEjercicio');
+            if (ejercicioContainer) {
+                ejercicioContainer.innerHTML = '';
+                if (gameState.stats.ejercicio) {
+                    ejercicioContainer.appendChild(createStatElement('ejercicio', gameState.stats.ejercicio));
+                }
+            }
 
             // Renderizar estadísticas de Crecer (idiomas, aprendizaje, profesión)
             const crecerContainer = document.getElementById('statsCrecer');
@@ -2995,7 +3015,7 @@
             
             // Agregar clase active al tab clickeado
             const tabs = document.querySelectorAll('.tab');
-            const tabNames = ['existir', 'cuidarme', 'crecer', 'biblioteca', 'ideas', 'resumen'];
+            const tabNames = ['existir', 'cuidarme', 'ejercicio', 'crecer', 'biblioteca', 'ideas', 'resumen'];
             const index = tabNames.indexOf(tabName);
             if (index !== -1) {
                 tabs[index].classList.add('active');
@@ -4602,7 +4622,7 @@
             saveState();
             updateContenidoBar();
             renderIdeas();
-            renderStats();
+            // No llamar renderStats aquí para evitar sobrescribir contenido
             
             // Feedback visual
             alert(`✨ Idea agregada! +${percentage}% a Contenido`);
@@ -4767,7 +4787,7 @@
             saveState();
             updateContenidoBar();
             renderIdeas();
-            renderStats();
+            // No llamar renderStats aquí para evitar sobrescribir contenido
             
             // Feedback
             const messages = {
@@ -4855,7 +4875,7 @@
             saveState();
             updateContenidoBar();
             renderIdeas();
-            renderStats();
+            // No llamar renderStats aquí para evitar sobrescribir contenido
             
             cancelSchedule();
             alert(`🎉 Idea programada para publicarse! +${idea.percentage}% a Contenido`);
@@ -4892,7 +4912,7 @@
             saveState();
             updateContenidoBar();
             renderIdeas();
-            renderStats();
+            // No llamar renderStats aquí para evitar sobrescribir contenido
             
             alert(`🗑️ Idea eliminada. -${percentage}% de Contenido`);
         }
