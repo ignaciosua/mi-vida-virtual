@@ -1315,7 +1315,22 @@
         <div class="tab-content" id="tab-ideas">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h2 style="color: #ff6b9d; margin-bottom: 10px;">💡 Mis Ideas de Contenido</h2>
-                <p style="color: #a78bfa; font-size: 0.95em;">Gestiona tus ideas desde la concepción hasta la publicación</p>
+                <p style="color: #a78bfa; font-size: 0.95em;">Cada etapa te acerca más a tu meta</p>
+            </div>
+            
+            <!-- Barra de progreso de Contenido -->
+            <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.5em;">🎬</span>
+                        <span style="font-weight: 600; color: #6b4c9a; font-size: 1.1em;">Contenido</span>
+                    </div>
+                    <span id="contenidoValue" style="font-size: 1.2em; font-weight: bold; color: #ff6b9d;">100%</span>
+                </div>
+                <div class="stat-bar-container">
+                    <div id="contenidoBar" class="stat-bar-fill stat-bar-high" style="width: 100%;"></div>
+                </div>
+                <p style="text-align: center; color: #a78bfa; font-size: 0.85em; margin-top: 10px;">✨ Cada idea y transición suma al progreso</p>
             </div>
             
             <!-- Agregar nueva idea -->
@@ -1332,26 +1347,24 @@
                 </div>
             </div>
             
-            <!-- Secciones de ideas por estado -->
-            <div id="ideasPendientes" style="margin-bottom: 20px;">
-                <h3 style="color: #ff6b9d; margin-bottom: 12px;">💭 Ideas Pendientes</h3>
-                <div id="ideasPendientesList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            <!-- Pestañas de estados de ideas -->
+            <div style="display: flex; gap: 8px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.5); padding: 10px; border-radius: 20px; flex-wrap: wrap;">
+                <button class="idea-state-tab active" onclick="switchIdeaState('pendientes')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2); transition: all 0.3s ease;">
+                    💭 Pendientes
+                </button>
+                <button class="idea-state-tab" onclick="switchIdeaState('grabadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                    🎥 Grabadas
+                </button>
+                <button class="idea-state-tab" onclick="switchIdeaState('editadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                    ✂️ Editadas
+                </button>
+                <button class="idea-state-tab" onclick="switchIdeaState('publicadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                    📤 Publicadas
+                </button>
             </div>
             
-            <div id="ideasGrabadas" style="margin-bottom: 20px;">
-                <h3 style="color: #ff6b9d; margin-bottom: 12px;">🎥 Ideas Grabadas</h3>
-                <div id="ideasGrabadasList" style="display: flex; flex-direction: column; gap: 10px;"></div>
-            </div>
-            
-            <div id="ideasEditadas" style="margin-bottom: 20px;">
-                <h3 style="color: #ff6b9d; margin-bottom: 12px;">✂️ Ideas Editadas</h3>
-                <div id="ideasEditadasList" style="display: flex; flex-direction: column; gap: 10px;"></div>
-            </div>
-            
-            <div id="ideasPublicadas">
-                <h3 style="color: #ff6b9d; margin-bottom: 12px;">📤 Ideas Publicadas</h3>
-                <div id="ideasPublicadasList" style="display: flex; flex-direction: column; gap: 10px;"></div>
-            </div>
+            <!-- Contenedor de ideas (cambia según la pestaña seleccionada) -->
+            <div id="ideasContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 200px;"></div>
         </div>
 
         <!-- Tab: Resumen -->
@@ -2999,6 +3012,7 @@
             // Si es ideas, renderizar ideas
             if (tabName === 'ideas') {
                 renderIdeas();
+                updateContenidoBar();
             }
         }
 
@@ -4476,6 +4490,9 @@
 
         // ===== SISTEMA DE GESTIÓN DE IDEAS =====
         
+        // Estado actual de la vista de ideas
+        let currentIdeaState = 'pendientes';
+        
         // Cargar ideas
         function loadIdeas() {
             const saved = localStorage.getItem('ideas');
@@ -4487,6 +4504,51 @@
         // Guardar ideas
         function saveIdeas() {
             localStorage.setItem('ideas', JSON.stringify(gameState.ideas));
+        }
+        
+        // Actualizar barra de contenido
+        function updateContenidoBar() {
+            const contenidoValue = gameState.stats.contenido ? gameState.stats.contenido.value : 100;
+            const bar = document.getElementById('contenidoBar');
+            const value = document.getElementById('contenidoValue');
+            
+            if (bar && value) {
+                value.textContent = `${Math.round(contenidoValue)}%`;
+                bar.style.width = `${contenidoValue}%`;
+                
+                // Cambiar color según nivel
+                if (contenidoValue >= 70) {
+                    bar.className = 'stat-bar-fill stat-bar-high';
+                } else if (contenidoValue >= 40) {
+                    bar.className = 'stat-bar-fill stat-bar-medium';
+                } else {
+                    bar.className = 'stat-bar-fill stat-bar-low';
+                }
+            }
+        }
+        
+        // Cambiar entre estados de ideas
+        function switchIdeaState(state) {
+            currentIdeaState = state;
+            
+            // Actualizar estilos de las pestañas
+            document.querySelectorAll('.idea-state-tab').forEach((tab, index) => {
+                const states = ['pendientes', 'grabadas', 'editadas', 'publicadas'];
+                if (states[index] === state) {
+                    tab.style.background = 'linear-gradient(135deg, #ffd89b 0%, #f093fb 100%)';
+                    tab.style.color = 'white';
+                    tab.style.boxShadow = '0 4px 15px rgba(255, 107, 157, 0.3)';
+                    tab.classList.add('active');
+                } else {
+                    tab.style.background = 'linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%)';
+                    tab.style.color = '#6b4c9a';
+                    tab.style.boxShadow = '0 2px 8px rgba(167, 139, 250, 0.2)';
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Renderizar ideas del estado seleccionado
+            renderCurrentIdeaState();
         }
         
         // Agregar nueva idea
@@ -4521,34 +4583,39 @@
             saveState();
             renderIdeas();
             renderStats();
+            updateContenidoBar();
             
             // Feedback visual
             alert(`✨ Idea agregada! +${percentage}% a Contenido`);
         }
         
-        // Renderizar todas las ideas
+        // Renderizar todas las ideas (actualiza la vista actual)
         function renderIdeas() {
-            renderIdeasSection('pendientes', 'ideasPendientesList');
-            renderIdeasSection('grabadas', 'ideasGrabadasList');
-            renderIdeasSection('editadas', 'ideasEditadasList');
-            renderIdeasSection('publicadas', 'ideasPublicadasList');
+            updateContenidoBar();
+            renderCurrentIdeaState();
         }
         
-        // Renderizar sección de ideas
-        function renderIdeasSection(section, containerId) {
-            const container = document.getElementById(containerId);
+        // Renderizar el estado actual de ideas
+        function renderCurrentIdeaState() {
+            const container = document.getElementById('ideasContainer');
             if (!container) return;
             
             container.innerHTML = '';
-            const ideas = gameState.ideas[section] || [];
+            const ideas = gameState.ideas[currentIdeaState] || [];
             
             if (ideas.length === 0) {
-                container.innerHTML = '<p style="color: #a78bfa; text-align: center; padding: 20px; font-style: italic;">No hay ideas en esta sección aún</p>';
+                const emptyMessages = {
+                    pendientes: '💭 No hay ideas pendientes. ¡Agrega una nueva arriba!',
+                    grabadas: '🎥 No hay ideas grabadas aún. Graba tus ideas pendientes.',
+                    editadas: '✂️ No hay ideas editadas. Edita tus videos grabados.',
+                    publicadas: '📤 No hay ideas publicadas. Programa tus videos editados.'
+                };
+                container.innerHTML = `<p style="color: #a78bfa; text-align: center; padding: 40px; font-style: italic; font-size: 1.1em;">${emptyMessages[currentIdeaState]}</p>`;
                 return;
             }
             
             ideas.forEach((idea, index) => {
-                const ideaCard = createIdeaCard(idea, section, index);
+                const ideaCard = createIdeaCard(idea, currentIdeaState, index);
                 container.appendChild(ideaCard);
             });
         }
@@ -4678,6 +4745,7 @@
             saveState();
             renderIdeas();
             renderStats();
+            updateContenidoBar();
             
             // Feedback
             const messages = {
@@ -4762,6 +4830,7 @@
             saveState();
             renderIdeas();
             renderStats();
+            updateContenidoBar();
             
             cancelSchedule();
             alert(`🎉 Idea programada para publicarse! +${idea.percentage}% a Contenido`);
@@ -4794,6 +4863,7 @@
             saveState();
             renderIdeas();
             renderStats();
+            updateContenidoBar();
             
             alert(`🗑️ Idea eliminada. -${percentage}% de Contenido`);
         }
