@@ -1380,23 +1380,20 @@
             
             <!-- Contenedor de ideas (cambia según la pestaña seleccionada) -->
             <div id="ideasContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 200px;"></div>
+            
+            <!-- Calendario de Videos Programados -->
+            <div style="margin-top: 30px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
+                <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">🎬 Calendario de Videos</h3>
+                <p style="text-align: center; color: #a78bfa; font-size: 0.9em; margin-bottom: 15px;">Videos programados para publicar</p>
+                <div id="scheduledVideos" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
         </div>
 
         <!-- Tab: Calendario -->
         <div class="tab-content" id="tab-calendario">
             <div style="text-align: center; margin-bottom: 20px;">
-                <h2 style="color: #ff6b9d; margin-bottom: 10px;">📅 Mi Calendario</h2>
-                <p style="color: #a78bfa; font-size: 0.95em;">Organiza tus actividades y videos</p>
-            </div>
-            
-            <!-- Selector de vista -->
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap;">
-                <button class="calendar-view-btn active" onclick="switchCalendarView('actividades')" style="flex: 1; min-width: 140px; padding: 12px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
-                    🎯 Actividades
-                </button>
-                <button class="calendar-view-btn" onclick="switchCalendarView('videos')" style="flex: 1; min-width: 140px; padding: 12px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); color: #6b4c9a; border: none; border-radius: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);">
-                    🎥 Videos
-                </button>
+                <h2 style="color: #ff6b9d; margin-bottom: 10px;">📅 Actividades del Día</h2>
+                <p style="color: #a78bfa; font-size: 0.95em;">Calendario general - Todas tus actividades</p>
             </div>
             
             <!-- Vista de Actividades -->
@@ -1420,7 +1417,7 @@
                 </div>
                 
                 <!-- Vista de calendario mensual -->
-                <div id="monthlyCalendar" style="background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);"></div>
+                <div id="monthlyCalendar" style="background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1); overflow-x: auto;"></div>
                 
                 <!-- Lista de actividades pendientes -->
                 <div style="margin-top: 20px;">
@@ -1433,15 +1430,6 @@
                     <h3 style="color: #56ab2f; margin-bottom: 12px;">✔️ Completadas</h3>
                     <div id="activitiesCompleted" style="display: flex; flex-direction: column; gap: 10px;"></div>
                 </div>
-            </div>
-            
-            <!-- Vista de Videos -->
-            <div id="calendar-videos" class="calendar-view" style="display: none;">
-                <div style="text-align: center; padding: 40px; color: #a78bfa;">
-                    <p style="font-size: 1.1em; margin-bottom: 10px;">🎬 Tus ideas de video programadas aparecerán aquí</p>
-                    <p style="font-size: 0.9em;">Ve a la pestaña de Ideas para programar publicaciones</p>
-                </div>
-                <div id="scheduledVideos" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
         </div>
 
@@ -3110,13 +3098,13 @@
             if (tabName === 'ideas') {
                 renderIdeas();
                 updateContenidoBar();
+                renderScheduledVideos();
             }
             
             // Si es calendario, renderizar calendario
             if (tabName === 'calendario') {
                 renderMonthlyCalendar();
                 renderActivities();
-                renderScheduledVideos();
             }
         }
 
@@ -4462,23 +4450,23 @@
                            value="${libraryFilters.search}" oninput="updateLibrarySearch(this.value)">
                     
                     <!-- Filtros alfabéticos -->
-                    <div style="margin-bottom: 15px; overflow-x: auto; white-space: nowrap; padding: 10px 0;">
+                    ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px; overflow-x: auto; white-space: nowrap; padding: 10px 0;">
                         <button onclick="filterByLetter('')" style="padding: 8px 12px; margin: 0 5px; background: ${libraryFilters.letter === '' ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.letter === '' ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Todas</button>
                         ${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => 
                             `<button onclick="filterByLetter('${letter}')" style="padding: 8px 12px; margin: 0 3px; background: ${libraryFilters.letter === letter ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.letter === letter ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">${letter}</button>`
                         ).join('')}
-                    </div>
+                    </div>` : ''}
                     
                     <!-- Filtros por rating -->
-                    <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                    ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
                         <button onclick="filterByRating(0)" style="padding: 10px 15px; background: ${libraryFilters.rating === 0 ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === 0 ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; min-width: 90px;">Todas ⭐</button>
                         ${[5,4,3,2,1].map(rating => 
                             `<button onclick="filterByRating(${rating})" style="padding: 10px 15px; background: ${libraryFilters.rating === rating ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === rating ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; min-width: 80px;">${'⭐'.repeat(rating)}</button>`
                         ).join('')}
-                    </div>
+                    </div>` : ''}
                     
                     <button onclick="openAddItemModal()" style="width: 100%; padding: 15px; background: white; color: #667eea; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
-                        ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : 'Serie'}
+                        ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard'}
                     </button>
                 </div>
                 
@@ -4543,16 +4531,16 @@
                     </div>
                     <div class="modal-body">
                         <input type="text" id="itemTitle" placeholder="${currentLibraryCategory === 'flashcards' ? 'Pregunta *' : 'Título *'}" value="${isEditing ? item.title : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
-                        ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing ? item.author : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing ? item.author : ''}}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `<textarea id="flashcardAnswer" placeholder="Respuesta *" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.answer || '' : ''}</textarea>` : ''}
-                        <input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
-                        <textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>
-                        <div style="margin-bottom: 15px;">
+                        ${currentLibraryCategory !== 'flashcards' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory !== 'flashcards' ? `<textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>` : ''}
+                        ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
                             <div id="ratingSelector" style="font-size: 2em; cursor: pointer;">
                                 ${'<span onclick="selectRating(1)">☆</span><span onclick="selectRating(2)">☆</span><span onclick="selectRating(3)">☆</span><span onclick="selectRating(4)">☆</span><span onclick="selectRating(5)">☆</span>'}
                             </div>
-                        </div>
+                        </div>` : ''}
                     </div>
                     <div style="display: flex; gap: 10px; padding: 20px;">
                         <button onclick="saveLibraryItem(${editIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
@@ -5432,12 +5420,12 @@
             const startingDayOfWeek = firstDay.getDay(); // 0 = domingo
             
             // Crear HTML del calendario
-            let html = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">';
+            let html = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin: 0 auto; max-width: 100%;">';
             
             // Encabezados de días
             const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
             dayNames.forEach(day => {
-                html += `<div style="text-align: center; font-weight: 600; color: #ff6b9d; padding: 8px; font-size: 0.85em;">${day}</div>`;
+                html += `<div style="text-align: center; font-weight: 600; color: #ff6b9d; padding: 5px; font-size: 0.75em;">${day}</div>`;
             });
             
             // Espacios vacíos antes del primer día
@@ -5458,11 +5446,11 @@
                 
                 html += `
                     <div style="
-                        min-height: 60px;
-                        padding: 5px;
+                        min-height: 50px;
+                        padding: 4px;
                         background: ${isToday ? 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)' : '#fff'};
                         border: 2px solid ${isToday ? '#ff6b9d' : '#ffe5f3'};
-                        border-radius: 10px;
+                        border-radius: 8px;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
@@ -5470,7 +5458,7 @@
                         transition: all 0.2s;
                         box-shadow: ${isToday ? '0 4px 15px rgba(255, 107, 157, 0.3)' : '0 2px 5px rgba(0,0,0,0.05)'};
                     " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        <div style="font-weight: 600; color: ${isToday ? 'white' : '#333'}; margin-bottom: 3px;">${day}</div>
+                        <div style="font-weight: 600; color: ${isToday ? 'white' : '#333'}; margin-bottom: 2px; font-size: 0.9em;">${day}</div>
                         ${dayActivities.length > 0 ? `
                             <div style="font-size: 0.65em; color: ${isToday ? 'white' : '#ff6b9d'}; text-align: center; line-height: 1.2;">
                                 ${dayActivities.slice(0, 2).map(a => `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">• ${a.text.substring(0, 8)}${a.text.length > 8 ? '...' : ''}</div>`).join('')}
