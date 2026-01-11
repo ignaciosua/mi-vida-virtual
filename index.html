@@ -4437,6 +4437,7 @@
                             ${item.description ? `<p style="color: #6b7280; font-size: 0.85em; line-height: 1.4; margin-bottom: 10px;">${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}</p>` : ''}
                             <div style="display: flex; gap: 10px;">
                                 <button onclick="viewLibraryItem(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">Ver</button>
+                                <button onclick="editLibraryItem(${index})" style="padding: 8px 12px; background: #a78bfa; color: white; border: none; border-radius: 8px; cursor: pointer;">✏️</button>
                                 <button onclick="deleteLibraryItem(${index})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">🗑️</button>
                             </div>
                         </div>
@@ -4467,7 +4468,9 @@
         }
         
         // Abrir modal para agregar item
-        function openAddItemModal() {
+        function openAddItemModal(editIndex = null) {
+            const isEditing = editIndex !== null;
+            const item = isEditing ? library[currentLibraryCategory][editIndex] : null;
             const categoryName = currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : 'Serie';
             
             const modal = document.createElement('div');
@@ -4475,13 +4478,13 @@
             modal.innerHTML = `
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
-                        <h3>➕ Agregar ${categoryName}</h3>
+                        <h3>${isEditing ? '✏️ Editar' : '➕ Agregar'} ${categoryName}</h3>
                     </div>
                     <div class="modal-body">
-                        <input type="text" id="itemTitle" placeholder="Título *" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
-                        ${currentLibraryCategory === 'libros' ? '<input type="text" id="itemAuthor" placeholder="Autor *" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">' : ''}
-                        <input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
-                        <textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;"></textarea>
+                        <input type="text" id="itemTitle" placeholder="Título *" value="${isEditing ? item.title : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                        ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing ? item.author : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        <input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                        <textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
                             <div id="ratingSelector" style="font-size: 2em; cursor: pointer;">
@@ -4490,13 +4493,18 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px; padding: 20px;">
-                        <button onclick="saveLibraryItem()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="saveLibraryItem(${editIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
                         <button onclick="closeLibraryModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
-            window.currentItemRating = 0;
+            window.currentItemRating = isEditing ? item.rating : 0;
+            
+            // Si estamos editando, mostrar las estrellas correctamente
+            if (isEditing && item.rating) {
+                setTimeout(() => selectRating(item.rating), 50);
+            }
         }
         
         // Seleccionar rating
@@ -4509,7 +4517,7 @@
         }
         
         // Guardar item de biblioteca
-        function saveLibraryItem() {
+        function saveLibraryItem(editIndex = null) {
             const title = document.getElementById('itemTitle').value.trim();
             const author = document.getElementById('itemAuthor')?.value.trim() || '';
             const imageUrl = document.getElementById('itemImageUrl').value.trim();
@@ -4532,13 +4540,25 @@
                 imageUrl,
                 description,
                 rating,
-                dateAdded: new Date().toISOString()
+                dateAdded: editIndex !== null ? library[currentLibraryCategory][editIndex].dateAdded : new Date().toISOString()
             };
             
-            library[currentLibraryCategory].push(item);
+            if (editIndex !== null) {
+                // Editar item existente
+                library[currentLibraryCategory][editIndex] = item;
+            } else {
+                // Agregar nuevo item
+                library[currentLibraryCategory].push(item);
+            }
+            
             saveLibrary();
             closeLibraryModal();
             renderLibraryContent();
+        }
+        
+        // Editar item de biblioteca
+        function editLibraryItem(index) {
+            openAddItemModal(index);
         }
         
         // Ver detalle de item
