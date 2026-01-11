@@ -1412,16 +1412,26 @@
                     <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
                 </div>
                 
-                <!-- Listas de actividades -->
-                <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <div>
-                        <h3 style="color: #ff6b9d; margin-bottom: 12px;">🕒 Pendientes</h3>
-                        <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
-                    </div>
-                    <div>
-                        <h3 style="color: #56ab2f; margin-bottom: 12px;">✔️ Completadas</h3>
-                        <div id="activitiesCompleted" style="display: flex; flex-direction: column; gap: 10px;"></div>
-                    </div>
+                <!-- Navegador de mes -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
+                    <button onclick="changeMonth(-1)" style="background: rgba(255,255,255,0.3); border: none; border-radius: 50%; width: 40px; height: 40px; color: white; font-size: 1.2em; cursor: pointer; font-weight: bold;">‹</button>
+                    <h3 id="currentMonthLabel" style="color: white; margin: 0; font-size: 1.2em;"></h3>
+                    <button onclick="changeMonth(1)" style="background: rgba(255,255,255,0.3); border: none; border-radius: 50%; width: 40px; height: 40px; color: white; font-size: 1.2em; cursor: pointer; font-weight: bold;">›</button>
+                </div>
+                
+                <!-- Vista de calendario mensual -->
+                <div id="monthlyCalendar" style="background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);"></div>
+                
+                <!-- Lista de actividades pendientes -->
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #ff6b9d; margin-bottom: 12px;">🕒 Pendientes</h3>
+                    <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                </div>
+                
+                <!-- Lista de actividades completadas -->
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #56ab2f; margin-bottom: 12px;">✔️ Completadas</h3>
+                    <div id="activitiesCompleted" style="display: flex; flex-direction: column; gap: 10px;"></div>
                 </div>
             </div>
             
@@ -1437,19 +1447,6 @@
 
         <!-- Tab: Resumen -->
         <div class="tab-content" id="tab-resumen">
-            <!-- Guía de Mi Vida -->
-            <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.15);">
-                <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">🌟 Guía de Mi Vida</h3>
-                <div id="lifeGuide" style="color: #6b4c9a; line-height: 1.8;">
-                    <p style="margin-bottom: 10px;">🌟 <strong>Paso 1:</strong> Completa tus necesidades básicas (Existir)</p>
-                    <p style="margin-bottom: 10px;">💖 <strong>Paso 2:</strong> Cuídate emocionalmente (Cuidarme)</p>
-                    <p style="margin-bottom: 10px;">🏃 <strong>Paso 3:</strong> Mantén tu cuerpo activo (Ejercicio)</p>
-                    <p style="margin-bottom: 10px;">🌱 <strong>Paso 4:</strong> Crece y aprende algo nuevo (Crecer)</p>
-                    <p style="margin-bottom: 10px;">💡 <strong>Paso 5:</strong> Crea contenido y compártelo (Ideas)</p>
-                    <p>📅 <strong>Paso 6:</strong> Organiza tu día (Calendario)</p>
-                </div>
-            </div>
-            
             <!-- Bloque 1: Base del día -->
             <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(168, 224, 99, 0.2);">
                 <h4 style="color: #388e3c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🌱</span> Base del día</h4>
@@ -3117,6 +3114,7 @@
             
             // Si es calendario, renderizar calendario
             if (tabName === 'calendario') {
+                renderMonthlyCalendar();
                 renderActivities();
                 renderScheduledVideos();
             }
@@ -4376,9 +4374,15 @@
                 library = {
                     libros: [],
                     peliculas: [],
-                    series: []
+                    series: [],
+                    flashcards: []
                 };
                 console.log('🆕 Biblioteca inicializada vacía');
+            }
+            
+            // Asegurar que flashcards exista en bibliotecas antiguas
+            if (!library.flashcards) {
+                library.flashcards = [];
             }
         }
         
@@ -4444,7 +4448,8 @@
             const categoryNames = {
                 libros: 'Libros',
                 peliculas: 'Películas',
-                series: 'Series'
+                series: 'Series',
+                flashcards: 'Flashcards'
             };
             
             let html = `
@@ -4527,7 +4532,7 @@
         function openAddItemModal(editIndex = null) {
             const isEditing = editIndex !== null;
             const item = isEditing ? library[currentLibraryCategory][editIndex] : null;
-            const categoryName = currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : 'Serie';
+            const categoryName = currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard';
             
             const modal = document.createElement('div');
             modal.className = 'modal show';
@@ -4537,8 +4542,9 @@
                         <h3>${isEditing ? '✏️ Editar' : '➕ Agregar'} ${categoryName}</h3>
                     </div>
                     <div class="modal-body">
-                        <input type="text" id="itemTitle" placeholder="Título *" value="${isEditing ? item.title : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                        <input type="text" id="itemTitle" placeholder="${currentLibraryCategory === 'flashcards' ? 'Pregunta *' : 'Título *'}" value="${isEditing ? item.title : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
                         ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing ? item.author : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'flashcards' ? `<textarea id="flashcardAnswer" placeholder="Respuesta *" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.answer || '' : ''}</textarea>` : ''}
                         <input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
                         <textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>
                         <div style="margin-bottom: 15px;">
@@ -4576,12 +4582,13 @@
         function saveLibraryItem(editIndex = null) {
             const title = document.getElementById('itemTitle').value.trim();
             const author = document.getElementById('itemAuthor')?.value.trim() || '';
-            const imageUrl = document.getElementById('itemImageUrl').value.trim();
-            const description = document.getElementById('itemDescription').value.trim();
+            const imageUrl = document.getElementById('itemImageUrl')?.value.trim() || '';
+            const description = document.getElementById('itemDescription')?.value.trim() || '';
+            const answer = document.getElementById('flashcardAnswer')?.value.trim() || '';
             const rating = window.currentItemRating || 0;
             
             if (!title) {
-                alert('⚠️ Por favor ingresa un título');
+                alert('⚠️ Por favor ingresa ' + (currentLibraryCategory === 'flashcards' ? 'una pregunta' : 'un título'));
                 return;
             }
             
@@ -4590,11 +4597,17 @@
                 return;
             }
             
+            if (currentLibraryCategory === 'flashcards' && !answer) {
+                alert('⚠️ Por favor ingresa la respuesta');
+                return;
+            }
+            
             const item = {
                 title,
                 author,
                 imageUrl,
                 description,
+                answer,
                 rating,
                 dateAdded: editIndex !== null ? library[currentLibraryCategory][editIndex].dateAdded : new Date().toISOString()
             };
@@ -5387,6 +5400,89 @@
             }
             saveState();
             renderActivities();
+        }
+        
+        // Variable para el mes actual del calendario
+        let currentCalendarMonth = new Date();
+        
+        function changeMonth(delta) {
+            currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
+            renderMonthlyCalendar();
+            renderActivities();
+        }
+        
+        function renderMonthlyCalendar() {
+            const container = document.getElementById('monthlyCalendar');
+            if (!container) return;
+            
+            const year = currentCalendarMonth.getFullYear();
+            const month = currentCalendarMonth.getMonth();
+            
+            // Actualizar label del mes
+            const monthLabel = document.getElementById('currentMonthLabel');
+            if (monthLabel) {
+                const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                monthLabel.textContent = `${monthNames[month]} ${year}`;
+            }
+            
+            // Obtener primer día del mes y total de días
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay(); // 0 = domingo
+            
+            // Crear HTML del calendario
+            let html = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">';
+            
+            // Encabezados de días
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            dayNames.forEach(day => {
+                html += `<div style="text-align: center; font-weight: 600; color: #ff6b9d; padding: 8px; font-size: 0.85em;">${day}</div>`;
+            });
+            
+            // Espacios vacíos antes del primer día
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                html += '<div></div>';
+            }
+            
+            // Días del mes
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = isCurrentMonth && day === today.getDate();
+                
+                // Obtener actividades del día
+                const dayActivities = gameState.activities.pending.filter(a => a.date === dateStr);
+                
+                html += `
+                    <div style="
+                        min-height: 60px;
+                        padding: 5px;
+                        background: ${isToday ? 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)' : '#fff'};
+                        border: 2px solid ${isToday ? '#ff6b9d' : '#ffe5f3'};
+                        border-radius: 10px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        box-shadow: ${isToday ? '0 4px 15px rgba(255, 107, 157, 0.3)' : '0 2px 5px rgba(0,0,0,0.05)'};
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="font-weight: 600; color: ${isToday ? 'white' : '#333'}; margin-bottom: 3px;">${day}</div>
+                        ${dayActivities.length > 0 ? `
+                            <div style="font-size: 0.65em; color: ${isToday ? 'white' : '#ff6b9d'}; text-align: center; line-height: 1.2;">
+                                ${dayActivities.slice(0, 2).map(a => `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">• ${a.text.substring(0, 8)}${a.text.length > 8 ? '...' : ''}</div>`).join('')}
+                                ${dayActivities.length > 2 ? `<div style="font-weight: 600;">+${dayActivities.length - 2}</div>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
         }
         
         function renderActivities() {
