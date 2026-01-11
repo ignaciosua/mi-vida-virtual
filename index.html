@@ -2127,70 +2127,70 @@
                 name: 'Hambre',
                 icon: '🍽️',
                 decayRate: 4.2, // % por hora
-                current: 100,
+                value: 100,
                 maxDaily: 0 // Se calculará con BMR
             },
             sueño: {
                 name: 'Sueño',
                 icon: '😴',
                 decayRate: 4.2,
-                current: 100,
+                value: 100,
                 maxDaily: 8 // 8 horas recomendadas
             },
             hidratacion: {
                 name: 'Hidratación',
                 icon: '💧',
                 decayRate: 4.2,
-                current: 100,
+                value: 100,
                 maxDaily: 0 // Se calculará con peso
             },
             ejercicio: {
                 name: 'Salud Física',
                 icon: '🏃',
                 decayRate: 4.2,
-                current: 100,
+                value: 100,
                 maxDaily: 100
             },
             autoestima: {
                 name: 'Autoestima',
                 icon: '💖',
                 decayRate: 4.2,
-                current: 100,
+                value: 100,
                 maxDaily: 100
             },
             vidaSocial: {
                 name: 'Vida Social',
                 icon: '💬',
                 decayRate: 4.2,
-                current: 100,
+                value: 100,
                 maxDaily: 100
             },
             idiomas: {
                 name: 'Idiomas',
                 icon: '🌍',
                 decayRate: 0, // No decae
-                current: 0,
+                value: 0,
                 maxDaily: 100
             },
             aprendizaje: {
                 name: 'Aprendizaje',
                 icon: '📚',
                 decayRate: 0, // No decae
-                current: 0,
+                value: 0,
                 maxDaily: 100
             },
             contenido: {
                 name: 'Contenido',
                 icon: '🎬',
                 decayRate: 0, // No decae
-                current: 0,
+                value: 0,
                 maxDaily: 100
             },
             profesion: {
                 name: 'Profesión',
                 icon: '👩‍⚕️',
                 decayRate: 0, // No decae
-                current: 0,
+                value: 0,
                 maxDaily: 100
             }
         };
@@ -2430,7 +2430,7 @@
                 
                 Object.keys(gameState.stats).forEach(key => {
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
-                    gameState.stats[key].current = Math.max(0, gameState.stats[key].current - decayAmount);
+                    gameState.stats[key].value = Math.max(0, gameState.stats[key].value - decayAmount);
                 });
                 
                 gameState.lastUpdate = now;
@@ -2482,10 +2482,10 @@
                 }
             });
 
-            // Renderizar estadísticas de Crecer (idiomas, aprendizaje, contenido, profesión)
+            // Renderizar estadísticas de Crecer (idiomas, aprendizaje, profesión)
             const crecerContainer = document.getElementById('statsCrecer');
             crecerContainer.innerHTML = '';
-            ['idiomas', 'aprendizaje', 'contenido', 'profesion'].forEach(key => {
+            ['idiomas', 'aprendizaje', 'profesion'].forEach(key => {
                 if (gameState.stats[key]) {
                     crecerContainer.appendChild(createStatElement(key, gameState.stats[key]));
                 }
@@ -2504,7 +2504,7 @@
 
         // Crear elemento de estadística
         function createStatElement(key, stat) {
-            const percentage = Math.round(stat.current);
+            const percentage = Math.round(stat.value);
             const isGrowthStat = ['idiomas', 'aprendizaje', 'contenido', 'profesion'].includes(key);
             
             // Determinar clase de color según porcentaje
@@ -2700,11 +2700,11 @@
             
             if (!wasChecked) {
                 // Completado: aumentar autoestima
-                gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + check.boost);
+                gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + check.boost);
                 console.log(`✓ Check completado: ${check.name} (+${check.boost}% autoestima)`);
             } else {
                 // Desmarcado: quitar autoestima
-                gameState.stats.autoestima.current = Math.max(0, gameState.stats.autoestima.current - check.boost);
+                gameState.stats.autoestima.value = Math.max(0, gameState.stats.autoestima.value - check.boost);
                 console.log(`✗ Check desmarcado: ${check.name} (-${check.boost}% autoestima)`);
             }
             
@@ -2774,7 +2774,7 @@
                             icon: action.icon,
                             action: action.action,
                             stat: stats[key].name,
-                            value: Math.round(stats[key].current)
+                            value: Math.round(stats[key].value)
                         });
                     }
                 });
@@ -2852,7 +2852,7 @@
                 if (!action) return '';
                 
                 const stat = gameState.stats[key];
-                const value = stat ? Math.round(stat.current) : 0;
+                const value = stat ? Math.round(stat.value) : 0;
                 
                 return `
                     <div onclick="${action.action}" style="
@@ -3211,11 +3211,11 @@
             const hungerPercent = caloriesToHungerPercent(calories);
             
             // Aplicar los cambios (limitar entre 0 y 100)
-            gameState.stats.hambre.current = Math.min(100, Math.max(0, gameState.stats.hambre.current + hungerPercent));
+            gameState.stats.hambre.value = Math.min(100, Math.max(0, gameState.stats.hambre.value + hungerPercent));
             
             // También se reduce un poco la hidratación (al comer necesitas agua)
             const hydrationDecrease = hungerPercent * 0.15; // 15% de las calorías afecta hidratación
-            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationDecrease);
+            gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationDecrease);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3314,7 +3314,7 @@
 
         function sleep(percentage) {
             // Aumentar sueño
-            gameState.stats.sueño.current = Math.min(100, gameState.stats.sueño.current + percentage);
+            gameState.stats.sueño.value = Math.min(100, gameState.stats.sueño.value + percentage);
             gameState.lastUpdate = Date.now();
             saveState();
             renderStats();
@@ -3465,10 +3465,10 @@
             };
             
             // Aplicar los cambios a las estadísticas
-            gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current + effect.hambre);
-            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current + effect.hidratacion);
-            gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + effect.ejercicio);
-            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + effect.autoestima);
+            gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value + effect.hambre);
+            gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value + effect.hidratacion);
+            gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + effect.ejercicio);
+            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + effect.autoestima);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3568,10 +3568,10 @@
             const waterNeeded = caloriesBurned * 1.5;
             const hydrationPercent = mlToHydrationPercent(waterNeeded);
             
-            gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current - hungerPercent);
-            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationPercent);
-            gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + 10);
-            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 5);
+            gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value - hungerPercent);
+            gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationPercent);
+            gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + 10);
+            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + 5);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3669,10 +3669,10 @@
             const waterNeeded = caloriesBurned * 2.0;
             const hydrationPercent = mlToHydrationPercent(waterNeeded);
             
-            gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current - hungerPercent);
-            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationPercent);
-            gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + 40);
-            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 20);
+            gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value - hungerPercent);
+            gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationPercent);
+            gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + 40);
+            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + 20);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3740,10 +3740,10 @@
             const waterNeeded = caloriesBurned * 1.6;
             const hydrationPercent = mlToHydrationPercent(waterNeeded);
             
-            gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current - hungerPercent);
-            gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationPercent);
-            gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + 35);
-            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 15);
+            gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value - hungerPercent);
+            gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationPercent);
+            gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + 35);
+            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + 15);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3786,10 +3786,10 @@
             };
             
             if (confirm(`🏋️ Pesas - ${muscleNames[muscleGroup]} - ${duration} minutos\n\nEfectos:\n- Hambre: -${hungerPercent.toFixed(1)}%\n- Hidratación: -${hydrationPercent.toFixed(1)}%\n- Salud Física: +45%\n- Autoestima: +25%\n\n¿Aplicar?`)) {
-                gameState.stats.hambre.current = Math.max(0, gameState.stats.hambre.current - hungerPercent);
-                gameState.stats.hidratacion.current = Math.max(0, gameState.stats.hidratacion.current - hydrationPercent);
-                gameState.stats.ejercicio.current = Math.min(100, gameState.stats.ejercicio.current + 45);
-                gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + 25);
+                gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value - hungerPercent);
+                gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationPercent);
+                gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + 45);
+                gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + 25);
                 
                 gameState.lastUpdate = Date.now();
                 saveState();
@@ -3910,7 +3910,7 @@
         }
         
         function applySelfcareAction(action) {
-            gameState.stats.autoestima.current = Math.min(100, gameState.stats.autoestima.current + action.boost);
+            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + action.boost);
             markActionUsed(action.id, action.cooldown);
             saveState();
             renderStats();
@@ -3988,7 +3988,7 @@
         
         function applySocialAction(action) {
             // Aumentar vida social
-            gameState.stats.vidaSocial.current = Math.min(100, gameState.stats.vidaSocial.current + action.boost);
+            gameState.stats.vidaSocial.value = Math.min(100, gameState.stats.vidaSocial.value + action.boost);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -4117,7 +4117,7 @@
                 gameState.stats[statKey] = { ...STATS_CONFIG[statKey] };
             }
             // Sin límite máximo para estadísticas de crecimiento, pero sí mínimo de 0
-            gameState.stats[statKey].current = Math.max(0, gameState.stats[statKey].current + action.boost);
+            gameState.stats[statKey].value = Math.max(0, gameState.stats[statKey].value + action.boost);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -4130,7 +4130,7 @@
             document.getElementById('enfermeriaModal').classList.remove('show');
             document.getElementById('farmacologiaModal').classList.remove('show');
             
-            console.log(`${action.emoji} ${action.name}: ${STATS_CONFIG[statKey].name} +${action.boost}% (Total: ${Math.round(gameState.stats[statKey].current)}%)`);
+            console.log(`${action.emoji} ${action.name}: ${STATS_CONFIG[statKey].name} +${action.boost}% (Total: ${Math.round(gameState.stats[statKey].value)}%)`);
         }
 
         // Efectos de botones (preparados para futuras funciones)
@@ -4561,6 +4561,16 @@
             if (text === '') {
                 alert('✏️ Por favor escribe tu idea');
                 return;
+            }
+            
+            // Asegurar que gameState.ideas existe
+            if (!gameState.ideas) {
+                gameState.ideas = {
+                    pendientes: [],
+                    grabadas: [],
+                    editadas: [],
+                    publicadas: []
+                };
             }
             
             const idea = {
@@ -5040,3 +5050,4 @@
     </script>
 </body>
 </html>
+
