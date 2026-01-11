@@ -4331,11 +4331,8 @@
 
         // ===== SISTEMA DE BIBLIOTECA =====
         
-        let library = {
-            libros: [],
-            peliculas: [],
-            series: []
-        };
+        // IMPORTANTE: NO inicializar library aquí, se carga desde localStorage
+        let library = null;
         
         let currentLibraryCategory = 'libros';
         let libraryFilters = {
@@ -4354,6 +4351,7 @@
                     if (loadedLibrary && typeof loadedLibrary === 'object') {
                         library = loadedLibrary;
                         console.log('📚 Biblioteca cargada:', library);
+                        return;
                     }
                 } catch (error) {
                     console.error('❌ Error al cargar biblioteca:', error);
@@ -4365,11 +4363,22 @@
                             console.log('⚠️ Biblioteca recuperada del backup');
                             // Guardar el backup como versión actual
                             saveLibrary();
+                            return;
                         } catch (backupError) {
                             console.error('❌ Error al recuperar backup:', backupError);
                         }
                     }
                 }
+            }
+            
+            // Solo si no hay datos guardados, inicializar vacío
+            if (!library) {
+                library = {
+                    libros: [],
+                    peliculas: [],
+                    series: []
+                };
+                console.log('🆕 Biblioteca inicializada vacía');
             }
         }
         
@@ -4385,6 +4394,9 @@
                 // Guardar nueva versión
                 localStorage.setItem('library', JSON.stringify(library));
                 console.log('💾 Biblioteca guardada correctamente');
+                
+                // Mostrar indicador visual
+                showSaveIndicator('Biblioteca guardada ✓');
             } catch (error) {
                 console.error('❌ Error al guardar biblioteca:', error);
                 alert('⚠️ Error al guardar. Tus cambios pueden no haberse guardado.');
@@ -5473,6 +5485,67 @@
             console.log('💾 Datos guardados automáticamente');
         }
         
+        // Indicador visual de guardado
+        function showSaveIndicator(message = 'Guardado ✓') {
+            // Remover indicador anterior si existe
+            const oldIndicator = document.getElementById('saveIndicator');
+            if (oldIndicator) oldIndicator.remove();
+            
+            const indicator = document.createElement('div');
+            indicator.id = 'saveIndicator';
+            indicator.textContent = message;
+            indicator.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-weight: 600;
+                font-size: 0.9em;
+                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+                z-index: 10000;
+                animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 2.7s;
+                pointer-events: none;
+            `;
+            
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                indicator.remove();
+            }, 3000);
+        }
+        
+        // Agregar estilos de animación si no existen
+        if (!document.getElementById('saveIndicatorStyles')) {
+            const style = document.createElement('style');
+            style.id = 'saveIndicatorStyles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
         // Registrar service worker y detectar actualizaciones
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -5516,15 +5589,16 @@
 
         // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
+            // PRIMERO: Cargar todos los datos guardados
+            loadLibrary();
+            loadIdeas();
+            
             // Iniciar el reloj INMEDIATAMENTE
             updateClock();
             setInterval(updateClock, 1000);
             
             // Siempre iniciar el juego (startGame verifica si hay perfil)
             startGame();
-            
-            // Cargar biblioteca
-            loadLibrary();
             
             // ===== GUARDADO AUTOMÁTICO MEJORADO =====
             
