@@ -2504,7 +2504,7 @@
 
         // Crear elemento de estadística
         function createStatElement(key, stat) {
-            const percentage = Math.round(stat.value);
+            const percentage = isNaN(stat.value) ? 0 : Math.round(stat.value);
             const isGrowthStat = ['idiomas', 'aprendizaje', 'contenido', 'profesion'].includes(key);
             
             // Determinar clase de color según porcentaje
@@ -4508,13 +4508,19 @@
         
         // Actualizar barra de contenido
         function updateContenidoBar() {
-            const contenidoValue = gameState.stats.contenido ? gameState.stats.contenido.value : 100;
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
+            }
+            
+            const contenidoValue = isNaN(gameState.stats.contenido.value) ? 0 : gameState.stats.contenido.value;
             const bar = document.getElementById('contenidoBar');
             const value = document.getElementById('contenidoValue');
             
             if (bar && value) {
-                value.textContent = `${Math.round(contenidoValue)}%`;
-                bar.style.width = `${contenidoValue}%`;
+                const displayValue = Math.round(contenidoValue);
+                value.textContent = `${displayValue}%`;
+                bar.style.width = `${Math.max(0, Math.min(100, contenidoValue))}%`;
                 
                 // Cambiar color según nivel
                 if (contenidoValue >= 70) {
@@ -4583,17 +4589,20 @@
             
             gameState.ideas.pendientes.push(idea);
             
-            // Sumar porcentaje a la barra de contenido
-            if (gameState.stats.contenido) {
-                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + percentage);
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
             }
+            
+            // Sumar porcentaje a la barra de contenido
+            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + percentage);
             
             input.value = '';
             saveIdeas();
             saveState();
+            updateContenidoBar();
             renderIdeas();
             renderStats();
-            updateContenidoBar();
             
             // Feedback visual
             alert(`✨ Idea agregada! +${percentage}% a Contenido`);
@@ -4746,16 +4755,19 @@
             gameState.ideas[fromSection].splice(index, 1);
             gameState.ideas[toSection].push(idea);
             
-            // Sumar porcentaje adicional a la barra
-            if (gameState.stats.contenido) {
-                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + percentage);
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
             }
+            
+            // Sumar porcentaje adicional a la barra
+            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + percentage);
             
             saveIdeas();
             saveState();
+            updateContenidoBar();
             renderIdeas();
             renderStats();
-            updateContenidoBar();
             
             // Feedback
             const messages = {
@@ -4831,16 +4843,19 @@
             gameState.ideas.editadas.splice(index, 1);
             gameState.ideas.publicadas.push(idea);
             
-            // Sumar porcentaje
-            if (gameState.stats.contenido) {
-                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + idea.percentage);
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
             }
+            
+            // Sumar porcentaje
+            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + idea.percentage);
             
             saveIdeas();
             saveState();
+            updateContenidoBar();
             renderIdeas();
             renderStats();
-            updateContenidoBar();
             
             cancelSchedule();
             alert(`🎉 Idea programada para publicarse! +${idea.percentage}% a Contenido`);
@@ -4864,16 +4879,20 @@
             
             gameState.ideas[section].splice(index, 1);
             
-            // Restar porcentaje de la barra (solo si no está en 0)
-            if (gameState.stats.contenido && gameState.stats.contenido.value > 0) {
-                gameState.stats.contenido.value = Math.max(0, gameState.stats.contenido.value - percentage);
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
             }
+            
+            // Restar porcentaje de la barra (solo si no está en 0)
+            const currentValue = gameState.stats.contenido.value || 0;
+            gameState.stats.contenido.value = Math.max(0, currentValue - percentage);
             
             saveIdeas();
             saveState();
+            updateContenidoBar();
             renderIdeas();
             renderStats();
-            updateContenidoBar();
             
             alert(`🗑️ Idea eliminada. -${percentage}% de Contenido`);
         }
