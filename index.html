@@ -1239,6 +1239,10 @@
                 <span class="tab-icon">💡</span>
                 <span class="tab-label">Ideas</span>
             </button>
+            <button class="tab" onclick="switchTab('calendario')">
+                <span class="tab-icon">📅</span>
+                <span class="tab-label">Calendario</span>
+            </button>
             <button class="tab" onclick="switchTab('resumen')">
                 <span class="tab-icon">📊</span>
                 <span class="tab-label">Resumen</span>
@@ -1378,8 +1382,74 @@
             <div id="ideasContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 200px;"></div>
         </div>
 
+        <!-- Tab: Calendario -->
+        <div class="tab-content" id="tab-calendario">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #ff6b9d; margin-bottom: 10px;">📅 Mi Calendario</h2>
+                <p style="color: #a78bfa; font-size: 0.95em;">Organiza tus actividades y videos</p>
+            </div>
+            
+            <!-- Selector de vista -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap;">
+                <button class="calendar-view-btn active" onclick="switchCalendarView('actividades')" style="flex: 1; min-width: 140px; padding: 12px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
+                    🎯 Actividades
+                </button>
+                <button class="calendar-view-btn" onclick="switchCalendarView('videos')" style="flex: 1; min-width: 140px; padding: 12px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); color: #6b4c9a; border: none; border-radius: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);">
+                    🎥 Videos
+                </button>
+            </div>
+            
+            <!-- Vista de Actividades -->
+            <div id="calendar-actividades" class="calendar-view" style="display: block;">
+                <!-- Agregar nueva actividad -->
+                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
+                    <h3 style="color: #6b4c9a; margin-bottom: 15px;">✨ Nueva Actividad</h3>
+                    <input type="text" id="newActivityInput" placeholder="¿Qué vas a hacer?" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                        <input type="date" id="activityDate" style="flex: 1; min-width: 140px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                        <input type="time" id="activityTime" style="flex: 1; min-width: 120px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                    </div>
+                    <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
+                </div>
+                
+                <!-- Listas de actividades -->
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div>
+                        <h3 style="color: #ff6b9d; margin-bottom: 12px;">🕒 Pendientes</h3>
+                        <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    </div>
+                    <div>
+                        <h3 style="color: #56ab2f; margin-bottom: 12px;">✔️ Completadas</h3>
+                        <div id="activitiesCompleted" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vista de Videos -->
+            <div id="calendar-videos" class="calendar-view" style="display: none;">
+                <div style="text-align: center; padding: 40px; color: #a78bfa;">
+                    <p style="font-size: 1.1em; margin-bottom: 10px;">🎬 Tus ideas de video programadas aparecerán aquí</p>
+                    <p style="font-size: 0.9em;">Ve a la pestaña de Ideas para programar publicaciones</p>
+                </div>
+                <div id="scheduledVideos" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+        </div>
+
         <!-- Tab: Resumen -->
         <div class="tab-content" id="tab-resumen">
+            <!-- Guía de Mi Vida -->
+            <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.15);">
+                <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">🌟 Guía de Mi Vida</h3>
+                <div id="lifeGuide" style="color: #6b4c9a; line-height: 1.8;">
+                    <p style="margin-bottom: 10px;">🌟 <strong>Paso 1:</strong> Completa tus necesidades básicas (Existir)</p>
+                    <p style="margin-bottom: 10px;">💖 <strong>Paso 2:</strong> Cuídate emocionalmente (Cuidarme)</p>
+                    <p style="margin-bottom: 10px;">🏃 <strong>Paso 3:</strong> Mantén tu cuerpo activo (Ejercicio)</p>
+                    <p style="margin-bottom: 10px;">🌱 <strong>Paso 4:</strong> Crece y aprende algo nuevo (Crecer)</p>
+                    <p style="margin-bottom: 10px;">💡 <strong>Paso 5:</strong> Crea contenido y compártelo (Ideas)</p>
+                    <p>📅 <strong>Paso 6:</strong> Organiza tu día (Calendario)</p>
+                </div>
+            </div>
+            
             <!-- Bloque 1: Base del día -->
             <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(168, 224, 99, 0.2);">
                 <h4 style="color: #388e3c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🌱</span> Base del día</h4>
@@ -3015,7 +3085,7 @@
             
             // Agregar clase active al tab clickeado
             const tabs = document.querySelectorAll('.tab');
-            const tabNames = ['existir', 'cuidarme', 'ejercicio', 'crecer', 'biblioteca', 'ideas', 'resumen'];
+            const tabNames = ['existir', 'cuidarme', 'ejercicio', 'crecer', 'biblioteca', 'ideas', 'calendario', 'resumen'];
             const index = tabNames.indexOf(tabName);
             if (index !== -1) {
                 tabs[index].classList.add('active');
@@ -3033,6 +3103,12 @@
             if (tabName === 'ideas') {
                 renderIdeas();
                 updateContenidoBar();
+            }
+            
+            // Si es calendario, renderizar calendario
+            if (tabName === 'calendario') {
+                renderActivities();
+                renderScheduledVideos();
             }
         }
 
@@ -4333,10 +4409,10 @@
                     </div>
                     
                     <!-- Filtros por rating -->
-                    <div style="margin-bottom: 15px;">
-                        <button onclick="filterByRating(0)" style="padding: 8px 15px; margin: 0 5px; background: ${libraryFilters.rating === 0 ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === 0 ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">Todas ⭐</button>
+                    <div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                        <button onclick="filterByRating(0)" style="padding: 10px 15px; background: ${libraryFilters.rating === 0 ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === 0 ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; min-width: 90px;">Todas ⭐</button>
                         ${[5,4,3,2,1].map(rating => 
-                            `<button onclick="filterByRating(${rating})" style="padding: 8px 15px; margin: 0 5px; background: ${libraryFilters.rating === rating ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === rating ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">${'⭐'.repeat(rating)}</button>`
+                            `<button onclick="filterByRating(${rating})" style="padding: 10px 15px; background: ${libraryFilters.rating === rating ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === rating ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; min-width: 80px;">${'⭐'.repeat(rating)}</button>`
                         ).join('')}
                     </div>
                     
@@ -4988,6 +5064,186 @@
             };
             
             input.click();
+        }
+        
+        // ===================================
+        // 📅 CALENDARIO
+        // ===================================
+        
+        // Inicializar actividades si no existen
+        if (!gameState.activities) {
+            gameState.activities = { pending: [], completed: [] };
+        }
+        
+        function switchCalendarView(view) {
+            // Actualizar botones
+            document.querySelectorAll('.calendar-view-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (view === 'actividades' && btn.textContent.includes('Actividades')) {
+                    btn.classList.add('active');
+                    btn.style.background = 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)';
+                    btn.style.color = 'white';
+                    btn.style.boxShadow = '0 4px 15px rgba(255, 107, 157, 0.3)';
+                } else if (view === 'videos' && btn.textContent.includes('Videos')) {
+                    btn.classList.add('active');
+                    btn.style.background = 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)';
+                    btn.style.color = 'white';
+                    btn.style.boxShadow = '0 4px 15px rgba(255, 107, 157, 0.3)';
+                } else {
+                    btn.style.background = 'linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%)';
+                    btn.style.color = '#6b4c9a';
+                    btn.style.boxShadow = '0 2px 8px rgba(167, 139, 250, 0.2)';
+                }
+            });
+            
+            // Mostrar vista correspondiente
+            document.getElementById('calendar-actividades').style.display = view === 'actividades' ? 'block' : 'none';
+            document.getElementById('calendar-videos').style.display = view === 'videos' ? 'block' : 'none';
+        }
+        
+        function addActivity() {
+            const input = document.getElementById('newActivityInput');
+            const dateInput = document.getElementById('activityDate');
+            const timeInput = document.getElementById('activityTime');
+            const activity = input.value.trim();
+            const date = dateInput.value;
+            const time = timeInput.value;
+            
+            if (activity === '') {
+                alert('⚠️ Por favor escribe una actividad');
+                return;
+            }
+            
+            if (date === '') {
+                alert('⚠️ Por favor selecciona una fecha');
+                return;
+            }
+            
+            const newActivity = {
+                id: Date.now(),
+                text: activity,
+                date: date,
+                time: time || '00:00',
+                completed: false
+            };
+            
+            gameState.activities.pending.push(newActivity);
+            saveState();
+            
+            input.value = '';
+            dateInput.value = '';
+            timeInput.value = '';
+            
+            renderActivities();
+        }
+        
+        function toggleActivity(id) {
+            const activity = gameState.activities.pending.find(a => a.id === id);
+            if (activity) {
+                gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+                activity.completed = true;
+                gameState.activities.completed.push(activity);
+                saveState();
+                renderActivities();
+            }
+        }
+        
+        function deleteActivity(id, completed = false) {
+            if (completed) {
+                gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
+            } else {
+                gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+            }
+            saveState();
+            renderActivities();
+        }
+        
+        function renderActivities() {
+            const pendingContainer = document.getElementById('activitiesPending');
+            const completedContainer = document.getElementById('activitiesCompleted');
+            
+            if (!pendingContainer || !completedContainer) return;
+            
+            // Renderizar pendientes (ordenar por fecha y hora)
+            const sortedPending = [...gameState.activities.pending].sort((a, b) => {
+                const dateA = new Date(`${a.date}T${a.time}`);
+                const dateB = new Date(`${b.date}T${b.time}`);
+                return dateA - dateB;
+            });
+            
+            if (sortedPending.length === 0) {
+                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades pendientes 🌸</p>';
+            } else {
+                pendingContainer.innerHTML = sortedPending.map(activity => {
+                    const activityDate = new Date(`${activity.date}T${activity.time}`);
+                    const formattedDate = activityDate.toLocaleDateString('es-ES', { 
+                        weekday: 'short', 
+                        day: 'numeric', 
+                        month: 'short' 
+                    });
+                    const formattedTime = activity.time;
+                    
+                    return `
+                        <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center;">
+                            <button onclick="toggleActivity(${activity.id})" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ff6b9d; background: white; cursor: pointer; flex-shrink: 0; transition: all 0.2s;"></button>
+                            <div style="flex: 1;">
+                                <p style="margin: 0; font-weight: 600; color: #333;">${activity.text}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #a78bfa;">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''}</p>
+                            </div>
+                            <button onclick="deleteActivity(${activity.id})" style="background: #ff4d4f; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; flex-shrink: 0;">🗑️</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Renderizar completadas
+            if (gameState.activities.completed.length === 0) {
+                completedContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades completadas aún 💫</p>';
+            } else {
+                completedContainer.innerHTML = gameState.activities.completed.slice(-5).reverse().map(activity => `
+                    <div style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center; opacity: 0.8;">
+                        <div style="width: 30px; height: 30px; border-radius: 50%; background: #56ab2f; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2em; flex-shrink: 0;">✓</div>
+                        <div style="flex: 1;">
+                            <p style="margin: 0; font-weight: 600; color: #333; text-decoration: line-through;">${activity.text}</p>
+                        </div>
+                        <button onclick="deleteActivity(${activity.id}, true)" style="background: rgba(255,255,255,0.5); color: #666; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; flex-shrink: 0;">🗑️</button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function renderScheduledVideos() {
+            const container = document.getElementById('scheduledVideos');
+            if (!container) return;
+            
+            // Obtener videos programados de las ideas
+            const scheduledVideos = gameState.ideas.publicadas.filter(idea => idea.scheduledDate);
+            
+            if (scheduledVideos.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const sortedVideos = [...scheduledVideos].sort((a, b) => {
+                return new Date(a.scheduledDate) - new Date(b.scheduledDate);
+            });
+            
+            container.innerHTML = sortedVideos.map(video => {
+                const videoDate = new Date(video.scheduledDate);
+                const formattedDate = videoDate.toLocaleDateString('es-ES', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                return `
+                    <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(255,107,157,0.15);">
+                        <p style="margin: 0; font-weight: 600; color: #ff6b9d;">🎬 ${video.text}</p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #a78bfa;">📅 ${formattedDate}</p>
+                    </div>
+                `;
+            }).join('');
         }
         
         // Guardar todo antes de cerrar o cambiar de pestaña
