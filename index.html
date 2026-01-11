@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+                                                                                                                                                            <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1231,6 +1231,10 @@
                 <span class="tab-icon">📚</span>
                 <span class="tab-label">Biblioteca</span>
             </button>
+            <button class="tab" onclick="switchTab('ideas')">
+                <span class="tab-icon">💡</span>
+                <span class="tab-label">Ideas</span>
+            </button>
             <button class="tab" onclick="switchTab('resumen')">
                 <span class="tab-icon">📊</span>
                 <span class="tab-label">Resumen</span>
@@ -1287,10 +1291,6 @@
                     <span class="button-icon">📚</span>
                     <span class="button-text">Aprendizaje</span>
                 </button>
-                <button class="action-button" id="btnContenido" style="background: linear-gradient(135deg, #fdcbf1 0%, #e6dee9 100%);">
-                    <span class="button-icon">🎬</span>
-                    <span class="button-text">Contenido</span>
-                </button>
                 <button class="action-button" id="btnProfesion" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);">
                     <span class="button-icon">👩‍⚕️</span>
                     <span class="button-text">Profesión</span>
@@ -1309,6 +1309,49 @@
                 </div>
             </div>
             <div id="libraryContent" style="padding: 15px;"></div>
+        </div>
+
+        <!-- Tab: Ideas/Contenido -->
+        <div class="tab-content" id="tab-ideas">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #ff6b9d; margin-bottom: 10px;">💡 Mis Ideas de Contenido</h2>
+                <p style="color: #a78bfa; font-size: 0.95em;">Gestiona tus ideas desde la concepción hasta la publicación</p>
+            </div>
+            
+            <!-- Agregar nueva idea -->
+            <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
+                <h3 style="color: #6b4c9a; margin-bottom: 15px;">✨ Nueva Idea</h3>
+                <input type="text" id="newIdeaInput" placeholder="Escribe tu idea aquí..." style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="ideaPercentage" style="padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                        <option value="2">Idea básica (+2%)</option>
+                        <option value="3">Idea desarrollada (+3%)</option>
+                        <option value="5">Idea completa (+5%)</option>
+                    </select>
+                    <button onclick="addNewIdea()" style="flex: 1; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Idea</button>
+                </div>
+            </div>
+            
+            <!-- Secciones de ideas por estado -->
+            <div id="ideasPendientes" style="margin-bottom: 20px;">
+                <h3 style="color: #ff6b9d; margin-bottom: 12px;">💭 Ideas Pendientes</h3>
+                <div id="ideasPendientesList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+            
+            <div id="ideasGrabadas" style="margin-bottom: 20px;">
+                <h3 style="color: #ff6b9d; margin-bottom: 12px;">🎥 Ideas Grabadas</h3>
+                <div id="ideasGrabadasList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+            
+            <div id="ideasEditadas" style="margin-bottom: 20px;">
+                <h3 style="color: #ff6b9d; margin-bottom: 12px;">✂️ Ideas Editadas</h3>
+                <div id="ideasEditadasList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+            
+            <div id="ideasPublicadas">
+                <h3 style="color: #ff6b9d; margin-bottom: 12px;">📤 Ideas Publicadas</h3>
+                <div id="ideasPublicadasList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
         </div>
 
         <!-- Tab: Resumen -->
@@ -1856,20 +1899,6 @@
         </div>
     </div>
 
-    <!-- Modal de Contenido -->
-    <div id="contenidoModal" class="modal">
-        <div class="modal-content" style="max-width: 550px;">
-            <div class="modal-header">
-                <div class="modal-title">🎬 Contenido</div>
-                <div class="modal-subtitle">Crea y comparte</div>
-            </div>
-            <div id="contenidoOptions" style="display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-                <!-- Se generan dinámicamente -->
-            </div>
-            <button class="modal-close" onclick="closeContenidoModal()">✕ Cerrar</button>
-        </div>
-    </div>
-
     <!-- Modal de Profesión -->
     <div id="profesionModal" class="modal">
         <div class="modal-content" style="max-width: 550px;">
@@ -2055,12 +2084,6 @@
                 { id: 'investigar', name: 'Investigar temas', emoji: '🔍', boost: 3, cooldown: 'none' },
                 { id: 'apuntes', name: 'Tomar apuntes', emoji: '📝', boost: 4, cooldown: 'none' },
                 { id: 'aprender-nuevo', name: 'Aprender algo nuevo', emoji: '✨', boost: 4, cooldown: 'none' }
-            ],
-            contenido: [
-                { id: 'ideas', name: 'Ideas', emoji: '💡', boost: 2, cooldown: 'none' },
-                { id: 'grabar', name: 'Grabar', emoji: '🎥', boost: 3, cooldown: 'none' },
-                { id: 'editar', name: 'Editar', emoji: '✂️', boost: 4, cooldown: 'none' },
-                { id: 'publicar', name: 'Publicar', emoji: '📤', boost: 2, cooldown: 'none' }
             ],
             enfermeria: [
                 { id: 'repasar-temas', name: 'Repasar temas', emoji: '📖', boost: 2, cooldown: 'none' },
@@ -2329,7 +2352,13 @@
                 lastReset: new Date().toDateString()
             },
             completedSuggestions: [],
-            favorites: []
+            favorites: [],
+            ideas: {
+                pendientes: [],
+                grabadas: [],
+                editadas: [],
+                publicadas: []
+            }
         };
 
         // Inicializar estadísticas
@@ -2681,7 +2710,6 @@
             vidaSocial: { label: 'Socializar', icon: '👥', action: 'openSocialModal()' },
             aprendizaje: { label: 'Aprender', icon: '📚', action: 'openAprendizajeModal()' },
             idiomas: { label: 'Idiomas', icon: '🌍', action: 'openIdiomasModal()' },
-            contenido: { label: 'Crear contenido', icon: '✍️', action: 'openContenidoModal()' },
             profesion: { label: 'Profesión', icon: '👩‍⚕️', action: 'openProfesionModal()' }
         };
         
@@ -2954,7 +2982,7 @@
             
             // Agregar clase active al tab clickeado
             const tabs = document.querySelectorAll('.tab');
-            const tabNames = ['existir', 'cuidarme', 'crecer', 'biblioteca', 'resumen'];
+            const tabNames = ['existir', 'cuidarme', 'crecer', 'biblioteca', 'ideas', 'resumen'];
             const index = tabNames.indexOf(tabName);
             if (index !== -1) {
                 tabs[index].classList.add('active');
@@ -2967,6 +2995,11 @@
             if (tabName === 'biblioteca') {
                 renderLibraryContent();
             }
+            
+            // Si es ideas, renderizar ideas
+            if (tabName === 'ideas') {
+                renderIdeas();
+            }
         }
 
         // Actualizar estadísticas continuamente
@@ -2977,7 +3010,7 @@
             if (hoursElapsed > 0) {
                 Object.keys(gameState.stats).forEach(key => {
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
-                    gameState.stats[key].current = Math.max(0, gameState.stats[key].current - decayAmount);
+                    gameState.stats[key].value = Math.max(0, gameState.stats[key].value - decayAmount);
                 });
                 
                 // Resetear desglose de hidratación si cambió el día
@@ -3208,7 +3241,7 @@
             const percentage = mlToHydrationPercent(ml);
             
             // Aumentar hidratación total
-            gameState.stats.hidratacion.current = Math.min(100, gameState.stats.hidratacion.current + percentage);
+            gameState.stats.hidratacion.value = Math.min(100, gameState.stats.hidratacion.value + percentage);
             
             // Registrar en desglose por tipo
             gameState.hydrationBreakdown[type] = (gameState.hydrationBreakdown[type] || 0) + ml;
@@ -4005,23 +4038,6 @@
             document.getElementById('aprendizajeModal').classList.remove('show');
         }
         
-        function openContenidoModal() {
-            const actions = GROWTH_ACTIONS.contenido;
-            const container = document.getElementById('contenidoOptions');
-            container.innerHTML = '';
-            
-            actions.forEach(action => {
-                const button = createGrowthButton(action, 'contenido');
-                container.appendChild(button);
-            });
-            
-            document.getElementById('contenidoModal').classList.add('show');
-        }
-        
-        function closeContenidoModal() {
-            document.getElementById('contenidoModal').classList.remove('show');
-        }
-        
         function openProfesionModal() {
             document.getElementById('profesionModal').classList.add('show');
         }
@@ -4138,10 +4154,6 @@
                 openAprendizajeModal();
             });
             
-            document.getElementById('btnContenido').addEventListener('click', () => {
-                openContenidoModal();
-            });
-            
             document.getElementById('btnProfesion').addEventListener('click', () => {
                 openProfesionModal();
             });
@@ -4165,6 +4177,10 @@
             loadSelfcareCooldowns();
             resetDailyChecksIfNeeded();
             renderDailyChecks();
+            
+            // Cargar y renderizar ideas
+            loadIdeas();
+            renderIdeas();
             
             // Inicializar y actualizar reloj cada segundo
             updateClock();
@@ -4456,6 +4472,330 @@
                     modal.remove();
                 }
             });
+        }
+
+        // ===== SISTEMA DE GESTIÓN DE IDEAS =====
+        
+        // Cargar ideas
+        function loadIdeas() {
+            const saved = localStorage.getItem('ideas');
+            if (saved) {
+                gameState.ideas = JSON.parse(saved);
+            }
+        }
+        
+        // Guardar ideas
+        function saveIdeas() {
+            localStorage.setItem('ideas', JSON.stringify(gameState.ideas));
+        }
+        
+        // Agregar nueva idea
+        function addNewIdea() {
+            const input = document.getElementById('newIdeaInput');
+            const percentageSelect = document.getElementById('ideaPercentage');
+            const text = input.value.trim();
+            const percentage = parseInt(percentageSelect.value);
+            
+            if (text === '') {
+                alert('✏️ Por favor escribe tu idea');
+                return;
+            }
+            
+            const idea = {
+                id: Date.now(),
+                text: text,
+                percentage: percentage,
+                createdAt: new Date().toISOString(),
+                status: 'pendiente'
+            };
+            
+            gameState.ideas.pendientes.push(idea);
+            
+            // Sumar porcentaje a la barra de contenido
+            if (gameState.stats.contenido) {
+                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + percentage);
+            }
+            
+            input.value = '';
+            saveIdeas();
+            saveState();
+            renderIdeas();
+            renderStats();
+            
+            // Feedback visual
+            alert(`✨ Idea agregada! +${percentage}% a Contenido`);
+        }
+        
+        // Renderizar todas las ideas
+        function renderIdeas() {
+            renderIdeasSection('pendientes', 'ideasPendientesList');
+            renderIdeasSection('grabadas', 'ideasGrabadasList');
+            renderIdeasSection('editadas', 'ideasEditadasList');
+            renderIdeasSection('publicadas', 'ideasPublicadasList');
+        }
+        
+        // Renderizar sección de ideas
+        function renderIdeasSection(section, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            container.innerHTML = '';
+            const ideas = gameState.ideas[section] || [];
+            
+            if (ideas.length === 0) {
+                container.innerHTML = '<p style="color: #a78bfa; text-align: center; padding: 20px; font-style: italic;">No hay ideas en esta sección aún</p>';
+                return;
+            }
+            
+            ideas.forEach((idea, index) => {
+                const ideaCard = createIdeaCard(idea, section, index);
+                container.appendChild(ideaCard);
+            });
+        }
+        
+        // Crear tarjeta de idea
+        function createIdeaCard(idea, section, index) {
+            const card = document.createElement('div');
+            card.style.cssText = `
+                background: linear-gradient(135deg, #ffffff 0%, #fef3ff 100%);
+                padding: 15px;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(255, 107, 157, 0.15);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 15px;
+                transition: transform 0.3s ease;
+            `;
+            
+            card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-2px)');
+            card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+            
+            // Contenido de la idea
+            const content = document.createElement('div');
+            content.style.cssText = 'flex: 1; min-width: 0;';
+            
+            const text = document.createElement('div');
+            text.textContent = idea.text;
+            text.style.cssText = 'color: #6b4c9a; font-weight: 600; margin-bottom: 5px; word-wrap: break-word;';
+            
+            const meta = document.createElement('div');
+            meta.style.cssText = 'display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.85em;';
+            
+            const percentage = document.createElement('span');
+            percentage.textContent = `+${idea.percentage}%`;
+            percentage.style.cssText = 'background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; padding: 3px 8px; border-radius: 8px; font-weight: 600;';
+            
+            const date = document.createElement('span');
+            date.textContent = new Date(idea.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+            date.style.cssText = 'color: #a78bfa;';
+            
+            meta.appendChild(percentage);
+            meta.appendChild(date);
+            
+            // Si está editada, mostrar fecha de publicación
+            if (section === 'editadas' && idea.publishDate) {
+                const publishInfo = document.createElement('span');
+                const pDate = new Date(idea.publishDate);
+                publishInfo.textContent = `📅 ${pDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} ${pDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+                publishInfo.style.cssText = 'color: #ff6b9d; font-weight: 600;';
+                meta.appendChild(publishInfo);
+            }
+            
+            content.appendChild(text);
+            content.appendChild(meta);
+            
+            // Botones de acción
+            const actions = document.createElement('div');
+            actions.style.cssText = 'display: flex; gap: 8px; flex-shrink: 0;';
+            
+            // Botón de acción principal según estado
+            if (section === 'pendientes') {
+                const recordBtn = createActionButton('🎥', () => moveIdea(section, index, 'grabadas', idea.percentage));
+                actions.appendChild(recordBtn);
+            } else if (section === 'grabadas') {
+                const editBtn = createActionButton('✂️', () => moveIdea(section, index, 'editadas', idea.percentage));
+                actions.appendChild(editBtn);
+            } else if (section === 'editadas') {
+                const scheduleBtn = createActionButton('📅', () => scheduleIdea(section, index));
+                actions.appendChild(scheduleBtn);
+            }
+            
+            // Botón de eliminar
+            const deleteBtn = createActionButton('🗑️', () => deleteIdea(section, index, idea.percentage));
+            deleteBtn.style.background = 'linear-gradient(135deg, #ff6b9d 0%, #c44569 100%)';
+            actions.appendChild(deleteBtn);
+            
+            card.appendChild(content);
+            card.appendChild(actions);
+            
+            return card;
+        }
+        
+        // Crear botón de acción
+        function createActionButton(emoji, onClick) {
+            const btn = document.createElement('button');
+            btn.textContent = emoji;
+            btn.style.cssText = `
+                background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%);
+                border: none;
+                border-radius: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+                transition: all 0.3s ease;
+            `;
+            
+            btn.addEventListener('mouseenter', () => {
+                btn.style.transform = 'scale(1.1)';
+                btn.style.boxShadow = '0 6px 20px rgba(167, 139, 250, 0.5)';
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'scale(1)';
+                btn.style.boxShadow = '0 4px 15px rgba(167, 139, 250, 0.3)';
+            });
+            
+            btn.addEventListener('click', onClick);
+            
+            return btn;
+        }
+        
+        // Mover idea de una sección a otra
+        function moveIdea(fromSection, index, toSection, percentage) {
+            const idea = gameState.ideas[fromSection][index];
+            gameState.ideas[fromSection].splice(index, 1);
+            gameState.ideas[toSection].push(idea);
+            
+            // Sumar porcentaje adicional a la barra
+            if (gameState.stats.contenido) {
+                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + percentage);
+            }
+            
+            saveIdeas();
+            saveState();
+            renderIdeas();
+            renderStats();
+            
+            // Feedback
+            const messages = {
+                grabadas: '🎥 Idea marcada como grabada!',
+                editadas: '✂️ Idea marcada como editada!',
+                publicadas: '📤 Idea publicada!'
+            };
+            
+            alert(`${messages[toSection]} +${percentage}% a Contenido`);
+        }
+        
+        // Programar idea para publicación
+        function scheduleIdea(section, index) {
+            const idea = gameState.ideas[section][index];
+            
+            // Crear modal para programar
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.cssText = 'display: flex; justify-content: center; align-items: center;';
+            
+            const content = document.createElement('div');
+            content.className = 'modal-content';
+            content.style.cssText = 'max-width: 400px;';
+            
+            content.innerHTML = `
+                <div class="modal-header">
+                    <h3 class="modal-title">📅 Programar Publicación</h3>
+                    <p class="modal-subtitle">${idea.text}</p>
+                </div>
+                <div style="margin: 20px 0;">
+                    <label style="display: block; color: #6b4c9a; font-weight: 600; margin-bottom: 8px;">Fecha y hora de publicación:</label>
+                    <input type="datetime-local" id="publishDateTime" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="confirmSchedule(${index})" style="flex: 1; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 15px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">✔️ Programar</button>
+                    <button onclick="cancelSchedule()" style="flex: 1; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border: none; border-radius: 12px; padding: 15px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">✖️ Cancelar</button>
+                </div>
+            `;
+            
+            // Establecer fecha mínima (ahora)
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const dateInput = content.querySelector('#publishDateTime');
+            setTimeout(() => {
+                const input = document.getElementById('publishDateTime');
+                if (input) {
+                    input.min = now.toISOString().slice(0, 16);
+                    input.value = now.toISOString().slice(0, 16);
+                }
+            }, 100);
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // Guardar referencia para las funciones globales
+            window.currentSchedulingIndex = index;
+        }
+        
+        // Confirmar programación
+        function confirmSchedule(index) {
+            const dateInput = document.getElementById('publishDateTime');
+            const publishDate = dateInput.value;
+            
+            if (!publishDate) {
+                alert('⚠️ Por favor selecciona una fecha y hora');
+                return;
+            }
+            
+            const idea = gameState.ideas.editadas[index];
+            idea.publishDate = new Date(publishDate).toISOString();
+            
+            // Mover a publicadas
+            gameState.ideas.editadas.splice(index, 1);
+            gameState.ideas.publicadas.push(idea);
+            
+            // Sumar porcentaje
+            if (gameState.stats.contenido) {
+                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + idea.percentage);
+            }
+            
+            saveIdeas();
+            saveState();
+            renderIdeas();
+            renderStats();
+            
+            cancelSchedule();
+            alert(`🎉 Idea programada para publicarse! +${idea.percentage}% a Contenido`);
+        }
+        
+        // Cancelar programación
+        function cancelSchedule() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#publishDateTime')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Eliminar idea
+        function deleteIdea(section, index, percentage) {
+            if (!confirm('⚠️ ¿Estás seguro de eliminar esta idea?')) {
+                return;
+            }
+            
+            gameState.ideas[section].splice(index, 1);
+            
+            // Restar porcentaje de la barra (solo si no está en 0)
+            if (gameState.stats.contenido && gameState.stats.contenido.value > 0) {
+                gameState.stats.contenido.value = Math.max(0, gameState.stats.contenido.value - percentage);
+            }
+            
+            saveIdeas();
+            saveState();
+            renderIdeas();
+            renderStats();
+            
+            alert(`🗑️ Idea eliminada. -${percentage}% de Contenido`);
         }
 
         // ===== SISTEMA DE BACKUP Y PERSISTENCIA =====
