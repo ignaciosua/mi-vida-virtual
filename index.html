@@ -1492,6 +1492,13 @@
                 🔄 Recuperar Últimos Datos
             </button>
         </div>
+        
+        <!-- Herramienta de diagnóstico -->
+        <div style="margin-top: 15px;">
+            <button onclick="showDiagnostics()" style="width: 100%; background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);">
+                🔍 Ver Todos Mis Datos Guardados
+            </button>
+        </div>
     </div>
 
     <!-- Modal para beber agua -->
@@ -5188,6 +5195,94 @@
                 alert('❌ Error al recuperar datos: ' + error.message);
                 console.error('Error en recuperación:', error);
             }
+        }
+        
+        // Mostrar diagnóstico de datos
+        function showDiagnostics() {
+            const library = localStorage.getItem('library');
+            const libraryBackup = localStorage.getItem('library_backup');
+            const ideas = localStorage.getItem('ideas');
+            const gameState = localStorage.getItem('gameState');
+            
+            let html = `
+                <div class="modal show" style="z-index: 10000;">
+                    <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+                        <div class="modal-header">
+                            <h3>🔍 Diagnóstico de Datos</h3>
+                        </div>
+                        <div class="modal-body" style="text-align: left;">
+            `;
+            
+            // Biblioteca
+            html += '<h4 style="color: #667eea; margin-top: 20px;">📚 Biblioteca</h4>';
+            if (library) {
+                const lib = JSON.parse(library);
+                html += `<p><strong>Libros:</strong> ${lib.libros?.length || 0}</p>`;
+                html += `<p><strong>Películas:</strong> ${lib.peliculas?.length || 0}</p>`;
+                html += `<p><strong>Series:</strong> ${lib.series?.length || 0}</p>`;
+                
+                if (lib.peliculas && lib.peliculas.length > 0) {
+                    html += '<details style="margin-top: 10px;"><summary style="cursor: pointer; color: #667eea; font-weight: 600;">Ver películas guardadas</summary>';
+                    html += '<div style="margin-top: 10px; background: #f5f5f5; padding: 10px; border-radius: 8px; max-height: 200px; overflow-y: auto;">';
+                    lib.peliculas.forEach((movie, i) => {
+                        html += `<div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 5px;">
+                            <strong>${i + 1}. ${movie.title}</strong><br>
+                            <small>Rating: ${'⭐'.repeat(movie.rating || 0)}</small><br>
+                            ${movie.description ? `<small style="color: #666;">${movie.description.substring(0, 100)}${movie.description.length > 100 ? '...' : ''}</small>` : ''}
+                        </div>`;
+                    });
+                    html += '</div></details>';
+                }
+            } else {
+                html += '<p style="color: red;">❌ No hay datos de biblioteca</p>';
+            }
+            
+            // Backup de biblioteca
+            html += '<h4 style="color: #ff9800; margin-top: 20px;">💾 Backup Automático de Biblioteca</h4>';
+            if (libraryBackup) {
+                const libBackup = JSON.parse(libraryBackup);
+                html += `<p>✅ Backup disponible</p>`;
+                html += `<p><strong>Películas en backup:</strong> ${libBackup.peliculas?.length || 0}</p>`;
+                
+                if (libBackup.peliculas && libBackup.peliculas.length > 0) {
+                    html += '<details style="margin-top: 10px;"><summary style="cursor: pointer; color: #ff9800; font-weight: 600;">Ver películas en backup</summary>';
+                    html += '<div style="margin-top: 10px; background: #fff3e0; padding: 10px; border-radius: 8px; max-height: 200px; overflow-y: auto;">';
+                    libBackup.peliculas.forEach((movie, i) => {
+                        html += `<div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 5px;">
+                            <strong>${i + 1}. ${movie.title}</strong><br>
+                            <small>Rating: ${'⭐'.repeat(movie.rating || 0)}</small><br>
+                            ${movie.description ? `<small style="color: #666;">${movie.description.substring(0, 100)}${movie.description.length > 100 ? '...' : ''}</small>` : ''}
+                        </div>`;
+                    });
+                    html += '</div></details>';
+                }
+            } else {
+                html += '<p style="color: #999;">⚠️ No hay backup automático aún</p>';
+            }
+            
+            // Ideas
+            html += '<h4 style="color: #ff6b9d; margin-top: 20px;">💡 Ideas</h4>';
+            if (ideas) {
+                const id = JSON.parse(ideas);
+                const total = (id.pendientes?.length || 0) + (id.grabadas?.length || 0) + (id.editadas?.length || 0) + (id.publicadas?.length || 0);
+                html += `<p>Total: ${total} ideas</p>`;
+            } else {
+                html += '<p style="color: #999;">Sin ideas guardadas</p>';
+            }
+            
+            html += `
+                        </div>
+                        <button onclick="closeDiagnostics()" style="width: 100%; margin-top: 20px; padding: 15px; background: #667eea; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">✕ Cerrar</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        
+        function closeDiagnostics() {
+            const modal = document.querySelector('.modal.show');
+            if (modal) modal.remove();
         }
         
         // ===================================
