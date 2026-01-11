@@ -1481,12 +1481,15 @@
         <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
         
         <!-- Botón de backup accesible -->
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button onclick="exportBackup()" style="flex: 1; background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.3);">
+        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+            <button onclick="exportBackup()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.3);">
                 📥 Descargar Backup
             </button>
-            <button onclick="importBackup()" style="flex: 1; background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">
+            <button onclick="importBackup()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">
                 📤 Restaurar Backup
+            </button>
+            <button onclick="recoverFromAutoBackup()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);">
+                🔄 Recuperar Últimos Datos
             </button>
         </div>
     </div>
@@ -4338,13 +4341,47 @@
         function loadLibrary() {
             const saved = localStorage.getItem('library');
             if (saved) {
-                library = JSON.parse(saved);
+                try {
+                    const loadedLibrary = JSON.parse(saved);
+                    // Solo cargar si hay datos válidos
+                    if (loadedLibrary && typeof loadedLibrary === 'object') {
+                        library = loadedLibrary;
+                        console.log('📚 Biblioteca cargada:', library);
+                    }
+                } catch (error) {
+                    console.error('❌ Error al cargar biblioteca:', error);
+                    // Intentar recuperar del backup
+                    const backup = localStorage.getItem('library_backup');
+                    if (backup) {
+                        try {
+                            library = JSON.parse(backup);
+                            console.log('⚠️ Biblioteca recuperada del backup');
+                            // Guardar el backup como versión actual
+                            saveLibrary();
+                        } catch (backupError) {
+                            console.error('❌ Error al recuperar backup:', backupError);
+                        }
+                    }
+                }
             }
         }
         
         // Guardar biblioteca en localStorage
         function saveLibrary() {
-            localStorage.setItem('library', JSON.stringify(library));
+            try {
+                // Crear backup antes de guardar
+                const currentLibrary = localStorage.getItem('library');
+                if (currentLibrary) {
+                    localStorage.setItem('library_backup', currentLibrary);
+                }
+                
+                // Guardar nueva versión
+                localStorage.setItem('library', JSON.stringify(library));
+                console.log('💾 Biblioteca guardada correctamente');
+            } catch (error) {
+                console.error('❌ Error al guardar biblioteca:', error);
+                alert('⚠️ Error al guardar. Tus cambios pueden no haberse guardado.');
+            }
         }
         
         // Abrir categoría de biblioteca
@@ -4613,13 +4650,32 @@
         function loadIdeas() {
             const saved = localStorage.getItem('ideas');
             if (saved) {
-                gameState.ideas = JSON.parse(saved);
+                try {
+                    const loadedIdeas = JSON.parse(saved);
+                    if (loadedIdeas && typeof loadedIdeas === 'object') {
+                        gameState.ideas = loadedIdeas;
+                        console.log('💡 Ideas cargadas:', gameState.ideas);
+                    }
+                } catch (error) {
+                    console.error('❌ Error al cargar ideas:', error);
+                }
             }
         }
         
         // Guardar ideas
         function saveIdeas() {
-            localStorage.setItem('ideas', JSON.stringify(gameState.ideas));
+            try {
+                // Backup antes de guardar
+                const currentIdeas = localStorage.getItem('ideas');
+                if (currentIdeas) {
+                    localStorage.setItem('ideas_backup', currentIdeas);
+                }
+                
+                localStorage.setItem('ideas', JSON.stringify(gameState.ideas));
+                console.log('💾 Ideas guardadas correctamente');
+            } catch (error) {
+                console.error('❌ Error al guardar ideas:', error);
+            }
         }
         
         // Actualizar barra de contenido
@@ -5084,6 +5140,54 @@
             };
             
             input.click();
+        }
+        
+        // Recuperar desde backup automático
+        function recoverFromAutoBackup() {
+            const libraryBackup = localStorage.getItem('library_backup');
+            const ideasBackup = localStorage.getItem('ideas_backup');
+            
+            if (!libraryBackup && !ideasBackup) {
+                alert('❌ No hay backups automáticos disponibles');
+                return;
+            }
+            
+            let message = '🔄 Backups disponibles:\n\n';
+            if (libraryBackup) message += '✓ Biblioteca\n';
+            if (ideasBackup) message += '✓ Ideas\n';
+            message += '\n¿Quieres recuperar estos datos? Esto reemplazará los datos actuales.';
+            
+            if (!confirm(message)) {
+                return;
+            }
+            
+            try {
+                let recovered = false;
+                
+                // Recuperar biblioteca
+                if (libraryBackup) {
+                    localStorage.setItem('library', libraryBackup);
+                    recovered = true;
+                    console.log('✅ Biblioteca recuperada del backup');
+                }
+                
+                // Recuperar ideas
+                if (ideasBackup) {
+                    localStorage.setItem('ideas', ideasBackup);
+                    recovered = true;
+                    console.log('✅ Ideas recuperadas del backup');
+                }
+                
+                if (recovered) {
+                    alert('✅ Datos recuperados exitosamente. La página se recargará.');
+                    location.reload();
+                } else {
+                    alert('⚠️ No se pudo recuperar ningún dato');
+                }
+            } catch (error) {
+                alert('❌ Error al recuperar datos: ' + error.message);
+                console.error('Error en recuperación:', error);
+            }
         }
         
         // ===================================
