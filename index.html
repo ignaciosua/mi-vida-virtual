@@ -1424,7 +1424,7 @@
             <div id="calendar-actividades" class="calendar-view" style="display: block;">
                 <!-- Lista de actividades pendientes (Arriba) -->
                 <div style="margin-bottom: 20px;">
-                    <h3 style="color: #ff6b9d; margin-bottom: 12px;">🕒 Pendientes (Este mes)</h3>
+                    <h3 style="color: #ff6b9d; margin-bottom: 12px;">� Actividades de Hoy</h3>
                     <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
                 </div>
                 
@@ -1467,9 +1467,6 @@
                         <label style="display: block; margin-bottom: 5px; color: #6b4c9a; font-weight: 600;">📊 Afecta a:</label>
                         <select id="activityStatEffect" onchange="toggleStatPercentage(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 8px;">
                             <option value="none">Ninguna estadística</option>
-                            <option value="hambre">🍽️ Hambre</option>
-                            <option value="sueño">😴 Sueño</option>
-                            <option value="hidratacion">💧 Hidratación</option>
                             <option value="ejercicio">🏋️ Salud Física</option>
                             <option value="autoestima">💖 Autoestima</option>
                             <option value="vidaSocial">💬 Vida Social</option>
@@ -1495,6 +1492,16 @@
                 
                 <!-- Vista de calendario mensual -->
                 <div id="monthlyCalendar" style="background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1); overflow-x: auto;"></div>
+                
+                <!-- Sección de corrección de actividades mal clasificadas -->
+                <div style="margin-top: 30px; padding: 15px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border-radius: 15px; border: 2px dashed #ffa726;">
+                    <h4 style="color: #f57c00; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <span>⚠️</span> Actividades mal clasificadas
+                        <span style="font-size: 0.75em; color: #ff6f00; background: rgba(255,255,255,0.5); padding: 3px 8px; border-radius: 12px; margin-left: auto;">Se borra cada día</span>
+                    </h4>
+                    <p style="font-size: 0.85em; color: #e65100; margin-bottom: 10px;">Si marcaste mal alguna actividad, puedes corregirla aquí:</p>
+                    <div id="wrongActivitiesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
                 
             </div>
         </div>
@@ -2507,6 +2514,10 @@
                 grabadas: [],
                 editadas: [],
                 publicadas: []
+            },
+            wrongActivities: {
+                list: [],
+                lastReset: new Date().toDateString()
             }
         };
 
@@ -2551,6 +2562,14 @@
                 
                 if (!gameState.favorites) {
                     gameState.favorites = [];
+                }
+                
+                // Migrar estructura de wrongActivities
+                if (!gameState.wrongActivities) {
+                    gameState.wrongActivities = {
+                        list: [],
+                        lastReset: new Date().toDateString()
+                    };
                 }
                 
                 // Asegurar que todas las estadísticas existen (incluyendo nuevas)
@@ -4352,6 +4371,11 @@
             // Cargar y renderizar ideas
             loadIdeas();
             renderIdeas();
+            
+            // Renderizar actividades del calendario
+            renderActivities();
+            renderMonthlyCalendar();
+            renderWrongActivities();
             
             // Inicializar y actualizar reloj cada segundo
             updateClock();
@@ -6316,6 +6340,9 @@
                 activity.completed = true;
                 gameState.activities.completed.push(activity);
                 
+                // Agregar a wrongActivities para poder corregir
+                gameState.wrongActivities.list.push({...activity});
+                
                 // Aplicar efecto de estadística si existe
                 if (activity.statEffect && activity.statEffect !== 'none') {
                     const [statName, statValue] = activity.statEffect.split(',');
@@ -6333,6 +6360,7 @@
                 
                 saveState();
                 renderActivities();
+                renderWrongActivities();
             }
         }
         
@@ -6340,7 +6368,7 @@
             const activity = gameState.activities.pending.find(a => a.id === id);
             if (activity) {
                 // Confirmar acción
-                if (!confirm('¿Confirmas que NO hiciste esta actividad? Esto reducirá tu estadística.')) {
+                if (!confirm('¿Confirmas que NO hiciste esta actividad?')) {
                     return;
                 }
                 
@@ -6348,8 +6376,11 @@
                 activity.completed = false;
                 gameState.activities.completed.push(activity);
                 
-                // Aplicar efecto NEGATIVO si existe
-                if (activity.statEffect && activity.statEffect !== 'none') {
+                // Agregar a wrongActivities para poder corregir
+                gameState.wrongActivities.list.push({...activity});
+                
+                // Solo aplicar penalización si es IMPORTANTE (3 estrellas)
+                if ((activity.importance || 2) === 3 && activity.statEffect && activity.statEffect !== 'none') {
                     const [statName, statValue] = activity.statEffect.split(',');
                     const penalty = parseInt(statValue);
                     
@@ -6359,13 +6390,126 @@
                         renderStats();
                         
                         // Mostrar notificación
+                        alert(`❌ Actividad importante no realizada: -${penalty}% a ${statName}`);
                         console.log(`❌ Actividad no realizada: -${penalty}% a ${statName}`);
                     }
                 }
                 
                 saveState();
                 renderActivities();
+                renderWrongActivities();
             }
+        }
+        
+        function renderWrongActivities() {
+            const container = document.getElementById('wrongActivitiesList');
+            if (!container) return;
+            
+            // Verificar si necesitamos resetear (cambio de día)
+            const today = new Date().toDateString();
+            if (gameState.wrongActivities.lastReset !== today) {
+                gameState.wrongActivities.list = [];
+                gameState.wrongActivities.lastReset = today;
+                saveState();
+            }
+            
+            // Obtener actividades marcadas hoy (tanto completadas como no completadas)
+            const todayActivities = gameState.wrongActivities.list;
+            
+            if (todayActivities.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; font-size: 0.9em; margin: 10px 0;">No hay actividades marcadas hoy</p>';
+                return;
+            }
+            
+            const categories = {
+                work: { icon: '💼', name: 'Trabajo', bg: '#fef3c7', text: '#92400e', border: '#fbbf24' },
+                personal: { icon: '🏠', name: 'Personal', bg: '#dbeafe', text: '#1e40af', border: '#3b82f6' },
+                health: { icon: '❤️', name: 'Salud', bg: '#fecaca', text: '#991b1b', border: '#ef4444' },
+                social: { icon: '👥', name: 'Social', bg: '#d1fae5', text: '#065f46', border: '#10b981' },
+                learning: { icon: '📚', name: 'Aprendizaje', bg: '#e9d5ff', text: '#6b21a8', border: '#a855f7' }
+            };
+            
+            container.innerHTML = todayActivities.map(activity => {
+                const cat = categories[activity.category || 'personal'];
+                const activityDate = new Date(activity.date);
+                const formattedDate = activityDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                const formattedTime = activity.time || '00:00';
+                
+                const stars = '⭐'.repeat(activity.importance || 2);
+                
+                let statInfo = '';
+                if (activity.statEffect && activity.statEffect !== 'none') {
+                    const [statName, statValue] = activity.statEffect.split(',');
+                    const statIcons = {
+                        ejercicio: '💪',
+                        autoestima: '✨',
+                        vidaSocial: '👥',
+                        idiomas: '🗣️',
+                        aprendizaje: '📚',
+                        contenido: '🎬'
+                    };
+                    statInfo = `<p style="margin: 5px 0 0 0; font-size: 0.85em; color: #666;">${statIcons[statName]} ${activity.completed ? '+' : '-'}${statValue}%</p>`;
+                }
+                
+                const statusBadge = activity.completed 
+                    ? '<span style="background: #10b981; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8em; font-weight: 600;">✅ Hecha</span>'
+                    : '<span style="background: #ef4444; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8em; font-weight: 600;">❌ No hecha</span>';
+                
+                return `
+                    <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                    <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                    ${statusBadge}
+                                </div>
+                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''} ${stars}</p>
+                                ${statInfo}
+                            </div>
+                            <button onclick="restoreActivity(${activity.id})" style="padding: 8px 16px; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; margin-left: 10px;">↩️ Restaurar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function restoreActivity(id) {
+            // Buscar la actividad en la lista de actividades mal clasificadas
+            const activityIndex = gameState.wrongActivities.list.findIndex(a => a.id === id);
+            if (activityIndex === -1) return;
+            
+            const activity = gameState.wrongActivities.list[activityIndex];
+            
+            // Revertir el efecto de estadística si existe
+            if (activity.statEffect && activity.statEffect !== 'none') {
+                const [statName, statValue] = activity.statEffect.split(',');
+                const value = parseInt(statValue);
+                
+                if (gameState.stats[statName]) {
+                    if (activity.completed) {
+                        // Si estaba marcada como hecha, restar el boost
+                        gameState.stats[statName].value = Math.max(0, gameState.stats[statName].value - value);
+                    } else {
+                        // Si estaba marcada como no hecha (y era importante), devolver la penalización
+                        if ((activity.importance || 2) === 3) {
+                            gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + value);
+                        }
+                    }
+                    renderStats();
+                }
+            }
+            
+            // Remover de completed y wrongActivities
+            gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
+            gameState.wrongActivities.list.splice(activityIndex, 1);
+            
+            // Restaurar a pending
+            activity.completed = false;
+            gameState.activities.pending.push(activity);
+            
+            saveState();
+            renderActivities();
+            renderWrongActivities();
         }
         
         function deleteActivity(id, completed = false) {
