@@ -1529,6 +1529,59 @@
 
         <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
         
+        <!-- Modal para editar actividad -->
+        <div id="editActivityModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+            <div style="background: white; padding: 25px; border-radius: 20px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                <h3 style="color: #7c3aed; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">✏️ Editar Actividad</h3>
+                
+                <label style="font-size: 0.9em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📝 Nombre</label>
+                <input type="text" id="editActivityText" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 1em; margin-bottom: 12px;">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Desde</label>
+                        <input type="date" id="editActivityDateFrom" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Hasta</label>
+                        <input type="date" id="editActivityDateTo" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⏰ Hora</label>
+                        <input type="time" id="editActivityTime" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">🎯 Categoría</label>
+                        <select id="editActivityCategory" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                            <option value="personal">🌸 Personal</option>
+                            <option value="escuela">📚 Escuela</option>
+                            <option value="trabajo">💼 Trabajo</option>
+                            <option value="ejercicio">💪 Ejercicio</option>
+                            <option value="salud">❤️ Salud</option>
+                            <option value="social">👥 Social</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⭐ Importancia</label>
+                    <select id="editActivityImportance" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                        <option value="3">⭐⭐⭐ Importante</option>
+                        <option value="2">⭐⭐ Normal</option>
+                        <option value="1">⭐ Opcional</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="saveActivityEdit()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">✅ Guardar</button>
+                    <button onclick="closeEditModal()" style="flex: 1; padding: 12px; background: #9ca3af; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">❌ Cancelar</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- Botón de backup accesible -->
         <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
             <button onclick="exportBackup()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.3);">
@@ -6555,13 +6608,64 @@
         }
         
         function deleteActivity(id, completed = false) {
-            if (completed) {
-                gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
-            } else {
-                gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+            if (confirm('¿Estás seguro de eliminar esta actividad?')) {
+                if (completed) {
+                    gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
+                } else {
+                    gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+                }
+                saveState();
+                renderActivities();
+                renderMonthlyCalendar();
             }
+        }
+        
+        let editingActivityId = null;
+        
+        function editActivity(id) {
+            const activity = gameState.activities.pending.find(a => a.id === id);
+            if (!activity) return;
+            
+            editingActivityId = id;
+            
+            // Llenar el formulario con los datos actuales
+            document.getElementById('editActivityText').value = activity.text;
+            document.getElementById('editActivityDateFrom').value = activity.dateFrom || '';
+            document.getElementById('editActivityDateTo').value = activity.dateTo === 'indefinido' ? '' : activity.dateTo;
+            document.getElementById('editActivityTime').value = activity.time || '20:00';
+            document.getElementById('editActivityCategory').value = activity.category || 'personal';
+            document.getElementById('editActivityImportance').value = activity.importance || 2;
+            
+            // Mostrar modal
+            const modal = document.getElementById('editActivityModal');
+            modal.style.display = 'flex';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editActivityModal').style.display = 'none';
+            editingActivityId = null;
+        }
+        
+        function saveActivityEdit() {
+            if (!editingActivityId) return;
+            
+            const activity = gameState.activities.pending.find(a => a.id === editingActivityId);
+            if (!activity) return;
+            
+            // Actualizar los datos
+            activity.text = document.getElementById('editActivityText').value.trim();
+            activity.dateFrom = document.getElementById('editActivityDateFrom').value || new Date().toISOString().split('T')[0];
+            activity.dateTo = document.getElementById('editActivityDateTo').value || 'indefinido';
+            activity.time = document.getElementById('editActivityTime').value || '20:00';
+            activity.category = document.getElementById('editActivityCategory').value;
+            activity.importance = parseInt(document.getElementById('editActivityImportance').value);
+            
             saveState();
             renderActivities();
+            renderMonthlyCalendar();
+            closeEditModal();
+            
+            alert('✅ Actividad actualizada correctamente');
         }
         
         // Variable para el mes actual del calendario
@@ -6801,7 +6905,10 @@
                                 <p style="margin: 0; font-weight: 600; color: ${isCompleted ? '#6b7280' : '#333'}; text-decoration: ${isCompleted ? 'line-through' : 'none'};"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
                                 <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${isCompleted ? '#9ca3af' : cat.text};">⏰ ${activity.time || '20:00'} ${stars}</p>
                             </div>
-                            ${!isCompleted ? `<button onclick="event.stopPropagation(); deleteActivity(${activity.id})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.85em;">🗑️</button>` : ''}
+                            <div style="display: flex; gap: 5px;">
+                                ${!isCompleted ? `<button onclick="event.stopPropagation(); editActivity(${activity.id})" style="padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.85em;">✏️</button>` : ''}
+                                ${!isCompleted ? `<button onclick="event.stopPropagation(); deleteActivity(${activity.id})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.85em;">🗑️</button>` : ''}
+                            </div>
                         </div>
                     `;
                 }).join('');
