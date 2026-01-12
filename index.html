@@ -1415,10 +1415,6 @@
 
         <!-- Tab: Calendario -->
         <div class="tab-content" id="tab-calendario">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h2 style="color: #ff6b9d; margin-bottom: 10px;">📅 Actividades del Día</h2>
-                <p style="color: #a78bfa; font-size: 0.95em;">Calendario general - Todas tus actividades</p>
-            </div>
             
             <!-- Vista de Actividades -->
             <div id="calendar-actividades" class="calendar-view" style="display: block;">
@@ -6554,6 +6550,16 @@
         // Variable para el mes actual del calendario
         let currentCalendarMonth = new Date();
         
+        // Variable para la fecha seleccionada en el calendario
+        let selectedDate = new Date();
+        
+        // Función para seleccionar un día en el calendario
+        function selectCalendarDay(year, month, day) {
+            selectedDate = new Date(year, month, day);
+            renderActivities();
+            renderMonthlyCalendar();
+        }
+        
         // Mostrar/ocultar campo de porcentaje según la estadística seleccionada
         function toggleStatPercentage(statValue) {
             const container = document.getElementById('statPercentageContainer');
@@ -6662,31 +6668,55 @@
         
         function renderActivities() {
             const pendingContainer = document.getElementById('activitiesPending');
+            const titleElement = document.getElementById('activitiesTitle');
             
             if (!pendingContainer) {
                 console.error('❌ No se encontró el contenedor activitiesPending');
                 return;
             }
             
-            // Obtener fecha de HOY en formato YYYY-MM-DD
+            // Usar la fecha seleccionada (por defecto es hoy)
+            const selectedStr = selectedDate.getFullYear() + '-' + 
+                              String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                              String(selectedDate.getDate()).padStart(2, '0');
+            
             const today = new Date();
             const todayStr = today.getFullYear() + '-' + 
                            String(today.getMonth() + 1).padStart(2, '0') + '-' + 
                            String(today.getDate()).padStart(2, '0');
             
-            console.log('📅 Fecha de hoy:', todayStr);
-            console.log('📋 Total actividades pendientes:', gameState.activities.pending.length);
-            
-            // Filtrar solo actividades de HOY
-            const todayActivities = gameState.activities.pending.filter(activity => {
-                console.log(`Comparando: "${activity.date}" === "${todayStr}"`);
-                return activity.date === todayStr;
+            // Actualizar título según si es hoy u otro día
+            const isToday = selectedStr === todayStr;
+            const formattedDate = selectedDate.toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long' 
             });
             
-            console.log('✅ Actividades de HOY:', todayActivities.length);
+            if (titleElement) {
+                titleElement.textContent = isToday ? '📋 Actividades de Hoy' : `📅 Actividades del ${formattedDate}`;
+            }
+            
+            console.log('📅 Mostrando actividades de:', selectedStr);
+            console.log('📋 Total actividades pendientes:', gameState.activities.pending.length);
+            
+            // Filtrar actividades de la fecha seleccionada O que se repiten diariamente
+            const selectedActivities = gameState.activities.pending.filter(activity => {
+                // Si es la fecha exacta
+                if (activity.date === selectedStr) {
+                    return true;
+                }
+                // Si se repite diariamente y la fecha de la actividad es anterior o igual a la seleccionada
+                if (activity.recurrence === 'daily' && activity.date <= selectedStr) {
+                    return true;
+                }
+                return false;
+            });
+            
+            console.log('✅ Actividades encontradas:', selectedActivities.length);
             
             // Ordenar por importancia y hora
-            const sortedPending = [...todayActivities].sort((a, b) => {
+            const sortedPending = [...selectedActivities].sort((a, b) => {
                 // Primero por importancia (descendente)
                 const importanceDiff = (b.importance || 2) - (a.importance || 2);
                 if (importanceDiff !== 0) return importanceDiff;
@@ -6698,8 +6728,8 @@
             if (sortedPending.length === 0) {
                 pendingContainer.innerHTML = `
                     <div style="text-align: center; padding: 20px;">
-                        <p style="color: #a78bfa; margin-bottom: 10px; font-size: 1.1em;">🌸 No hay actividades para hoy</p>
-                        <p style="color: #999; font-size: 0.85em;">Fecha de hoy: ${todayStr}</p>
+                        <p style="color: #a78bfa; margin-bottom: 10px; font-size: 1.1em;">🌸 No hay actividades para este día</p>
+                        <p style="color: #999; font-size: 0.85em;">${isToday ? 'Hoy' : formattedDate}</p>
                         <p style="color: #999; font-size: 0.85em;">Total en sistema: ${gameState.activities.pending.length} actividades</p>
                     </div>
                 `;
