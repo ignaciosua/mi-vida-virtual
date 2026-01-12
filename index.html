@@ -6693,7 +6693,13 @@
             });
             
             if (sortedPending.length === 0) {
-                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades para hoy 🌸</p>';
+                pendingContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <p style="color: #a78bfa; margin-bottom: 10px; font-size: 1.1em;">🌸 No hay actividades para hoy</p>
+                        <p style="color: #999; font-size: 0.85em;">Total en sistema: ${gameState.activities.pending.length} actividades</p>
+                        <p style="color: #999; font-size: 0.85em;">Buscando fecha: ${todayStr}</p>
+                    </div>
+                `;
             } else {
                 pendingContainer.innerHTML = sortedPending.map(activity => {
                     const activityDate = new Date(`${activity.date}T${activity.time}`);
