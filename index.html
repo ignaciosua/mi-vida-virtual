@@ -6312,6 +6312,8 @@
                 console.log('📅 No se seleccionó fecha, usando hoy:', finalDate);
             }
             
+            console.log('🔍 FECHA FINAL A GUARDAR:', finalDate, '(tipo:', typeof finalDate, ')');
+            
             const newActivity = {
                 id: Date.now(),
                 text: activity,
@@ -6673,9 +6675,20 @@
             console.log('📅 Fecha de hoy:', todayStr);
             console.log('📋 Total actividades pendientes:', gameState.activities.pending.length);
             
+            // MOSTRAR TODAS LAS ACTIVIDADES Y SUS FECHAS
+            console.log('🔍 TODAS LAS ACTIVIDADES:');
+            gameState.activities.pending.forEach((act, i) => {
+                console.log(`  ${i+1}. "${act.text}" - Fecha: "${act.date}" (tipo: ${typeof act.date})`);
+            });
+            
             const todayActivities = gameState.activities.pending.filter(activity => {
-                console.log('Comparando:', activity.date, '===', todayStr, '→', activity.date === todayStr);
-                return activity.date === todayStr;
+                const match = activity.date === todayStr;
+                if (!match) {
+                    console.log(`❌ NO MATCH: "${activity.date}" !== "${todayStr}"`);
+                } else {
+                    console.log(`✅ MATCH: "${activity.text}" - ${activity.date}`);
+                }
+                return match;
             });
             
             console.log('✅ Actividades de hoy encontradas:', todayActivities.length);
