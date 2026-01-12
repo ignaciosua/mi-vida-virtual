@@ -1491,12 +1491,14 @@
                 
                 <!-- Sección de corrección de actividades mal clasificadas -->
                 <div style="margin-top: 30px; padding: 15px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border-radius: 15px; border: 2px dashed #ffa726;">
-                    <h4 style="color: #f57c00; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                    <h4 onclick="document.getElementById('wrongActivitiesContent').style.display = document.getElementById('wrongActivitiesContent').style.display === 'none' ? 'block' : 'none'" style="color: #f57c00; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
                         <span>⚠️</span> Actividades mal clasificadas
-                        <span style="font-size: 0.75em; color: #ff6f00; background: rgba(255,255,255,0.5); padding: 3px 8px; border-radius: 12px; margin-left: auto;">Se borra cada día</span>
+                        <span style="font-size: 0.75em; color: #ff6f00; background: rgba(255,255,255,0.5); padding: 3px 8px; border-radius: 12px; margin-left: auto;">Click para ver</span>
                     </h4>
-                    <p style="font-size: 0.85em; color: #e65100; margin-bottom: 10px;">Si marcaste mal alguna actividad, puedes corregirla aquí:</p>
-                    <div id="wrongActivitiesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                    <div id="wrongActivitiesContent" style="display: none;">
+                        <p style="font-size: 0.85em; color: #e65100; margin-bottom: 10px;">Si marcaste mal alguna actividad, puedes corregirla aquí:</p>
+                        <div id="wrongActivitiesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                    </div>
                 </div>
                 
             </div>
@@ -6438,13 +6440,17 @@
                 saveState();
             }
             
-            // Obtener actividades marcadas hoy (tanto completadas como no completadas)
+            // Obtener solo la ÚLTIMA actividad marcada hoy
             const todayActivities = gameState.wrongActivities.list;
             
             if (todayActivities.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #666; font-size: 0.9em; margin: 10px 0;">No hay actividades marcadas hoy</p>';
                 return;
             }
+            
+            // Mostrar solo la última actividad
+            const lastActivity = todayActivities[todayActivities.length - 1];
+            const activitiesToShow = [lastActivity];
             
             const categories = {
                 work: { icon: '💼', name: 'Trabajo', bg: '#fef3c7', text: '#92400e', border: '#fbbf24' },
@@ -6454,7 +6460,7 @@
                 learning: { icon: '📚', name: 'Aprendizaje', bg: '#e9d5ff', text: '#6b21a8', border: '#a855f7' }
             };
             
-            container.innerHTML = todayActivities.map(activity => {
+            container.innerHTML = activitiesToShow.map(activity => {
                 const cat = categories[activity.category || 'personal'];
                 const activityDate = new Date(activity.date);
                 const formattedDate = activityDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
@@ -6705,12 +6711,14 @@
             const selectedActivities = gameState.activities.pending.filter(activity => {
                 // Si es la fecha exacta de la actividad
                 if (activity.date === selectedStr) {
+                    console.log('✅ Actividad con fecha exacta:', activity.title);
                     return true;
                 }
                 // Si se repite diariamente: mostrar desde su fecha de inicio en adelante
                 if (activity.recurrence === 'daily') {
                     const activityDate = new Date(activity.date + 'T00:00:00');
                     const selectedDateObj = new Date(selectedStr + 'T00:00:00');
+                    console.log('📅 Actividad diaria:', activity.title, '| Inicio:', activity.date, '| Seleccionado:', selectedStr, '| Cumple?:', selectedDateObj >= activityDate);
                     // Mostrar si la fecha seleccionada es igual o posterior a la fecha de inicio
                     return selectedDateObj >= activityDate;
                 }
