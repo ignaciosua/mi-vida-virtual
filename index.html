@@ -6634,21 +6634,16 @@
             
             if (!pendingContainer) return;
             
-            // Filtrar solo actividades del mes actual
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
+            // Filtrar TODAS las actividades de HOY (sin importar la hora)
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
             
-            const thisMonthActivities = gameState.activities.pending.filter(activity => {
-                const activityDate = new Date(activity.date);
-                return activityDate.getMonth() === currentMonth && activityDate.getFullYear() === currentYear;
+            const todayActivities = gameState.activities.pending.filter(activity => {
+                return activity.date === todayStr;
             });
             
-            // Filtrar solo las más importantes (3 estrellas)
-            const importantActivities = thisMonthActivities.filter(a => (a.importance || 2) >= 3);
-            
-            // Renderizar pendientes del mes (ordenar por importancia primero, luego por fecha)
-            const sortedPending = [...importantActivities].sort((a, b) => {
+            // Renderizar todas las actividades de hoy (ordenar por importancia primero, luego por fecha)
+            const sortedPending = [...todayActivities].sort((a, b) => {
                 // Primero por importancia (descendente)
                 const importanceDiff = (b.importance || 3) - (a.importance || 3);
                 if (importanceDiff !== 0) return importanceDiff;
@@ -6660,7 +6655,7 @@
             });
             
             if (sortedPending.length === 0) {
-                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades importantes este mes 🌸</p>';
+                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades para hoy 🌸</p>';
             } else {
                 pendingContainer.innerHTML = sortedPending.map(activity => {
                     const activityDate = new Date(`${activity.date}T${activity.time}`);
