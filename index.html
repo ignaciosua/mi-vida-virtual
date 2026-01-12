@@ -1456,10 +1456,8 @@
                     <div style="margin-bottom: 10px;">
                         <label style="display: block; margin-bottom: 5px; color: #6b4c9a; font-weight: 600;">⭐ Nivel de importancia:</label>
                         <select id="activityImportance" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
-                            <option value="5">⭐⭐⭐⭐⭐ Muy importante</option>
-                            <option value="4">⭐⭐⭐⭐ Importante</option>
-                            <option value="3" selected>⭐⭐⭐ Normal</option>
-                            <option value="2">⭐⭐ Poco importante</option>
+                            <option value="3">⭐⭐⭐ Importante</option>
+                            <option value="2" selected>⭐⭐ Normal</option>
                             <option value="1">⭐ Opcional</option>
                         </select>
                     </div>
@@ -1467,15 +1465,19 @@
                     <!-- Impacto en estadísticas -->
                     <div style="margin-bottom: 10px;">
                         <label style="display: block; margin-bottom: 5px; color: #6b4c9a; font-weight: 600;">📊 Afecta a:</label>
-                        <select id="activityStatEffect" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                        <select id="activityStatEffect" onchange="toggleStatPercentage(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 8px;">
                             <option value="none">Ninguna estadística</option>
-                            <option value="autoestima,15">💎 Autoestima (+15%)</option>
-                            <option value="higiene,20">🚿 Higiene (+20%)</option>
-                            <option value="ejercicio,25">💪 Ejercicio (+25%)</option>
-                            <option value="productividad,20">📚 Productividad (+20%)</option>
-                            <option value="social,15">👥 Social (+15%)</option>
-                            <option value="descanso,10">😴 Descanso (+10%)</option>
+                            <option value="autoestima">💎 Autoestima</option>
+                            <option value="higiene">🚿 Higiene</option>
+                            <option value="ejercicio">💪 Ejercicio</option>
+                            <option value="productividad">📚 Productividad</option>
+                            <option value="social">👥 Social</option>
+                            <option value="descanso">😴 Descanso</option>
                         </select>
+                        <div id="statPercentageContainer" style="display: none;">
+                            <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600; font-size: 0.9em;">Porcentaje de aumento:</label>
+                            <input type="number" id="activityStatPercentage" value="15" min="1" max="100" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 10px; font-size: 0.95em; text-align: center;">
+                        </div>
                     </div>
                     
                     <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
@@ -6263,6 +6265,7 @@
             const recurrenceInput = document.getElementById('activityRecurrence');
             const importanceInput = document.getElementById('activityImportance');
             const statEffectInput = document.getElementById('activityStatEffect');
+            const statPercentageInput = document.getElementById('activityStatPercentage');
             const activity = input.value.trim();
             const date = dateInput.value;
             const time = timeInput.value;
@@ -6270,6 +6273,7 @@
             const recurrence = recurrenceInput.value;
             const importance = parseInt(importanceInput.value);
             const statEffect = statEffectInput.value;
+            const statPercentage = statEffect !== 'none' ? parseInt(statPercentageInput.value) : 0;
             
             if (activity === '') {
                 alert('⚠️ Por favor escribe una actividad');
@@ -6289,7 +6293,7 @@
                 category: category || 'personal',
                 recurrence: recurrence,
                 importance: importance,
-                statEffect: statEffect,
+                statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
                 completed: false
             };
             
@@ -6301,8 +6305,10 @@
             timeInput.value = '';
             categoryInput.value = 'personal';
             recurrenceInput.value = 'none';
-            importanceInput.value = '3';
+            importanceInput.value = '2';
             statEffectInput.value = 'none';
+            statPercentageInput.value = '15';
+            document.getElementById('statPercentageContainer').style.display = 'none';
             
             renderActivities();
             renderMonthlyCalendar();
@@ -6347,6 +6353,16 @@
         
         // Variable para el mes actual del calendario
         let currentCalendarMonth = new Date();
+        
+        // Mostrar/ocultar campo de porcentaje según la estadística seleccionada
+        function toggleStatPercentage(statValue) {
+            const container = document.getElementById('statPercentageContainer');
+            if (statValue && statValue !== 'none') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
         
         function changeMonth(delta) {
             currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
@@ -6459,8 +6475,8 @@
                 return activityDate.getMonth() === currentMonth && activityDate.getFullYear() === currentYear;
             });
             
-            // Filtrar solo las más importantes (3+ estrellas)
-            const importantActivities = thisMonthActivities.filter(a => (a.importance || 3) >= 3);
+            // Filtrar solo las más importantes (3 estrellas)
+            const importantActivities = thisMonthActivities.filter(a => (a.importance || 2) >= 3);
             
             // Renderizar pendientes del mes (ordenar por importancia primero, luego por fecha)
             const sortedPending = [...importantActivities].sort((a, b) => {
