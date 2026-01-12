@@ -250,10 +250,19 @@
 
         @keyframes pulse {
             0%, 100% {
-                transform: scale(1);
+                transform: translateX(-50%) scale(1);
             }
             50% {
-                transform: scale(1.3);
+                transform: translateX(-50%) scale(1.05);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
             }
         }
 
@@ -5817,10 +5826,10 @@
                     .then(registration => {
                         console.log('✅ Service Worker registrado');
                         
-                        // Verificar actualizaciones cada 5 minutos
+                        // Verificar actualizaciones cada 30 segundos (más frecuente)
                         setInterval(() => {
                             registration.update();
-                        }, 5 * 60 * 1000);
+                        }, 30 * 1000);
                         
                         // Detectar cuando hay actualización disponible
                         registration.addEventListener('updatefound', () => {
@@ -5833,6 +5842,16 @@
                                 }
                             });
                         });
+                        
+                        // Recargar cuando se activa un nuevo service worker
+                        let refreshing = false;
+                        navigator.serviceWorker.addEventListener('controllerchange', () => {
+                            if (!refreshing) {
+                                refreshing = true;
+                                console.log('🔄 Recargando con nueva versión...');
+                                window.location.reload();
+                            }
+                        });
                     })
                     .catch(err => {
                         console.log('❌ Error al registrar Service Worker:', err);
@@ -5843,12 +5862,39 @@
         // Mostrar botón de actualización
         function mostrarBotonActualizar() {
             const boton = document.createElement('div');
-            boton.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); color: white; padding: 15px 30px; border-radius: 25px; box-shadow: 0 8px 25px rgba(66, 165, 245, 0.5); cursor: pointer; z-index: 99999; font-weight: 600; animation: bounce 2s infinite;';
-            boton.innerHTML = '🔄 Nueva versión disponible - Toca para actualizar';
+            boton.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6); cursor: pointer; z-index: 99999; font-weight: 700; animation: pulse 2s infinite; max-width: 90%; text-align: center; font-size: 1.1em;';
+            boton.innerHTML = '🎉 ¡NUEVA VERSIÓN! Se agregaron Flashcards 🧠<br><span style="font-size: 0.9em; opacity: 0.9;">Toca aquí para actualizar ahora</span>';
             boton.onclick = () => {
-                window.location.reload();
+                // Forzar actualización
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+                }
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
             };
             document.body.appendChild(boton);
+        }
+        
+        // Mostrar indicador de auto-guardado
+        function showAutoSaveIndicator() {
+            const indicator = document.createElement('div');
+            indicator.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 10px 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); z-index: 9999; font-weight: 600; font-size: 0.9em; opacity: 0; transition: opacity 0.3s ease;';
+            indicator.innerHTML = '💾 Guardado automático';
+            document.body.appendChild(indicator);
+            
+            // Fade in
+            setTimeout(() => {
+                indicator.style.opacity = '1';
+            }, 10);
+            
+            // Fade out después de 2 segundos
+            setTimeout(() => {
+                indicator.style.opacity = '0';
+                setTimeout(() => {
+                    indicator.remove();
+                }, 300);
+            }, 2000);
         }
 
         // Iniciar cuando el DOM esté listo
@@ -5883,10 +5929,11 @@
                 saveBeforeExit();
             });
             
-            // Guardar periódicamente cada 30 segundos
+            // Guardar periódicamente cada 10 segundos (más frecuente)
             setInterval(() => {
                 saveBeforeExit();
-            }, 30000);
+                showAutoSaveIndicator();
+            }, 10000);
             
             // Registrar Service Worker para funcionalidad offline
             if ('serviceWorker' in navigator) {

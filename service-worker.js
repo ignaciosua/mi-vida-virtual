@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mi-vida-virtual-v4';
+const CACHE_NAME = 'mi-vida-virtual-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const urlsToCache = [
 
 // Instalar el service worker y cachear archivos
 self.addEventListener('install', event => {
+  console.log('🔄 Instalando nueva versión del service worker...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -16,6 +17,13 @@ self.addEventListener('install', event => {
   );
   // Forzar activación inmediata cuando hay nueva versión
   self.skipWaiting();
+});
+
+// Notificar a los clientes sobre la nueva versión
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activar el service worker y limpiar caches antiguos
