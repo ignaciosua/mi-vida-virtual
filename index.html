@@ -1294,17 +1294,20 @@
 
         <!-- Tab: Ejercicio -->
         <div class="tab-content" id="tab-ejercicio">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h2 style="color: #ff6b9d; margin-bottom: 15px;">💪 Plan Semanal de Ejercicio</h2>
-                <p style="color: #a78bfa; font-size: 0.95em;">Programa de grupos musculares</p>
+            <!-- Ejercicio del día hasta arriba -->
+            <div id="todayExercise" style="background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; color: white; box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);">
+                <div style="font-size: 2.5em; margin-bottom: 10px;">💪</div>
+                <h2 style="margin-bottom: 10px; font-size: 1.5em;">Hoy te toca:</h2>
+                <div id="todayMuscle" style="font-size: 2em; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Glúteo 🍑</div>
             </div>
             
             <!-- Calendario semanal de ejercicio -->
             <div id="exerciseCalendar" style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
             
-            <div class="stats-container" id="statsEjercicio"></div>
-            <div class="buttons-container">
-                <button class="action-button btn-exercise" id="btnExercise">
+            <!-- Stats y botón en proporción 1:2 -->
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 20px;">
+                <div class="stats-container" id="statsEjercicio" style="margin: 0;"></div>
+                <button class="action-button btn-exercise" id="btnExercise" style="height: 100%; margin: 0;">
                     <span class="button-icon">🏃</span>
                     <span class="button-text">Ejercicio</span>
                 </button>
@@ -1382,16 +1385,19 @@
             
             <!-- Pestañas de estados de ideas -->
             <div style="display: flex; gap: 8px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.5); padding: 10px; border-radius: 20px; flex-wrap: wrap;">
-                <button class="idea-state-tab active" onclick="switchIdeaState('pendientes')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2); transition: all 0.3s ease;">
+                <button class="idea-state-tab active" onclick="switchIdeaState('pendientes')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2); transition: all 0.3s ease;">
                     💭 Pendientes
                 </button>
-                <button class="idea-state-tab" onclick="switchIdeaState('grabadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                <button class="idea-state-tab" onclick="switchIdeaState('guionada')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                    📝 Guionada
+                </button>
+                <button class="idea-state-tab" onclick="switchIdeaState('grabadas')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
                     🎥 Grabadas
                 </button>
-                <button class="idea-state-tab" onclick="switchIdeaState('editadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                <button class="idea-state-tab" onclick="switchIdeaState('editadas')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
                     ✂️ Editadas
                 </button>
-                <button class="idea-state-tab" onclick="switchIdeaState('publicadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                <button class="idea-state-tab" onclick="switchIdeaState('publicadas')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
                     📤 Publicadas
                 </button>
             </div>
@@ -4745,7 +4751,13 @@
         
         function renderExerciseCalendar() {
             const container = document.getElementById('exerciseCalendar');
+            const todayMuscleDiv = document.getElementById('todayMuscle');
             const today = new Date().getDay(); // 0 = Domingo
+            
+            // Actualizar el texto de "Hoy te toca"
+            if (todayMuscleDiv) {
+                todayMuscleDiv.textContent = `${exercisePlan[today].muscle} ${exercisePlan[today].icon}`;
+            }
             
             let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">';
             
@@ -4856,7 +4868,7 @@
             
             // Actualizar estilos de las pestañas
             document.querySelectorAll('.idea-state-tab').forEach((tab, index) => {
-                const states = ['pendientes', 'grabadas', 'editadas', 'publicadas'];
+                const states = ['pendientes', 'guionada', 'grabadas', 'editadas', 'publicadas'];
                 if (states[index] === state) {
                     tab.style.background = 'linear-gradient(135deg, #ffd89b 0%, #f093fb 100%)';
                     tab.style.color = 'white';
@@ -4890,10 +4902,16 @@
             if (!gameState.ideas) {
                 gameState.ideas = {
                     pendientes: [],
+                    guionada: [],
                     grabadas: [],
                     editadas: [],
                     publicadas: []
                 };
+            }
+            
+            // Asegurar que guionada existe en estados antiguos
+            if (!gameState.ideas.guionada) {
+                gameState.ideas.guionada = [];
             }
             
             const idea = {
@@ -4942,7 +4960,8 @@
             if (ideas.length === 0) {
                 const emptyMessages = {
                     pendientes: '💭 No hay ideas pendientes. ¡Agrega una nueva arriba!',
-                    grabadas: '🎥 No hay ideas grabadas aún. Graba tus ideas pendientes.',
+                    guionada: '📝 No hay ideas con guion escrito. Mueve tus ideas pendientes aquí.',
+                    grabadas: '🎥 No hay ideas grabadas aún. Graba tus ideas con guion.',
                     editadas: '✂️ No hay ideas editadas. Edita tus videos grabados.',
                     publicadas: '📤 No hay ideas publicadas. Programa tus videos editados.'
                 };
@@ -5014,7 +5033,12 @@
             
             // Botón de acción principal según estado
             if (section === 'pendientes') {
+                const guionBtn = createActionButton('📝', () => openGuionModal(section, index));
+                actions.appendChild(guionBtn);
+            } else if (section === 'guionada') {
                 const recordBtn = createActionButton('🎥', () => moveIdea(section, index, 'grabadas', idea.percentage));
+                const editGuionBtn = createActionButton('✏️', () => openGuionModal(section, index));
+                actions.appendChild(editGuionBtn);
                 actions.appendChild(recordBtn);
             } else if (section === 'grabadas') {
                 const editBtn = createActionButton('✂️', () => moveIdea(section, index, 'editadas', idea.percentage));
@@ -5064,6 +5088,94 @@
             btn.addEventListener('click', onClick);
             
             return btn;
+        }
+        
+        // Abrir modal para escribir/editar guion
+        function openGuionModal(section, index) {
+            const idea = gameState.ideas[section][index];
+            const isEditing = idea.guion !== undefined;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>📝 ${isEditing ? 'Editar' : 'Escribir'} Guion e Investigación</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Idea:</label>
+                            <p style="background: #f3f4f6; padding: 12px; border-radius: 10px; color: #6b7280;">${idea.text}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Guion / Notas:</label>
+                            <textarea id="guionText" rows="8" placeholder="Escribe tu guion aquí..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: inherit;">${idea.guion?.text || ''}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">URLs de Investigación (una por línea):</label>
+                            <textarea id="guionUrls" rows="4" placeholder="https://ejemplo.com&#10;https://otro-sitio.com" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: monospace;">${idea.guion?.urls?.join('\n') || ''}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">URLs de Imágenes (una por línea):</label>
+                            <textarea id="guionImages" rows="3" placeholder="https://imagen1.jpg&#10;https://imagen2.png" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: monospace;">${idea.guion?.images?.join('\n') || ''}</textarea>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 15px; border-radius: 10px;">
+                            <p style="color: #6b4c9a; font-size: 0.9em; margin: 0;">💡 <strong>Tip:</strong> Usa este espacio para escribir tu guion completo, agregar links de investigación e imágenes que vas a usar.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveGuion('${section}', ${index})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">💾 Guardar y Mover a Guionada</button>
+                        <button onclick="closeGuionModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Guardar guion y mover a guionada
+        function saveGuion(section, index) {
+            const guionText = document.getElementById('guionText').value.trim();
+            const guionUrls = document.getElementById('guionUrls').value.trim();
+            const guionImages = document.getElementById('guionImages').value.trim();
+            
+            if (!guionText) {
+                alert('⚠️ Por favor escribe al menos algo en el guion');
+                return;
+            }
+            
+            const idea = gameState.ideas[section][index];
+            
+            // Agregar información del guion
+            idea.guion = {
+                text: guionText,
+                urls: guionUrls ? guionUrls.split('\n').filter(url => url.trim()) : [],
+                images: guionImages ? guionImages.split('\n').filter(img => img.trim()) : [],
+                updatedAt: new Date().toISOString()
+            };
+            
+            // Si está en pendientes, moverla a guionada
+            if (section === 'pendientes') {
+                gameState.ideas[section].splice(index, 1);
+                gameState.ideas.guionada.push(idea);
+            }
+            
+            saveIdeas();
+            closeGuionModal();
+            renderCurrentIdeaState();
+        }
+        
+        // Cerrar modal del guion
+        function closeGuionModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#guionText')) {
+                    modal.remove();
+                }
+            });
         }
         
         // Mover idea de una sección a otra
@@ -5402,7 +5514,7 @@
             html += '<h4 style="color: #ff6b9d; margin-top: 20px;">💡 Ideas</h4>';
             if (ideas) {
                 const id = JSON.parse(ideas);
-                const total = (id.pendientes?.length || 0) + (id.grabadas?.length || 0) + (id.editadas?.length || 0) + (id.publicadas?.length || 0);
+                const total = (id.pendientes?.length || 0) + (id.guionada?.length || 0) + (id.grabadas?.length || 0) + (id.editadas?.length || 0) + (id.publicadas?.length || 0);
                 html += `<p>Total: ${total} ideas</p>`;
             } else {
                 html += '<p style="color: #999;">Sin ideas guardadas</p>';
