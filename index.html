@@ -4681,10 +4681,9 @@
                         ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing ? item.author || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `<textarea id="flashcardAnswer" placeholder="Respuesta *" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.answer || '' : ''}</textarea>` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `
-                            <input type="text" id="flashcardFolder" list="foldersList" placeholder="Carpeta (ej: Matemáticas, Historia...)" value="${isEditing ? item.folder || 'General' : (libraryFilters.folder || 'General')}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
-                            <datalist id="foldersList">
-                                ${getFlashcardFolders().map(folder => `<option value="${folder}">${folder}</option>`).join('')}
-                            </datalist>
+                            <select id="flashcardFolder" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; background: white;">
+                                ${getFlashcardFolders().length === 0 ? '<option value="General">General</option>' : getFlashcardFolders().map(folder => `<option value="${folder}" ${(isEditing ? (item.folder || 'General') : (libraryFilters.folder || 'General')) === folder ? 'selected' : ''}>${folder}</option>`).join('')}
+                            </select>
                         ` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `<input type="url" id="flashcardImage" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
@@ -4844,7 +4843,8 @@
 
         // ===== CALENDARIO DE EJERCICIO SEMANAL =====
         
-        const exercisePlan = {
+        // Cargar plan de ejercicios desde localStorage
+        let exercisePlan = JSON.parse(localStorage.getItem('exercisePlan')) || {
             0: { muscle: 'Glúteo', icon: '🍑', color: '#ff6b9d', exercises: [] },
             1: { muscle: 'Lunes', icon: '💪', color: '#667eea', exercises: [] },
             2: { muscle: 'Martes', icon: '💪', color: '#4facfe', exercises: [] },
@@ -4853,6 +4853,14 @@
             5: { muscle: 'Viernes', icon: '💪', color: '#a8edea', exercises: [] },
             6: { muscle: 'Sábado', icon: '💪', color: '#ffeaa7', exercises: [] }
         };
+        
+        // Historial de entrenamientos
+        let workoutHistory = JSON.parse(localStorage.getItem('workoutHistory')) || {};
+        
+        function saveExercisePlan() {
+            localStorage.setItem('exercisePlan', JSON.stringify(exercisePlan));
+            localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
+        }
         
         function renderExerciseCalendar() {
             const container = document.getElementById('exerciseCalendar');
@@ -4864,29 +4872,33 @@
                 todayMuscleDiv.textContent = `${exercisePlan[today].muscle} ${exercisePlan[today].icon}`;
             }
             
-            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">';
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px;">';
             
             const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
             
             for (let i = 0; i < 7; i++) {
                 const plan = exercisePlan[i];
                 const isToday = i === today;
+                const exerciseCount = plan.exercises?.length || 0;
                 
                 html += `
                     <div style="
                         background: ${isToday ? `linear-gradient(135deg, ${plan.color} 0%, ${plan.color}dd 100%)` : 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)'};
-                        padding: 20px;
+                        padding: 15px;
                         border-radius: 15px;
                         text-align: center;
                         box-shadow: ${isToday ? '0 8px 20px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.1)'};
                         transform: ${isToday ? 'scale(1.05)' : 'scale(1)'};
                         transition: all 0.3s ease;
                         border: ${isToday ? '3px solid white' : 'none'};
-                    ">
-                        <div style="font-size: 2em; margin-bottom: 10px;">${plan.icon}</div>
-                        <div style="font-weight: bold; font-size: 1.1em; color: ${isToday ? 'white' : '#6b7280'}; margin-bottom: 5px;">${days[i]}</div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: ${isToday ? 'white' : plan.color};">${plan.muscle}</div>
-                        ${isToday ? '<div style="margin-top: 10px; padding: 8px; background: rgba(255,255,255,0.3); border-radius: 10px; color: white; font-weight: 600; font-size: 0.9em;">¡HOY!</div>' : ''}
+                        cursor: pointer;
+                    " onclick="openDayExercises(${i})">
+                        <div style="font-size: 2em; margin-bottom: 8px;">${plan.icon}</div>
+                        <div style="font-weight: bold; font-size: 1em; color: ${isToday ? 'white' : '#6b7280'}; margin-bottom: 5px;">${days[i]}</div>
+                        <div style="font-size: 1.1em; font-weight: 700; color: ${isToday ? 'white' : plan.color}; margin-bottom: 8px;">${plan.muscle}</div>
+                        <div style="font-size: 0.85em; color: ${isToday ? 'rgba(255,255,255,0.9)' : '#9ca3af'}; margin-bottom: 8px;">${exerciseCount} ejercicio${exerciseCount !== 1 ? 's' : ''}</div>
+                        <button onclick="event.stopPropagation(); editDayMuscle(${i})" style="background: rgba(255,255,255,${isToday ? '0.3' : '0.5'}); border: none; border-radius: 8px; padding: 5px 10px; font-size: 0.8em; color: ${isToday ? 'white' : '#6b7280'}; cursor: pointer; font-weight: 600;">✏️ Editar</button>
+                        ${isToday ? '<div style="margin-top: 8px; padding: 6px; background: rgba(255,255,255,0.3); border-radius: 8px; color: white; font-weight: 600; font-size: 0.85em;">¡HOY!</div>' : ''}
                     </div>
                 `;
             }
@@ -4901,6 +4913,398 @@
             `;
             
             container.innerHTML = html;
+        }
+        
+        // Editar músculo del día
+        function editDayMuscle(dayIndex) {
+            const day = exercisePlan[dayIndex];
+            const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>✏️ Editar ${dayNames[dayIndex]}</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Grupo muscular:</label>
+                        <input type="text" id="muscleName" value="${day.muscle}" placeholder="Ej: Glúteo, Pierna, Pecho..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1em;">
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Icono:</label>
+                        <select id="muscleIcon" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1.5em; background: white;">
+                            <option value="🍑" ${day.icon === '🍑' ? 'selected' : ''}>🍑 Glúteo</option>
+                            <option value="🦵" ${day.icon === '🦵' ? 'selected' : ''}>🦵 Pierna</option>
+                            <option value="💪" ${day.icon === '💪' ? 'selected' : ''}>💪 Brazo</option>
+                            <option value="🏋️" ${day.icon === '🏋️' ? 'selected' : ''}>🏋️ Pecho</option>
+                            <option value="🔙" ${day.icon === '🔙' ? 'selected' : ''}>🔙 Espalda</option>
+                            <option value="🤸" ${day.icon === '🤸' ? 'selected' : ''}>🤸 Core</option>
+                            <option value="🧘" ${day.icon === '🧘' ? 'selected' : ''}>🧘 Flexibilidad</option>
+                            <option value="🏃" ${day.icon === '🏃' ? 'selected' : ''}>🏃 Cardio</option>
+                            <option value="🚴" ${day.icon === '🚴' ? 'selected' : ''}>🚴 Ciclismo</option>
+                            <option value="🏊" ${day.icon === '🏊' ? 'selected' : ''}>🏊 Natación</option>
+                        </select>
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Color:</label>
+                        <input type="color" id="muscleColor" value="${day.color}" style="width: 100%; height: 50px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer;">
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveDayMuscle(${dayIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="closeDayMuscleModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function saveDayMuscle(dayIndex) {
+            const muscle = document.getElementById('muscleName').value.trim();
+            const icon = document.getElementById('muscleIcon').value;
+            const color = document.getElementById('muscleColor').value;
+            
+            if (!muscle) {
+                alert('⚠️ Por favor ingresa el grupo muscular');
+                return;
+            }
+            
+            exercisePlan[dayIndex].muscle = muscle;
+            exercisePlan[dayIndex].icon = icon;
+            exercisePlan[dayIndex].color = color;
+            
+            saveExercisePlan();
+            renderExerciseCalendar();
+            closeDayMuscleModal();
+        }
+        
+        function closeDayMuscleModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#muscleName')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Abrir vista de ejercicios del día
+        function openDayExercises(dayIndex) {
+            const day = exercisePlan[dayIndex];
+            const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const today = new Date().getDay();
+            const isToday = dayIndex === today;
+            
+            if (!day.exercises) day.exercises = [];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.zIndex = '10000';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 650px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, ${day.color} 0%, ${day.color}dd 100%); color: white;">
+                        <h3>${day.icon} ${dayNames[dayIndex]} - ${day.muscle}</h3>
+                        ${isToday ? '<div style="background: rgba(255,255,255,0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.9em; margin-top: 8px;">📅 Hoy</div>' : ''}
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 20px;">
+                            <button onclick="addExerciseToDay(${dayIndex})" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1em; font-weight: bold; cursor: pointer;">➕ Agregar Ejercicio</button>
+                        </div>
+                        
+                        <div id="exercisesList${dayIndex}"></div>
+                        
+                        ${day.exercises.length === 0 ? `
+                            <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+                                <div style="font-size: 3em; margin-bottom: 10px;">🏋️</div>
+                                <p>No hay ejercicios programados</p>
+                                <p style="font-size: 0.9em;">Agrega ejercicios para este día</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div style="padding: 20px;">
+                        <button onclick="closeDayExercisesModal()" style="width: 100%; padding: 15px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            renderDayExercises(dayIndex);
+        }
+        
+        function renderDayExercises(dayIndex) {
+            const container = document.getElementById(`exercisesList${dayIndex}`);
+            if (!container) return;
+            
+            const day = exercisePlan[dayIndex];
+            const exercises = day.exercises || [];
+            
+            if (exercises.length === 0) return;
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+            
+            exercises.forEach((exercise, index) => {
+                const history = workoutHistory[`${dayIndex}-${index}`] || [];
+                const lastWorkout = history.length > 0 ? history[history.length - 1] : null;
+                
+                // Calcular si debe aumentar peso (3 semanas = 21 días)
+                let shouldIncreaseWeight = false;
+                if (lastWorkout) {
+                    const daysSinceLastIncrease = Math.floor((Date.now() - (lastWorkout.lastWeightIncrease || lastWorkout.date)) / (1000 * 60 * 60 * 24));
+                    shouldIncreaseWeight = daysSinceLastIncrease >= 21;
+                }
+                
+                html += `
+                    <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); padding: 15px; border-radius: 12px; border-left: 4px solid ${day.color};">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold; font-size: 1.1em; color: #1f2937; margin-bottom: 5px;">${exercise.name}</div>
+                                ${exercise.notes ? `<div style="font-size: 0.9em; color: #6b7280; margin-bottom: 8px;">📝 ${exercise.notes}</div>` : ''}
+                                <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.95em;">
+                                    <span style="color: #667eea;">🔢 ${exercise.sets} sets</span>
+                                    <span style="color: #4facfe;">🔁 ${exercise.reps} reps</span>
+                                    <span style="color: #f093fb;">⚖️ ${exercise.weight} kg</span>
+                                </div>
+                                ${lastWorkout ? `
+                                    <div style="margin-top: 8px; padding: 8px; background: rgba(102, 126, 234, 0.1); border-radius: 8px; font-size: 0.85em; color: #667eea;">
+                                        📅 Última vez: ${new Date(lastWorkout.date).toLocaleDateString()} - ${lastWorkout.weight}kg
+                                    </div>
+                                ` : ''}
+                                ${shouldIncreaseWeight ? `
+                                    <div style="margin-top: 8px; padding: 8px; background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%); border-radius: 8px; font-size: 0.85em; color: white; font-weight: 600;">
+                                        🔥 ¡Han pasado 3 semanas! Es hora de aumentar el peso
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div style="display: flex; gap: 5px; flex-shrink: 0;">
+                                <button onclick="editExercise(${dayIndex}, ${index})" style="background: #f3f4f6; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.9em;">✏️</button>
+                                <button onclick="deleteExercise(${dayIndex}, ${index})" style="background: #fee2e2; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.9em;">🗑️</button>
+                            </div>
+                        </div>
+                        <button onclick="logWorkout(${dayIndex}, ${index})" style="width: 100%; padding: 10px; background: linear-gradient(135deg, ${day.color} 0%, ${day.color}dd 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95em;">✅ Registrar realizado hoy</button>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function closeDayExercisesModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('[id^="exercisesList"]')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Agregar ejercicio
+        function addExerciseToDay(dayIndex) {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.zIndex = '10001';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <h3>➕ Nuevo Ejercicio</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Nombre del ejercicio:</label>
+                        <input type="text" id="exerciseName" placeholder="Ej: Sentadilla búlgara" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1em;">
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Sets:</label>
+                                <input type="number" id="exerciseSets" value="3" min="1" max="10" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Reps:</label>
+                                <input type="number" id="exerciseReps" value="12" min="1" max="50" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Peso (kg):</label>
+                                <input type="number" id="exerciseWeight" value="0" min="0" step="2.5" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                        </div>
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Notas (opcional):</label>
+                        <textarea id="exerciseNotes" placeholder="Técnica, ajustes, recordatorios..." rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveExercise(${dayIndex}, null)" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="closeExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Editar ejercicio
+        function editExercise(dayIndex, exerciseIndex) {
+            const exercise = exercisePlan[dayIndex].exercises[exerciseIndex];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.zIndex = '10001';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <h3>✏️ Editar Ejercicio</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Nombre del ejercicio:</label>
+                        <input type="text" id="exerciseName" value="${exercise.name}" placeholder="Ej: Sentadilla búlgara" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1em;">
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Sets:</label>
+                                <input type="number" id="exerciseSets" value="${exercise.sets}" min="1" max="10" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Reps:</label>
+                                <input type="number" id="exerciseReps" value="${exercise.reps}" min="1" max="50" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Peso (kg):</label>
+                                <input type="number" id="exerciseWeight" value="${exercise.weight}" min="0" step="2.5" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                        </div>
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Notas (opcional):</label>
+                        <textarea id="exerciseNotes" placeholder="Técnica, ajustes, recordatorios..." rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical;">${exercise.notes || ''}</textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveExercise(${dayIndex}, ${exerciseIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="closeExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function saveExercise(dayIndex, exerciseIndex) {
+            const name = document.getElementById('exerciseName').value.trim();
+            const sets = parseInt(document.getElementById('exerciseSets').value);
+            const reps = parseInt(document.getElementById('exerciseReps').value);
+            const weight = parseFloat(document.getElementById('exerciseWeight').value);
+            const notes = document.getElementById('exerciseNotes').value.trim();
+            
+            if (!name) {
+                alert('⚠️ Por favor ingresa el nombre del ejercicio');
+                return;
+            }
+            
+            const exercise = { name, sets, reps, weight, notes };
+            
+            if (exerciseIndex === null) {
+                // Nuevo ejercicio
+                if (!exercisePlan[dayIndex].exercises) exercisePlan[dayIndex].exercises = [];
+                exercisePlan[dayIndex].exercises.push(exercise);
+            } else {
+                // Editar ejercicio existente
+                exercisePlan[dayIndex].exercises[exerciseIndex] = exercise;
+            }
+            
+            saveExercisePlan();
+            renderDayExercises(dayIndex);
+            renderExerciseCalendar();
+            closeExerciseModal();
+        }
+        
+        function deleteExercise(dayIndex, exerciseIndex) {
+            if (confirm('¿Eliminar este ejercicio?')) {
+                exercisePlan[dayIndex].exercises.splice(exerciseIndex, 1);
+                saveExercisePlan();
+                renderDayExercises(dayIndex);
+                renderExerciseCalendar();
+            }
+        }
+        
+        function closeExerciseModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#exerciseName')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Registrar entrenamiento realizado
+        function logWorkout(dayIndex, exerciseIndex) {
+            const exercise = exercisePlan[dayIndex].exercises[exerciseIndex];
+            const key = `${dayIndex}-${exerciseIndex}`;
+            
+            if (!workoutHistory[key]) workoutHistory[key] = [];
+            
+            const lastWorkout = workoutHistory[key].length > 0 ? workoutHistory[key][workoutHistory[key].length - 1] : null;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.zIndex = '10002';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>✅ Registrar Entrenamiento</h3>
+                        <div style="font-size: 0.9em; margin-top: 5px; opacity: 0.9;">${exercise.name}</div>
+                    </div>
+                    <div class="modal-body">
+                        ${lastWorkout ? `
+                            <div style="background: rgba(102, 126, 234, 0.1); padding: 12px; border-radius: 10px; margin-bottom: 15px;">
+                                <div style="font-weight: 600; color: #667eea; margin-bottom: 5px;">📊 Última vez:</div>
+                                <div style="font-size: 0.95em; color: #6b7280;">Peso: ${lastWorkout.weight}kg</div>
+                            </div>
+                        ` : ''}
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">¿Qué peso usaste hoy?</label>
+                        <input type="number" id="workoutWeight" value="${exercise.weight}" min="0" step="2.5" style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1.2em; text-align: center;">
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Notas de esta sesión (opcional):</label>
+                        <textarea id="workoutNotes" placeholder="¿Cómo te sentiste? ¿Algún ajuste?" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveWorkoutLog(${dayIndex}, ${exerciseIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">💪 Registrar</button>
+                        <button onclick="closeWorkoutModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function saveWorkoutLog(dayIndex, exerciseIndex) {
+            const weight = parseFloat(document.getElementById('workoutWeight').value);
+            const notes = document.getElementById('workoutNotes').value.trim();
+            const key = `${dayIndex}-${exerciseIndex}`;
+            
+            if (!workoutHistory[key]) workoutHistory[key] = [];
+            
+            const lastWorkout = workoutHistory[key].length > 0 ? workoutHistory[key][workoutHistory[key].length - 1] : null;
+            
+            // Si el peso aumentó, actualizar fecha de último aumento
+            let lastWeightIncrease = lastWorkout?.lastWeightIncrease || Date.now();
+            if (!lastWorkout || weight > lastWorkout.weight) {
+                lastWeightIncrease = Date.now();
+            }
+            
+            workoutHistory[key].push({
+                date: Date.now(),
+                weight: weight,
+                notes: notes,
+                lastWeightIncrease: lastWeightIncrease
+            });
+            
+            // Actualizar el peso del ejercicio con el último usado
+            exercisePlan[dayIndex].exercises[exerciseIndex].weight = weight;
+            
+            saveExercisePlan();
+            renderDayExercises(dayIndex);
+            closeWorkoutModal();
+            
+            alert('✅ ¡Entrenamiento registrado! 💪');
+        }
+        
+        function closeWorkoutModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#workoutWeight')) {
+                    modal.remove();
+                }
+            });
         }
 
         // ===== SISTEMA DE GESTIÓN DE IDEAS =====
