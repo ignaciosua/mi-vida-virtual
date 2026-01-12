@@ -4377,6 +4377,14 @@
             renderMonthlyCalendar();
             renderWrongActivities();
             
+            // Pre-llenar fecha de hoy en el input de actividad
+            const activityDateInput = document.getElementById('activityDate');
+            if (activityDateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                activityDateInput.value = today;
+                console.log('📅 Fecha de hoy pre-llenada:', today);
+            }
+            
             // Inicializar y actualizar reloj cada segundo
             updateClock();
             setInterval(updateClock, 1000);
@@ -6296,16 +6304,19 @@
                 return;
             }
             
-            if (date === '') {
-                alert('⚠️ Por favor selecciona una fecha');
-                return;
+            // Si no hay fecha, usar HOY
+            let finalDate = date;
+            if (finalDate === '') {
+                const today = new Date();
+                finalDate = today.toISOString().split('T')[0];
+                console.log('📅 No se seleccionó fecha, usando hoy:', finalDate);
             }
             
             const newActivity = {
                 id: Date.now(),
                 text: activity,
-                date: date,
-                time: time || '00:00',
+                date: finalDate,
+                time: time || '20:00',
                 category: category || 'personal',
                 recurrence: recurrence,
                 importance: importance,
@@ -6333,6 +6344,15 @@
             renderActivities();
             renderMonthlyCalendar();
             renderWrongActivities();
+            
+            // Confirmación visual
+            alert(`✅ Actividad "${activity}" agregada exitosamente!\n📅 Fecha: ${finalDate}\n⏰ Hora: ${time || '20:00'}`);
+            
+            // Scroll al contenedor de actividades para que el usuario vea la actividad
+            const container = document.getElementById('activitiesPending');
+            if (container) {
+                container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
         
         function toggleActivity(id) {
