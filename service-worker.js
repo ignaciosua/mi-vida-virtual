@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mi-vida-virtual-v6';
+const CACHE_NAME = 'mi-vida-virtual-v7';
 const urlsToCache = [
   './',
   './index.html',

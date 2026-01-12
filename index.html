@@ -1294,6 +1294,14 @@
 
         <!-- Tab: Ejercicio -->
         <div class="tab-content" id="tab-ejercicio">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #ff6b9d; margin-bottom: 15px;">💪 Plan Semanal de Ejercicio</h2>
+                <p style="color: #a78bfa; font-size: 0.95em;">Programa de grupos musculares</p>
+            </div>
+            
+            <!-- Calendario semanal de ejercicio -->
+            <div id="exerciseCalendar" style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+            
             <div class="stats-container" id="statsEjercicio"></div>
             <div class="buttons-container">
                 <button class="action-button btn-exercise" id="btnExercise">
@@ -3111,6 +3119,11 @@
                 renderLibraryContent();
             }
             
+            // Si es ejercicio, renderizar calendario
+            if (tabName === 'ejercicio') {
+                renderExerciseCalendar();
+            }
+            
             // Si es ideas, renderizar ideas
             if (tabName === 'ideas') {
                 renderIdeas();
@@ -4611,6 +4624,11 @@
             const timesWatched = document.getElementById('movieTimesWatched')?.value || 1;
             const rating = window.currentItemRating || 0;
             
+            console.log('💾 Guardando item en categoría:', currentLibraryCategory);
+            console.log('📝 Título:', title);
+            console.log('📝 Respuesta:', answer);
+            console.log('📝 Carpeta:', folder);
+            
             if (!title) {
                 alert('⚠️ Por favor ingresa ' + (currentLibraryCategory === 'flashcards' ? 'una pregunta' : 'un título'));
                 return;
@@ -4624,6 +4642,12 @@
             if (currentLibraryCategory === 'flashcards' && !answer) {
                 alert('⚠️ Por favor ingresa la respuesta');
                 return;
+            }
+            
+            // Asegurar que la categoría existe
+            if (!library[currentLibraryCategory]) {
+                library[currentLibraryCategory] = [];
+                console.log('🆕 Creando categoría:', currentLibraryCategory);
             }
             
             const item = {
@@ -4646,14 +4670,17 @@
             if (editIndex !== null) {
                 // Editar item existente
                 library[currentLibraryCategory][editIndex] = item;
+                console.log('✏️ Item editado');
             } else {
                 // Agregar nuevo item
                 library[currentLibraryCategory].push(item);
+                console.log('➕ Item agregado. Total:', library[currentLibraryCategory].length);
             }
             
             saveLibrary();
             closeLibraryModal();
             renderLibraryContent();
+            console.log('✅ Item guardado exitosamente');
         }
         
         // Editar item de biblioteca
@@ -4702,6 +4729,61 @@
                     modal.remove();
                 }
             });
+        }
+
+        // ===== CALENDARIO DE EJERCICIO SEMANAL =====
+        
+        const exercisePlan = {
+            0: { muscle: 'Glúteo', icon: '🍑', color: '#ff6b9d', exercises: [] },
+            1: { muscle: 'Lunes', icon: '💪', color: '#667eea', exercises: [] },
+            2: { muscle: 'Martes', icon: '💪', color: '#4facfe', exercises: [] },
+            3: { muscle: 'Miércoles', icon: '💪', color: '#f093fb', exercises: [] },
+            4: { muscle: 'Jueves', icon: '💪', color: '#ffd89b', exercises: [] },
+            5: { muscle: 'Viernes', icon: '💪', color: '#a8edea', exercises: [] },
+            6: { muscle: 'Sábado', icon: '💪', color: '#ffeaa7', exercises: [] }
+        };
+        
+        function renderExerciseCalendar() {
+            const container = document.getElementById('exerciseCalendar');
+            const today = new Date().getDay(); // 0 = Domingo
+            
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">';
+            
+            const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            
+            for (let i = 0; i < 7; i++) {
+                const plan = exercisePlan[i];
+                const isToday = i === today;
+                
+                html += `
+                    <div style="
+                        background: ${isToday ? `linear-gradient(135deg, ${plan.color} 0%, ${plan.color}dd 100%)` : 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)'};
+                        padding: 20px;
+                        border-radius: 15px;
+                        text-align: center;
+                        box-shadow: ${isToday ? '0 8px 20px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.1)'};
+                        transform: ${isToday ? 'scale(1.05)' : 'scale(1)'};
+                        transition: all 0.3s ease;
+                        border: ${isToday ? '3px solid white' : 'none'};
+                    ">
+                        <div style="font-size: 2em; margin-bottom: 10px;">${plan.icon}</div>
+                        <div style="font-weight: bold; font-size: 1.1em; color: ${isToday ? 'white' : '#6b7280'}; margin-bottom: 5px;">${days[i]}</div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: ${isToday ? 'white' : plan.color};">${plan.muscle}</div>
+                        ${isToday ? '<div style="margin-top: 10px; padding: 8px; background: rgba(255,255,255,0.3); border-radius: 10px; color: white; font-weight: 600; font-size: 0.9em;">¡HOY!</div>' : ''}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            
+            // Mensaje motivacional
+            html += `
+                <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); border-radius: 15px; text-align: center;">
+                    <p style="color: #ff6b9d; font-weight: 600; margin: 0;">💪 ${exercisePlan[today].muscle} hoy - ¡Tú puedes!</p>
+                </div>
+            `;
+            
+            container.innerHTML = html;
         }
 
         // ===== SISTEMA DE GESTIÓN DE IDEAS =====
