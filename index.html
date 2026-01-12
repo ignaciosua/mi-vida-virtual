@@ -6668,49 +6668,33 @@
                 return;
             }
             
-            // Filtrar TODAS las actividades de HOY (sin importar la hora)
-            const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
-            
-            console.log('📅 Fecha de hoy:', todayStr);
             console.log('📋 Total actividades pendientes:', gameState.activities.pending.length);
             
-            // MOSTRAR TODAS LAS ACTIVIDADES Y SUS FECHAS
-            console.log('🔍 TODAS LAS ACTIVIDADES:');
+            // MOSTRAR TODAS LAS ACTIVIDADES (sin filtrar por fecha)
+            console.log('🔍 MOSTRANDO TODAS LAS ACTIVIDADES:');
             gameState.activities.pending.forEach((act, i) => {
-                console.log(`  ${i+1}. "${act.text}" - Fecha: "${act.date}" (tipo: ${typeof act.date})`);
+                console.log(`  ${i+1}. "${act.text}" - Fecha: "${act.date}"`);
             });
             
-            const todayActivities = gameState.activities.pending.filter(activity => {
-                const match = activity.date === todayStr;
-                if (!match) {
-                    console.log(`❌ NO MATCH: "${activity.date}" !== "${todayStr}"`);
-                } else {
-                    console.log(`✅ MATCH: "${activity.text}" - ${activity.date}`);
-                }
-                return match;
-            });
-            
-            console.log('✅ Actividades de hoy encontradas:', todayActivities.length);
-            
-            // Renderizar todas las actividades de hoy (ordenar por importancia primero, luego por fecha)
-            const sortedPending = [...todayActivities].sort((a, b) => {
-                // Primero por importancia (descendente)
-                const importanceDiff = (b.importance || 3) - (a.importance || 3);
+            // Ordenar por fecha e importancia
+            const sortedPending = [...gameState.activities.pending].sort((a, b) => {
+                // Primero por fecha
+                const dateCompare = a.date.localeCompare(b.date);
+                if (dateCompare !== 0) return dateCompare;
+                
+                // Luego por importancia (descendente)
+                const importanceDiff = (b.importance || 2) - (a.importance || 2);
                 if (importanceDiff !== 0) return importanceDiff;
                 
-                // Luego por fecha (ascendente)
-                const dateA = new Date(`${a.date}T${a.time}`);
-                const dateB = new Date(`${b.date}T${b.time}`);
-                return dateA - dateB;
+                // Finalmente por hora
+                return (a.time || '00:00').localeCompare(b.time || '00:00');
             });
             
             if (sortedPending.length === 0) {
                 pendingContainer.innerHTML = `
                     <div style="text-align: center; padding: 20px;">
-                        <p style="color: #a78bfa; margin-bottom: 10px; font-size: 1.1em;">🌸 No hay actividades para hoy</p>
-                        <p style="color: #999; font-size: 0.85em;">Total en sistema: ${gameState.activities.pending.length} actividades</p>
-                        <p style="color: #999; font-size: 0.85em;">Buscando fecha: ${todayStr}</p>
+                        <p style="color: #a78bfa; margin-bottom: 10px; font-size: 1.1em;">🌸 No hay actividades</p>
+                        <p style="color: #999; font-size: 0.85em;">¡Agrega tu primera actividad!</p>
                     </div>
                 `;
             } else {
