@@ -1,4 +1,4 @@
-                                                                                                                                                            <!DOCTYPE html>
+﻿                                                                                                                                                            <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -6556,6 +6556,7 @@
         // Función para seleccionar un día en el calendario
         function selectCalendarDay(year, month, day) {
             selectedDate = new Date(year, month, day);
+            console.log('🗓️ Día seleccionado:', selectedDate.toLocaleDateString('es-ES'));
             renderActivities();
             renderMonthlyCalendar();
         }
@@ -6694,7 +6695,7 @@
             });
             
             if (titleElement) {
-                titleElement.textContent = isToday ? '� Actividades de Hoy' : `📅 Actividades del ${formattedDate}`;
+                titleElement.innerHTML = isToday ? '📅 Actividades de Hoy' : `📅 Actividades del ${formattedDate}`;
             }
             
             console.log('📅 Mostrando actividades de:', selectedStr);
