@@ -6316,6 +6316,9 @@
             gameState.activities.pending.push(newActivity);
             saveState();
             
+            console.log('✅ Actividad agregada:', newActivity);
+            console.log('📊 Total actividades ahora:', gameState.activities.pending.length);
+            
             input.value = '';
             dateInput.value = '';
             timeInput.value = '';
@@ -6326,6 +6329,7 @@
             statPercentageInput.value = '15';
             document.getElementById('statPercentageContainer').style.display = 'none';
             
+            console.log('🔄 Llamando a renderActivities()...');
             renderActivities();
             renderMonthlyCalendar();
             renderWrongActivities();
@@ -6632,15 +6636,24 @@
         function renderActivities() {
             const pendingContainer = document.getElementById('activitiesPending');
             
-            if (!pendingContainer) return;
+            if (!pendingContainer) {
+                console.error('❌ No se encontró el contenedor activitiesPending');
+                return;
+            }
             
             // Filtrar TODAS las actividades de HOY (sin importar la hora)
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
             
+            console.log('📅 Fecha de hoy:', todayStr);
+            console.log('📋 Total actividades pendientes:', gameState.activities.pending.length);
+            
             const todayActivities = gameState.activities.pending.filter(activity => {
+                console.log('Comparando:', activity.date, '===', todayStr, '→', activity.date === todayStr);
                 return activity.date === todayStr;
             });
+            
+            console.log('✅ Actividades de hoy encontradas:', todayActivities.length);
             
             // Renderizar todas las actividades de hoy (ordenar por importancia primero, luego por fecha)
             const sortedPending = [...todayActivities].sort((a, b) => {
