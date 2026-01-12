@@ -6345,14 +6345,19 @@
             renderMonthlyCalendar();
             renderWrongActivities();
             
+            // CAMBIAR A LA PESTAÑA DE CALENDARIO para que el usuario VEA la actividad
+            switchTab('calendario');
+            
             // Confirmación visual
             alert(`✅ Actividad "${activity}" agregada exitosamente!\n📅 Fecha: ${finalDate}\n⏰ Hora: ${time || '20:00'}`);
             
             // Scroll al contenedor de actividades para que el usuario vea la actividad
-            const container = document.getElementById('activitiesPending');
-            if (container) {
-                container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
+            setTimeout(() => {
+                const container = document.getElementById('activitiesPending');
+                if (container) {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
         
         function toggleActivity(id) {
