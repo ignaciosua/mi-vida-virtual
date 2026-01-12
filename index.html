@@ -1428,16 +1428,17 @@
                 <div style="background: linear-gradient(135deg, #f0f4ff 0%, #e8f3ff 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.12); border: 2px solid #ddd6fe;">
                     <h3 style="color: #7c3aed; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">✨ Nueva Actividad</h3>
                     <input type="text" id="newActivityInput" placeholder="📝 ¿Qué vas a hacer?" style="width: 100%; padding: 14px; border: 2px solid #c7d2fe; border-radius: 15px; font-size: 1em; margin-bottom: 12px; background: white;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                        <div>
-                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Desde</label>
-                            <input type="date" id="activityDateFrom" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
-                        </div>
-                        <div>
-                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Hasta</label>
-                            <input type="date" id="activityDateTo" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;" placeholder="Dejar vacío = indefinido">
-                        </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Desde qué día</label>
+                        <input type="date" id="activityDateFrom" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
                     </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Hasta qué día (dejar vacío = se repite siempre)</label>
+                        <input type="date" id="activityDateTo" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                    </div>
+                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
                         <div>
                             <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⏰ Hora</label>
@@ -1455,7 +1456,6 @@
                             </select>
                         </div>
                     </div>
-                    <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block; margin-top: 2px;">⚡ Dejar "Hasta" vacío para que se repita todos los días hasta que la canceles</label>
                     
                     <!-- Nivel de importancia -->
                     <div style="margin-bottom: 10px;">
@@ -6361,15 +6361,11 @@
         function toggleActivity(id) {
             const activity = gameState.activities.pending.find(a => a.id === id);
             if (activity) {
-                gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
-                activity.completed = true;
-                gameState.activities.completed.push(activity);
+                // Solo cambiar el estado de completada
+                activity.completed = !activity.completed;
                 
-                // Agregar a wrongActivities para poder corregir
-                gameState.wrongActivities.list.push({...activity});
-                
-                // Aplicar efecto de estadística si existe
-                if (activity.statEffect && activity.statEffect !== 'none') {
+                // Si se marca como completada, aplicar efecto de estadística
+                if (activity.completed && activity.statEffect && activity.statEffect !== 'none') {
                     const [statName, statValue] = activity.statEffect.split(',');
                     const boost = parseInt(statValue);
                     
@@ -6377,15 +6373,13 @@
                     if (gameState.stats[statName]) {
                         gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + boost);
                         renderStats();
-                        
-                        // Mostrar notificación
                         console.log(`✅ Actividad completada! +${boost}% a ${statName}`);
                     }
                 }
                 
                 saveState();
                 renderActivities();
-                renderWrongActivities();
+                renderMonthlyCalendar();
             }
         }
         
@@ -6775,14 +6769,15 @@
                     const isCompleted = activity.completed;
                     
                     return `
-                        <div style="background: ${cat.bg}; padding: 15px; border-radius: 15px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 12px; align-items: center; opacity: ${isCompleted ? '0.6' : '1'}; transition: all 0.3s;">
-                            <div onclick="toggleActivity(${activity.id})" style="width: 28px; height: 28px; border: 3px solid ${cat.border}; border-radius: 50%; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ${isCompleted ? cat.border : 'white'}; transition: all 0.2s;">
-                                ${isCompleted ? '<span style="color: white; font-size: 16px;">✓</span>' : ''}
+                        <div style="background: ${isCompleted ? '#f3f4f6' : cat.bg}; padding: 15px; border-radius: 15px; border-left: 4px solid ${isCompleted ? '#9ca3af' : cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,${isCompleted ? '0.05' : '0.1'}); display: flex; gap: 12px; align-items: center; transition: all 0.3s;">
+                            <div onclick="toggleActivity(${activity.id})" style="width: 28px; height: 28px; border: 3px solid ${isCompleted ? '#9ca3af' : cat.border}; border-radius: 50%; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ${isCompleted ? '#9ca3af' : 'white'}; transition: all 0.2s;">
+                                ${isCompleted ? '<span style="color: white; font-size: 16px; font-weight: bold;">✓</span>' : ''}
                             </div>
-                            <div onclick="showActivityDetails(${activity.id})" style="flex: 1; cursor: pointer;">
-                                <p style="margin: 0; font-weight: 600; color: #333; text-decoration: ${isCompleted ? 'line-through' : 'none'};"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
-                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">⏰ ${activity.time || '20:00'} ${stars}</p>
+                            <div style="flex: 1;">
+                                <p style="margin: 0; font-weight: 600; color: ${isCompleted ? '#6b7280' : '#333'}; text-decoration: ${isCompleted ? 'line-through' : 'none'};"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${isCompleted ? '#9ca3af' : cat.text};">⏰ ${activity.time || '20:00'} ${stars}</p>
                             </div>
+                            ${!isCompleted ? `<button onclick="event.stopPropagation(); deleteActivity(${activity.id})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.85em;">🗑️</button>` : ''}
                         </div>
                     `;
                 }).join('');
