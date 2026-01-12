@@ -1294,7 +1294,16 @@
 
         <!-- Tab: Ejercicio -->
         <div class="tab-content" id="tab-ejercicio">
-            <!-- Ejercicio del día hasta arriba -->
+            <!-- Stats y botón en proporción 1:2 HASTA ARRIBA -->
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 20px;">
+                <div class="stats-container" id="statsEjercicio" style="margin: 0;"></div>
+                <button class="action-button btn-exercise" id="btnExercise" style="height: 100%; margin: 0;">
+                    <span class="button-icon">🏃</span>
+                    <span class="button-text">Ejercicio</span>
+                </button>
+            </div>
+            
+            <!-- Ejercicio del día -->
             <div id="todayExercise" style="background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; color: white; box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);">
                 <div style="font-size: 2.5em; margin-bottom: 10px;">💪</div>
                 <h2 style="margin-bottom: 10px; font-size: 1.5em;">Hoy te toca:</h2>
@@ -1303,15 +1312,6 @@
             
             <!-- Calendario semanal de ejercicio -->
             <div id="exerciseCalendar" style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
-            
-            <!-- Stats y botón en proporción 1:2 -->
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 20px;">
-                <div class="stats-container" id="statsEjercicio" style="margin: 0;"></div>
-                <button class="action-button btn-exercise" id="btnExercise" style="height: 100%; margin: 0;">
-                    <span class="button-icon">🏃</span>
-                    <span class="button-text">Ejercicio</span>
-                </button>
-            </div>
         </div>
 
         <!-- Tab: Crecer -->
@@ -1389,7 +1389,7 @@
                     💭 Pendientes
                 </button>
                 <button class="idea-state-tab" onclick="switchIdeaState('guionada')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
-                    📝 Guionada
+                    📝 Guion
                 </button>
                 <button class="idea-state-tab" onclick="switchIdeaState('grabadas')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
                     🎥 Grabadas
@@ -4368,8 +4368,82 @@
         let libraryFilters = {
             search: '',
             letter: '',
-            rating: 0
+            rating: 0,
+            folder: ''
         };
+        
+        // Obtener todas las carpetas únicas de flashcards
+        function getFlashcardFolders() {
+            if (!library || !library.flashcards) return [];
+            const folders = [...new Set(library.flashcards.map(f => f.folder || 'General'))];
+            return folders.sort();
+        }
+        
+        // Filtrar por carpeta
+        function filterByFolder(folder) {
+            libraryFilters.folder = folder;
+            renderLibraryContent();
+        }
+        
+        // Abrir modal para crear carpeta
+        function openCreateFolderModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>➕ Nueva Carpeta</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Nombre de la carpeta:</label>
+                        <input type="text" id="newFolderName" placeholder="Ej: Matemáticas, Historia..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em;">
+                        <p style="color: #9ca3af; font-size: 0.85em; margin-top: 10px;">💡 Puedes crear carpetas para organizar tus flashcards por temas</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="createFolder()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Crear</button>
+                        <button onclick="closeFolderModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            setTimeout(() => document.getElementById('newFolderName').focus(), 100);
+        }
+        
+        // Crear carpeta (simplemente la agregamos al filtro y estará disponible al crear flashcards)
+        function createFolder() {
+            const folderName = document.getElementById('newFolderName').value.trim();
+            if (!folderName) {
+                alert('⚠️ Por favor ingresa un nombre para la carpeta');
+                return;
+            }
+            
+            // Verificar si ya existe
+            const existingFolders = getFlashcardFolders();
+            if (existingFolders.includes(folderName)) {
+                alert('⚠️ Esta carpeta ya existe');
+                return;
+            }
+            
+            // Filtrar por la nueva carpeta (estará vacía hasta que agregues flashcards)
+            libraryFilters.folder = folderName;
+            closeFolderModal();
+            renderLibraryContent();
+            
+            // Mostrar mensaje
+            setTimeout(() => {
+                alert(`✅ Carpeta "${folderName}" creada. Ahora puedes agregar flashcards a esta carpeta.`);
+            }, 100);
+        }
+        
+        // Cerrar modal de carpeta
+        function closeFolderModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#newFolderName')) {
+                    modal.remove();
+                }
+            });
+        }
         
         // Cargar biblioteca desde localStorage
         function loadLibrary() {
@@ -4456,6 +4530,7 @@
                 let matchSearch = true;
                 let matchLetter = true;
                 let matchRating = true;
+                let matchFolder = true;
                 
                 if (libraryFilters.search) {
                     const search = libraryFilters.search.toLowerCase();
@@ -4471,7 +4546,11 @@
                     matchRating = item.rating === libraryFilters.rating;
                 }
                 
-                return matchSearch && matchLetter && matchRating;
+                if (currentLibraryCategory === 'flashcards' && libraryFilters.folder) {
+                    matchFolder = (item.folder || 'General') === libraryFilters.folder;
+                }
+                
+                return matchSearch && matchLetter && matchRating && matchFolder;
             });
             
             // Ordenar por título
@@ -4487,6 +4566,19 @@
             let html = `
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; color: white;">
                     <h3 style="margin-bottom: 15px;">📚 ${categoryNames[currentLibraryCategory]}</h3>
+                    
+                    ${currentLibraryCategory === 'flashcards' ? `
+                        <!-- Selector de carpetas para flashcards -->
+                        <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                            <select id="folderFilter" onchange="filterByFolder(this.value)" style="flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 0.95em;">
+                                <option value="">📂 Todas las carpetas</option>
+                                ${getFlashcardFolders().map(folder => 
+                                    `<option value="${folder}" ${libraryFilters.folder === folder ? 'selected' : ''}>📁 ${folder}</option>`
+                                ).join('')}
+                            </select>
+                            <button onclick="openCreateFolderModal()" style="padding: 12px 20px; background: rgba(255,255,255,0.3); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap;">➕ Carpeta</button>
+                        </div>
+                    ` : ''}
                     
                     <!-- Barra de búsqueda -->
                     <input type="text" id="librarySearch" placeholder="🔍 Buscar por título o autor..." 
@@ -4588,7 +4680,12 @@
                         <input type="text" id="itemTitle" placeholder="${currentLibraryCategory === 'flashcards' ? 'Pregunta *' : 'Título *'}" value="${isEditing ? item.title : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
                         ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing ? item.author || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `<textarea id="flashcardAnswer" placeholder="Respuesta *" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.answer || '' : ''}</textarea>` : ''}
-                        ${currentLibraryCategory === 'flashcards' ? `<input type="text" id="flashcardFolder" placeholder="Carpeta (ej: Matemáticas, Historia...)" value="${isEditing ? item.folder || 'General' : 'General'}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'flashcards' ? `
+                            <input type="text" id="flashcardFolder" list="foldersList" placeholder="Carpeta (ej: Matemáticas, Historia...)" value="${isEditing ? item.folder || 'General' : (libraryFilters.folder || 'General')}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                            <datalist id="foldersList">
+                                ${getFlashcardFolders().map(folder => `<option value="${folder}">${folder}</option>`).join('')}
+                            </datalist>
+                        ` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `<input type="url" id="flashcardImage" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
@@ -4968,7 +5065,7 @@
             if (ideas.length === 0) {
                 const emptyMessages = {
                     pendientes: '💭 No hay ideas pendientes. ¡Agrega una nueva arriba!',
-                    guionada: '📝 No hay ideas con guion escrito. Mueve tus ideas pendientes aquí.',
+                    guionada: '📝 No hay ideas con guion escrito. Escribe el guion de tus ideas pendientes.',
                     grabadas: '🎥 No hay ideas grabadas aún. Graba tus ideas con guion.',
                     editadas: '✂️ No hay ideas editadas. Edita tus videos grabados.',
                     publicadas: '📤 No hay ideas publicadas. Programa tus videos editados.'
@@ -5044,9 +5141,17 @@
                 const guionBtn = createActionButton('📝', () => openGuionModal(section, index));
                 actions.appendChild(guionBtn);
             } else if (section === 'guionada') {
-                const recordBtn = createActionButton('🎥', () => moveIdea(section, index, 'grabadas', idea.percentage));
+                // Botón para VER el guion
+                const viewGuionBtn = createActionButton('👁️', () => viewGuion(section, index));
+                viewGuionBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                actions.appendChild(viewGuionBtn);
+                
+                // Botón para EDITAR el guion
                 const editGuionBtn = createActionButton('✏️', () => openGuionModal(section, index));
                 actions.appendChild(editGuionBtn);
+                
+                // Botón para mover a grabadas
+                const recordBtn = createActionButton('🎥', () => moveIdea(section, index, 'grabadas', idea.percentage));
                 actions.appendChild(recordBtn);
             } else if (section === 'grabadas') {
                 const editBtn = createActionButton('✂️', () => moveIdea(section, index, 'editadas', idea.percentage));
@@ -5181,6 +5286,97 @@
             const modals = document.querySelectorAll('.modal');
             modals.forEach(modal => {
                 if (modal.querySelector('#guionText')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Ver guion como documento (estilo Word con imágenes intercaladas)
+        function viewGuion(section, index) {
+            const idea = gameState.ideas[section][index];
+            
+            if (!idea.guion) {
+                alert('⚠️ Esta idea no tiene guion aún');
+                return;
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            
+            // Procesar el texto y crear el documento
+            let guionHTML = '';
+            const textParts = idea.guion.text.split('\n');
+            const images = idea.guion.images || [];
+            
+            // Crear documento con texto e imágenes intercaladas
+            // Distribuir imágenes a lo largo del texto
+            const imageInterval = Math.ceil(textParts.length / (images.length + 1));
+            let imageIndex = 0;
+            
+            textParts.forEach((paragraph, i) => {
+                if (paragraph.trim()) {
+                    guionHTML += `<p style="margin-bottom: 15px; color: #374151; line-height: 1.8; text-align: justify;">${paragraph}</p>`;
+                }
+                
+                // Insertar imagen cada cierto número de párrafos
+                if (imageIndex < images.length && (i + 1) % imageInterval === 0) {
+                    guionHTML += `
+                        <div style="margin: 20px 0; text-align: center;">
+                            <img src="${images[imageIndex]}" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onerror="this.style.display='none'" />
+                        </div>
+                    `;
+                    imageIndex++;
+                }
+            });
+            
+            // Agregar imágenes restantes al final
+            while (imageIndex < images.length) {
+                guionHTML += `
+                    <div style="margin: 20px 0; text-align: center;">
+                        <img src="${images[imageIndex]}" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onerror="this.style.display='none'" />
+                    </div>
+                `;
+                imageIndex++;
+            }
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; margin: -20px -20px 20px -20px; border-radius: 20px 20px 0 0;">
+                        <h3 style="margin: 0; color: white;">📝 ${idea.text}</h3>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 0.9em;">Última actualización: ${new Date(idea.guion.updatedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                    
+                    <div class="modal-body" style="padding: 20px; background: white; font-family: 'Georgia', 'Times New Roman', serif;">
+                        ${guionHTML}
+                        
+                        ${idea.guion.urls && idea.guion.urls.length > 0 ? `
+                            <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); border-radius: 15px; border-left: 4px solid #ff6b9d;">
+                                <h4 style="color: #6b4c9a; margin-bottom: 15px; font-size: 1.1em;">🔗 Enlaces de Investigación</h4>
+                                ${idea.guion.urls.map(url => `
+                                    <div style="margin-bottom: 10px;">
+                                        <a href="${url}" target="_blank" style="color: #667eea; text-decoration: none; word-break: break-all; display: block; padding: 8px; background: white; border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='white'">
+                                            🌐 ${url}
+                                        </a>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; padding: 20px; background: #f9fafb; margin: 0 -20px -20px -20px; border-radius: 0 0 20px 20px;">
+                        <button onclick="openGuionModal('${section}', ${index})" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">✏️ Editar</button>
+                        <button onclick="closeGuionViewModal()" style="padding: 12px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Cerrar modal de vista del guion
+        function closeGuionViewModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.innerHTML.includes('Enlaces de Investigación') || modal.innerHTML.includes('Última actualización')) {
                     modal.remove();
                 }
             });
