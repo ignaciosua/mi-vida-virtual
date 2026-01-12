@@ -1430,6 +1430,14 @@
                         <input type="date" id="activityDate" style="flex: 1; min-width: 140px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
                         <input type="time" id="activityTime" style="flex: 1; min-width: 120px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
                     </div>
+                    <select id="activityCategory" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
+                        <option value="personal">🌸 Personal</option>
+                        <option value="escuela">📚 Escuela</option>
+                        <option value="trabajo">💼 Trabajo</option>
+                        <option value="ejercicio">💪 Ejercicio</option>
+                        <option value="salud">❤️ Salud</option>
+                        <option value="social">👥 Social</option>
+                    </select>
                     <select id="activityRecurrence" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
                         <option value="none">No se repite</option>
                         <option value="daily">Diariamente</option>
@@ -5574,10 +5582,12 @@
             const input = document.getElementById('newActivityInput');
             const dateInput = document.getElementById('activityDate');
             const timeInput = document.getElementById('activityTime');
+            const categoryInput = document.getElementById('activityCategory');
             const recurrenceInput = document.getElementById('activityRecurrence');
             const activity = input.value.trim();
             const date = dateInput.value;
             const time = timeInput.value;
+            const category = categoryInput.value;
             const recurrence = recurrenceInput.value;
             
             if (activity === '') {
@@ -5595,6 +5605,7 @@
                 text: activity,
                 date: date,
                 time: time || '00:00',
+                category: category || 'personal',
                 recurrence: recurrence,
                 completed: false
             };
@@ -5605,9 +5616,11 @@
             input.value = '';
             dateInput.value = '';
             timeInput.value = '';
+            categoryInput.value = 'personal';
             recurrenceInput.value = 'none';
             
             renderActivities();
+            renderMonthlyCalendar();
         }
         
         function toggleActivity(id) {
@@ -5639,6 +5652,16 @@
             renderMonthlyCalendar();
             renderActivities();
         }
+        
+        // Colores por categoría
+        const categoryColors = {
+            personal: { bg: '#fef3ff', border: '#ff6b9d', text: '#ff6b9d', icon: '🌸' },
+            escuela: { bg: '#e0f2fe', border: '#3b82f6', text: '#3b82f6', icon: '📚' },
+            trabajo: { bg: '#f0fdf4', border: '#10b981', text: '#10b981', icon: '💼' },
+            ejercicio: { bg: '#fff7ed', border: '#f97316', text: '#f97316', icon: '💪' },
+            salud: { bg: '#fef2f2', border: '#ef4444', text: '#ef4444', icon: '❤️' },
+            social: { bg: '#faf5ff', border: '#a855f7', text: '#a855f7', icon: '👥' }
+        };
         
         function renderMonthlyCalendar() {
             const container = document.getElementById('monthlyCalendar');
@@ -5685,12 +5708,16 @@
                 // Obtener actividades del día
                 const dayActivities = gameState.activities.pending.filter(a => a.date === dateStr);
                 
+                // Obtener colores de las categorías presentes
+                const categoriesInDay = [...new Set(dayActivities.map(a => a.category || 'personal'))];
+                const dayColor = categoriesInDay.length === 1 ? categoryColors[categoriesInDay[0]] : null;
+                
                 html += `
                     <div style="
                         min-height: 50px;
                         padding: 4px;
-                        background: ${isToday ? 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)' : '#fff'};
-                        border: 2px solid ${isToday ? '#ff6b9d' : '#ffe5f3'};
+                        background: ${isToday ? 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)' : (dayColor ? dayColor.bg : '#fff')};
+                        border: 2px solid ${isToday ? '#ff6b9d' : (dayColor ? dayColor.border : '#ffe5f3')};
                         border-radius: 8px;
                         display: flex;
                         flex-direction: column;
@@ -5701,9 +5728,11 @@
                     " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         <div style="font-weight: 600; color: ${isToday ? 'white' : '#333'}; margin-bottom: 2px; font-size: 0.9em;">${day}</div>
                         ${dayActivities.length > 0 ? `
-                            <div style="font-size: 0.65em; color: ${isToday ? 'white' : '#ff6b9d'}; text-align: center; line-height: 1.2;">
-                                ${dayActivities.slice(0, 2).map(a => `<div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">• ${a.text.substring(0, 8)}${a.text.length > 8 ? '...' : ''}</div>`).join('')}
-                                ${dayActivities.length > 2 ? `<div style="font-weight: 600;">+${dayActivities.length - 2}</div>` : ''}
+                            <div style="display: flex; gap: 2px; flex-wrap: wrap; justify-content: center;">
+                                ${categoriesInDay.slice(0, 3).map(cat => `
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${categoryColors[cat].border};"></div>
+                                `).join('')}
+                                ${categoriesInDay.length > 3 ? `<div style="font-size: 0.6em; color: ${isToday ? 'white' : '#666'};">+${categoriesInDay.length - 3}</div>` : ''}
                             </div>
                         ` : ''}
                     </div>
@@ -5738,13 +5767,14 @@
                         month: 'short' 
                     });
                     const formattedTime = activity.time;
+                    const cat = categoryColors[activity.category || 'personal'];
                     
                     return `
-                        <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center;">
-                            <button onclick="toggleActivity(${activity.id})" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ff6b9d; background: white; cursor: pointer; flex-shrink: 0; transition: all 0.2s;"></button>
+                        <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center;">
+                            <button onclick="toggleActivity(${activity.id})" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid ${cat.border}; background: white; cursor: pointer; flex-shrink: 0; transition: all 0.2s;"></button>
                             <div style="flex: 1;">
-                                <p style="margin: 0; font-weight: 600; color: #333;">${activity.text}</p>
-                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #a78bfa;">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''}</p>
+                                <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''}</p>
                             </div>
                             <button onclick="deleteActivity(${activity.id})" style="background: #ff4d4f; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; flex-shrink: 0;">🗑️</button>
                         </div>
