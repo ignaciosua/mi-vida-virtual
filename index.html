@@ -1440,25 +1440,11 @@
                         <option value="salud">❤️ Salud</option>
                         <option value="social">👥 Social</option>
                     </select>
-                    <select id="activityRecurrence" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                        <option value="none">No se repite</option>
-                        <option value="daily">Diariamente</option>
-                        <option value="weekly">Semanalmente</option>
-                        <option value="monthly">Mensualmente</option>
-                        <option value="yearly">Anualmente</option>
-                    </select>
+                    <label style="font-size: 0.9em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Desde qué fecha</label>
+                    <input type="date" id="activityDateFrom" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
                     
-                    <label style="font-size: 0.9em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">🕑 Duración (opcional)</label>
-                    <select id="activityDuration" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                        <option value="indefinido">Hasta que la complete o cancele</option>
-                        <option value="1week">1 semana</option>
-                        <option value="2weeks">2 semanas</option>
-                        <option value="1month">1 mes</option>
-                        <option value="2months">2 meses</option>
-                        <option value="3months">3 meses</option>
-                        <option value="6months">6 meses</option>
-                        <option value="1year">1 año</option>
-                    </select>
+                    <label style="font-size: 0.9em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Hasta qué fecha (dejar vacío = hasta que la canceles)</label>
+                    <input type="date" id="activityDateTo" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;" placeholder="Dejar vacío para indefinido">
                     
                     <!-- Nivel de importancia -->
                     <div style="margin-bottom: 10px;">
@@ -1500,18 +1486,6 @@
                 
                 <!-- Vista de calendario mensual -->
                 <div id="monthlyCalendar" style="background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1); overflow-x: auto;"></div>
-                
-                <!-- Sección de corrección de actividades mal clasificadas -->
-                <div style="margin-top: 30px; padding: 15px; background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border-radius: 15px; border: 2px dashed #ffa726;">
-                    <h4 onclick="document.getElementById('wrongActivitiesContent').style.display = document.getElementById('wrongActivitiesContent').style.display === 'none' ? 'block' : 'none'" style="color: #f57c00; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <span>⚠️</span> Actividades mal clasificadas
-                        <span style="font-size: 0.75em; color: #ff6f00; background: rgba(255,255,255,0.5); padding: 3px 8px; border-radius: 12px; margin-left: auto;">Click para ver</span>
-                    </h4>
-                    <div id="wrongActivitiesContent" style="display: none;">
-                        <p style="font-size: 0.85em; color: #e65100; margin-bottom: 10px;">Si marcaste mal alguna actividad, puedes corregirla aquí:</p>
-                        <div id="wrongActivitiesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                    </div>
-                </div>
                 
             </div>
         </div>
@@ -6296,15 +6270,16 @@
             const dateInput = document.getElementById('activityDate');
             const timeInput = document.getElementById('activityTime');
             const categoryInput = document.getElementById('activityCategory');
-            const recurrenceInput = document.getElementById('activityRecurrence');
+            const dateFromInput = document.getElementById('activityDateFrom');
+            const dateToInput = document.getElementById('activityDateTo');
             const importanceInput = document.getElementById('activityImportance');
             const statEffectInput = document.getElementById('activityStatEffect');
             const statPercentageInput = document.getElementById('activityStatPercentage');
             const activity = input.value.trim();
-            const date = dateInput.value;
             const time = timeInput.value;
             const category = categoryInput.value;
-            const recurrence = recurrenceInput.value;
+            const dateFrom = dateFromInput.value;
+            const dateTo = dateToInput.value;
             const importance = parseInt(importanceInput.value);
             const statEffect = statEffectInput.value;
             const statPercentage = statEffect !== 'none' ? parseInt(statPercentageInput.value) : 0;
@@ -6314,23 +6289,23 @@
                 return;
             }
             
-            // Si no hay fecha, usar HOY
-            let finalDate = date;
-            if (finalDate === '') {
+            // Usar dateFrom o hoy si no se especificó
+            let finalDateFrom = dateFrom;
+            if (finalDateFrom === '') {
                 const today = new Date();
-                finalDate = today.toISOString().split('T')[0];
-                console.log('📅 No se seleccionó fecha, usando hoy:', finalDate);
+                finalDateFrom = today.toISOString().split('T')[0];
             }
             
-            console.log('🔍 FECHA FINAL A GUARDAR:', finalDate, '(tipo:', typeof finalDate, ')');
+            // dateTo puede ser vacío (indefinido)
+            const finalDateTo = dateTo || 'indefinido';
             
             const newActivity = {
                 id: Date.now(),
                 text: activity,
-                date: finalDate,
+                dateFrom: finalDateFrom,
+                dateTo: finalDateTo,
                 time: time || '20:00',
                 category: category || 'personal',
-                recurrence: recurrence,
                 importance: importance,
                 statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
                 completed: false
@@ -6343,10 +6318,10 @@
             console.log('📊 Total actividades ahora:', gameState.activities.pending.length);
             
             input.value = '';
-            dateInput.value = '';
+            dateFromInput.value = '';
+            dateToInput.value = '';
             timeInput.value = '';
             categoryInput.value = 'personal';
-            recurrenceInput.value = 'none';
             importanceInput.value = '2';
             statEffectInput.value = 'none';
             statPercentageInput.value = '15';
@@ -6724,18 +6699,37 @@
                 console.log('🔍 Actividad:', act.text, '| Fecha:', act.date, '| Recurrencia:', act.recurrence);
             });
             
-            // Filtrar actividades de la fecha seleccionada O que se repiten diariamente
+            // Filtrar actividades que estén en el rango de fechas
             const selectedActivities = gameState.activities.pending.filter(activity => {
-                // Si es la fecha exacta de la actividad
-                if (activity.date === selectedStr) {
-                    console.log('✅ Actividad con fecha exacta:', activity.text);
+                // Compatibilidad con actividades viejas (con date y recurrence)
+                if (activity.date && activity.recurrence) {
+                    if (activity.date === selectedStr) return true;
+                    if (activity.recurrence === 'daily') return true;
+                    return false;
+                }
+                
+                // Actividades nuevas con dateFrom/dateTo
+                if (!activity.dateFrom) return false;
+                
+                const activityFrom = new Date(activity.dateFrom + 'T00:00:00');
+                const selectedDateObj = new Date(selectedStr + 'T00:00:00');
+                
+                // Verificar si la fecha seleccionada es >= fecha de inicio
+                if (selectedDateObj < activityFrom) return false;
+                
+                // Si dateTo es indefinido, mostrar siempre después de dateFrom
+                if (activity.dateTo === 'indefinido') {
+                    console.log('🔁 Actividad indefinida:', activity.text);
                     return true;
                 }
-                // Si se repite diariamente: SIEMPRE mostrar (sin importar la fecha de inicio)
-                if (activity.recurrence === 'daily') {
-                    console.log('🔁 Actividad diaria encontrada:', activity.text);
+                
+                // Si hay dateTo, verificar que esté en el rango
+                const activityTo = new Date(activity.dateTo + 'T00:00:00');
+                if (selectedDateObj <= activityTo) {
+                    console.log('✅ Actividad en rango:', activity.text, 'De', activity.dateFrom, 'a', activity.dateTo);
                     return true;
                 }
+                
                 return false;
             });
             
