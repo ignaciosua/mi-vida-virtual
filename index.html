@@ -1425,26 +1425,37 @@
                 </div>
                 
                 <!-- Agregar nueva actividad -->
-                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
-                    <h3 style="color: #6b4c9a; margin-bottom: 15px;">✨ Nueva Actividad</h3>
-                    <input type="text" id="newActivityInput" placeholder="¿Qué vas a hacer?" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                        <input type="date" id="activityDate" style="flex: 1; min-width: 140px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
-                        <input type="time" id="activityTime" style="flex: 1; min-width: 120px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                <div style="background: linear-gradient(135deg, #f0f4ff 0%, #e8f3ff 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.12); border: 2px solid #ddd6fe;">
+                    <h3 style="color: #7c3aed; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">✨ Nueva Actividad</h3>
+                    <input type="text" id="newActivityInput" placeholder="📝 ¿Qué vas a hacer?" style="width: 100%; padding: 14px; border: 2px solid #c7d2fe; border-radius: 15px; font-size: 1em; margin-bottom: 12px; background: white;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                        <div>
+                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Desde</label>
+                            <input type="date" id="activityDateFrom" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Hasta</label>
+                            <input type="date" id="activityDateTo" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;" placeholder="Dejar vacío = indefinido">
+                        </div>
                     </div>
-                    <select id="activityCategory" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                        <option value="personal">🌸 Personal</option>
-                        <option value="escuela">📚 Escuela</option>
-                        <option value="trabajo">💼 Trabajo</option>
-                        <option value="ejercicio">💪 Ejercicio</option>
-                        <option value="salud">❤️ Salud</option>
-                        <option value="social">👥 Social</option>
-                    </select>
-                    <label style="font-size: 0.9em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Desde qué fecha</label>
-                    <input type="date" id="activityDateFrom" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                    
-                    <label style="font-size: 0.9em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Hasta qué fecha (dejar vacío = hasta que la canceles)</label>
-                    <input type="date" id="activityDateTo" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;" placeholder="Dejar vacío para indefinido">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                        <div>
+                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⏰ Hora</label>
+                            <input type="time" id="activityTime" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">🎯 Categoría</label>
+                            <select id="activityCategory" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                                <option value="personal">🌸 Personal</option>
+                                <option value="escuela">📚 Escuela</option>
+                                <option value="trabajo">💼 Trabajo</option>
+                                <option value="ejercicio">💪 Ejercicio</option>
+                                <option value="salud">❤️ Salud</option>
+                                <option value="social">👥 Social</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block; margin-top: 2px;">⚡ Dejar "Hasta" vacío para que se repita todos los días hasta que la canceles</label>
                     
                     <!-- Nivel de importancia -->
                     <div style="margin-bottom: 10px;">
@@ -6737,10 +6748,13 @@
             
             // Ordenar por importancia y hora
             const sortedPending = [...selectedActivities].sort((a, b) => {
-                // Primero por importancia (descendente)
+                // Primero las no completadas
+                if (a.completed !== b.completed) {
+                    return a.completed ? 1 : -1;
+                }
+                // Luego por importancia (descendente)
                 const importanceDiff = (b.importance || 2) - (a.importance || 2);
                 if (importanceDiff !== 0) return importanceDiff;
-                
                 // Finalmente por hora
                 return (a.time || '00:00').localeCompare(b.time || '00:00');
             });
@@ -6755,46 +6769,19 @@
                 `;
             } else {
                 pendingContainer.innerHTML = sortedPending.map(activity => {
-                    const activityDate = new Date(`${activity.date}T${activity.time}`);
-                    const formattedDate = activityDate.toLocaleDateString('es-ES', { 
-                        weekday: 'short', 
-                        day: 'numeric', 
-                        month: 'short' 
-                    });
-                    const formattedTime = activity.time;
                     const cat = categoryColors[activity.category || 'personal'];
-                    const importance = activity.importance || 3;
+                    const importance = activity.importance || 2;
                     const stars = '⭐'.repeat(importance);
-                    
-                    // Parsear el efecto de estadística
-                    let statInfo = '';
-                    if (activity.statEffect && activity.statEffect !== 'none') {
-                        const [statName, statValue] = activity.statEffect.split(',');
-                        const statIcons = {
-                            'autoestima': '💎',
-                            'higiene': '🚿',
-                            'ejercicio': '💪',
-                            'productividad': '📚',
-                            'social': '👥',
-                            'descanso': '😴'
-                        };
-                        statInfo = `<div style="margin-top: 5px; padding: 5px 10px; background: rgba(167, 139, 250, 0.2); border-radius: 8px; font-size: 0.8em; color: #667eea;">${statIcons[statName] || '📊'} ${statName.charAt(0).toUpperCase() + statName.slice(1)} +${statValue}%</div>`;
-                    }
+                    const isCompleted = activity.completed;
                     
                     return `
-                        <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: start;">
-                            <div style="flex: 1;">
-                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
-                                    <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
-                                    <span style="font-size: 0.9em;">${stars}</span>
-                                </div>
-                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''}</p>
-                                ${statInfo}
+                        <div style="background: ${cat.bg}; padding: 15px; border-radius: 15px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 12px; align-items: center; opacity: ${isCompleted ? '0.6' : '1'}; transition: all 0.3s;">
+                            <div onclick="toggleActivity(${activity.id})" style="width: 28px; height: 28px; border: 3px solid ${cat.border}; border-radius: 50%; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ${isCompleted ? cat.border : 'white'}; transition: all 0.2s;">
+                                ${isCompleted ? '<span style="color: white; font-size: 16px;">✓</span>' : ''}
                             </div>
-                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <button onclick="toggleActivity(${activity.id})" style="padding: 8px 12px; background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap;">✅ Hecha</button>
-                                <button onclick="markActivityNotDone(${activity.id})" style="padding: 8px 12px; background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap;">❌ No hecha</button>
-                                <button onclick="deleteActivity(${activity.id})" style="padding: 6px 10px; background: #9ca3af; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85em;">🗑️</button>
+                            <div onclick="showActivityDetails(${activity.id})" style="flex: 1; cursor: pointer;">
+                                <p style="margin: 0; font-weight: 600; color: #333; text-decoration: ${isCompleted ? 'line-through' : 'none'};"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">⏰ ${activity.time || '20:00'} ${stars}</p>
                             </div>
                         </div>
                     `;
