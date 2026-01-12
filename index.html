@@ -1467,12 +1467,15 @@
                         <label style="display: block; margin-bottom: 5px; color: #6b4c9a; font-weight: 600;">📊 Afecta a:</label>
                         <select id="activityStatEffect" onchange="toggleStatPercentage(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 8px;">
                             <option value="none">Ninguna estadística</option>
-                            <option value="autoestima">💎 Autoestima</option>
-                            <option value="higiene">🚿 Higiene</option>
-                            <option value="ejercicio">💪 Ejercicio</option>
-                            <option value="productividad">📚 Productividad</option>
-                            <option value="social">👥 Social</option>
-                            <option value="descanso">😴 Descanso</option>
+                            <option value="hambre">🍽️ Hambre</option>
+                            <option value="sueño">😴 Sueño</option>
+                            <option value="hidratacion">💧 Hidratación</option>
+                            <option value="ejercicio">🏋️ Salud Física</option>
+                            <option value="autoestima">💖 Autoestima</option>
+                            <option value="vidaSocial">💬 Vida Social</option>
+                            <option value="idiomas">🌍 Idiomas</option>
+                            <option value="aprendizaje">📚 Aprendizaje</option>
+                            <option value="contenido">🎬 Contenido</option>
                         </select>
                         <div id="statPercentageContainer" style="display: none;">
                             <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600; font-size: 0.9em;">Porcentaje de aumento:</label>
@@ -4609,35 +4612,27 @@
             
             let html = `
                 <!-- Contador de totales -->
-                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);">
-                    <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">📊 Mi Biblioteca</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
-                        <div style="background: white; padding: 12px; border-radius: 12px; text-align: center;">
-                            <div style="font-size: 1.5em; margin-bottom: 5px;">🎬</div>
-                            <div style="font-weight: bold; color: #667eea; font-size: 1.3em;">${totalMovies}</div>
-                            <div style="font-size: 0.85em; color: #6b7280;">Películas</div>
-                            ${totalMovieHours > 0 ? `<div style="font-size: 0.75em; color: #a78bfa; margin-top: 3px;">${totalMovieHours.toFixed(1)}h vistas</div>` : ''}
+                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 12px 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(255, 107, 157, 0.15);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px;">
+                        <div style="background: white; padding: 8px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.2em; margin-bottom: 3px;">🎬</div>
+                            <div style="font-weight: bold; color: #667eea; font-size: 1.1em;">${totalMovies}</div>
+                            <div style="font-size: 0.75em; color: #6b7280;">Películas</div>
                         </div>
-                        <div style="background: white; padding: 12px; border-radius: 12px; text-align: center;">
-                            <div style="font-size: 1.5em; margin-bottom: 5px;">📺</div>
-                            <div style="font-weight: bold; color: #667eea; font-size: 1.3em;">${totalSeries}</div>
-                            <div style="font-size: 0.85em; color: #6b7280;">Series</div>
-                            ${totalSeriesHours > 0 ? `<div style="font-size: 0.75em; color: #a78bfa; margin-top: 3px;">${totalSeriesHours.toFixed(1)}h vistas</div>` : ''}
+                        <div style="background: white; padding: 8px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.2em; margin-bottom: 3px;">📺</div>
+                            <div style="font-weight: bold; color: #667eea; font-size: 1.1em;">${totalSeries}</div>
+                            <div style="font-size: 0.75em; color: #6b7280;">Series</div>
                         </div>
-                        <div style="background: white; padding: 12px; border-radius: 12px; text-align: center;">
-                            <div style="font-size: 1.5em; margin-bottom: 5px;">📚</div>
-                            <div style="font-weight: bold; color: #667eea; font-size: 1.3em;">${totalBooks}</div>
-                            <div style="font-size: 0.85em; color: #6b7280;">Libros</div>
-                        </div>
-                        <div style="background: white; padding: 12px; border-radius: 12px; text-align: center;">
-                            <div style="font-size: 1.5em; margin-bottom: 5px;">🧠</div>
-                            <div style="font-weight: bold; color: #667eea; font-size: 1.3em;">${totalFlashcards}</div>
-                            <div style="font-size: 0.85em; color: #6b7280;">Flashcards</div>
+                        <div style="background: white; padding: 8px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 1.2em; margin-bottom: 3px;">📚</div>
+                            <div style="font-weight: bold; color: #667eea; font-size: 1.1em;">${totalBooks}</div>
+                            <div style="font-size: 0.75em; color: #6b7280;">Libros</div>
                         </div>
                     </div>
                     ${(totalMovieHours + totalSeriesHours) > 0 ? `
-                        <div style="margin-top: 12px; padding: 10px; background: rgba(167, 139, 250, 0.1); border-radius: 10px; text-align: center;">
-                            <span style="color: #667eea; font-weight: 600;">⏱️ Total: ${(totalMovieHours + totalSeriesHours).toFixed(1)} horas de contenido visto</span>
+                        <div style="margin-top: 8px; padding: 6px; background: rgba(167, 139, 250, 0.1); border-radius: 8px; text-align: center;">
+                            <span style="color: #667eea; font-weight: 600; font-size: 0.8em;">⏱️ Películas: ${totalMovieHours.toFixed(1)}h | Series: ${totalSeriesHours.toFixed(1)}h | Total: ${(totalMovieHours + totalSeriesHours).toFixed(1)}h</span>
                         </div>
                     ` : ''}
                 </div>
@@ -6341,6 +6336,38 @@
             }
         }
         
+        function markActivityNotDone(id) {
+            const activity = gameState.activities.pending.find(a => a.id === id);
+            if (activity) {
+                // Confirmar acción
+                if (!confirm('¿Confirmas que NO hiciste esta actividad? Esto reducirá tu estadística.')) {
+                    return;
+                }
+                
+                gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+                activity.completed = false;
+                gameState.activities.completed.push(activity);
+                
+                // Aplicar efecto NEGATIVO si existe
+                if (activity.statEffect && activity.statEffect !== 'none') {
+                    const [statName, statValue] = activity.statEffect.split(',');
+                    const penalty = parseInt(statValue);
+                    
+                    // Restar el porcentaje que hubiera sumado
+                    if (gameState.stats[statName]) {
+                        gameState.stats[statName].value = Math.max(0, gameState.stats[statName].value - penalty);
+                        renderStats();
+                        
+                        // Mostrar notificación
+                        console.log(`❌ Actividad no realizada: -${penalty}% a ${statName}`);
+                    }
+                }
+                
+                saveState();
+                renderActivities();
+            }
+        }
+        
         function deleteActivity(id, completed = false) {
             if (completed) {
                 gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
@@ -6522,7 +6549,6 @@
                     
                     return `
                         <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: start;">
-                            <button onclick="toggleActivity(${activity.id})" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid ${cat.border}; background: white; cursor: pointer; flex-shrink: 0; transition: all 0.2s;"></button>
                             <div style="flex: 1;">
                                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
                                     <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
@@ -6531,7 +6557,11 @@
                                 <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''}</p>
                                 ${statInfo}
                             </div>
-                            <button onclick="deleteActivity(${activity.id})" style="background: #ff4d4f; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; flex-shrink: 0;">🗑️</button>
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <button onclick="toggleActivity(${activity.id})" style="padding: 8px 12px; background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap;">✅ Hecha</button>
+                                <button onclick="markActivityNotDone(${activity.id})" style="padding: 8px 12px; background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap;">❌ No hecha</button>
+                                <button onclick="deleteActivity(${activity.id})" style="padding: 6px 10px; background: #9ca3af; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85em;">🗑️</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
