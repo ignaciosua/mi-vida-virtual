@@ -1429,15 +1429,17 @@
                     <h3 style="color: #7c3aed; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">✨ Nueva Actividad</h3>
                     <input type="text" id="newActivityInput" placeholder="📝 ¿Qué vas a hacer?" style="width: 100%; padding: 14px; border: 2px solid #c7d2fe; border-radius: 15px; font-size: 1em; margin-bottom: 12px; background: white;">
                     
-                    <div style="margin-bottom: 12px;">
-                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Desde qué día</label>
-                        <input type="date" id="activityDateFrom" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                        <div>
+                            <label style="font-size: 0.8em; color: #7c3aed; font-weight: 600; margin-bottom: 4px; display: block;">📅 Desde</label>
+                            <input type="date" id="activityDateFrom" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em; background: white;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8em; color: #7c3aed; font-weight: 600; margin-bottom: 4px; display: block;">📅 Hasta</label>
+                            <input type="date" id="activityDateTo" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em; background: white;">
+                        </div>
                     </div>
-                    
-                    <div style="margin-bottom: 12px;">
-                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Hasta qué día (dejar vacío = se repite siempre)</label>
-                        <input type="date" id="activityDateTo" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
-                    </div>
+                    <p style="font-size: 0.75em; color: #7c3aed; margin: -8px 0 12px 0; opacity: 0.8;">💡 Dejar "Hasta" vacío = se repite siempre</p>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
                         <div>
