@@ -1406,6 +1406,13 @@
                         <input type="date" id="activityDate" style="flex: 1; min-width: 140px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
                         <input type="time" id="activityTime" style="flex: 1; min-width: 120px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
                     </div>
+                    <select id="activityRecurrence" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
+                        <option value="none">No se repite</option>
+                        <option value="daily">Diariamente</option>
+                        <option value="weekly">Semanalmente</option>
+                        <option value="monthly">Mensualmente</option>
+                        <option value="yearly">Anualmente</option>
+                    </select>
                     <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
                 </div>
                 
@@ -4465,9 +4472,12 @@
                         ).join('')}
                     </div>` : ''}
                     
-                    <button onclick="openAddItemModal()" style="width: 100%; padding: 15px; background: white; color: #667eea; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
-                        ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard'}
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="openAddItemModal()" style="flex: 1; padding: 15px; background: white; color: #667eea; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
+                            ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard'}
+                        </button>
+                        ${currentLibraryCategory === 'flashcards' ? `<button onclick="startFlashcardReview()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">🧠 Repasar</button>` : ''}
+                    </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
@@ -4482,10 +4492,18 @@
                             ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">` : ''}
                             <h4 style="color: #667eea; margin-bottom: 5px;">${item.title}</h4>
                             ${item.author ? `<p style="color: #a78bfa; font-size: 0.9em; margin-bottom: 10px;">por ${item.author}</p>` : ''}
-                            <div style="color: #fbbf24; margin-bottom: 10px;">${'⭐'.repeat(item.rating || 0)}${'☆'.repeat(5 - (item.rating || 0))}</div>
+                            ${currentLibraryCategory !== 'flashcards' ? `<div style="color: #fbbf24; margin-bottom: 10px;">${'⭐'.repeat(item.rating || 0)}${'☆'.repeat(5 - (item.rating || 0))}</div>` : ''}
                             ${item.description ? `<p style="color: #6b7280; font-size: 0.85em; line-height: 1.4; margin-bottom: 10px;">${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}</p>` : ''}
-                            <div style="display: flex; gap: 10px;">
-                                <button onclick="viewLibraryItem(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">Ver</button>
+                            ${currentLibraryCategory === 'peliculas' && item.duration ? `
+                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
+                                    <div style="color: #6b4c9a;">⏱️ ${item.duration} min | 👁️ ${item.timesWatched || 1}x</div>
+                                    <div style="color: #ff6b9d; font-weight: 600;">Total: ${((item.duration || 0) * (item.timesWatched || 1))} min (${Math.floor(((item.duration || 0) * (item.timesWatched || 1)) / 60)}h ${((item.duration || 0) * (item.timesWatched || 1)) % 60}m)</div>
+                                </div>
+                            ` : ''}
+                            ${currentLibraryCategory === 'flashcards' && item.folder ? `<p style="color: #ff6b9d; font-size: 0.85em; margin-bottom: 10px;">📁 ${item.folder}</p>` : ''}
+                            <div style="display: flex; gap: 10px;">${currentLibraryCategory === 'flashcards' ? `
+                                    <button onclick="reviewSingleFlashcard(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">🧠 Repasar</button>
+                                ` : `<button onclick="viewLibraryItem(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">Ver</button>`}
                                 <button onclick="editLibraryItem(${index})" style="padding: 8px 12px; background: #a78bfa; color: white; border: none; border-radius: 8px; cursor: pointer;">✏️</button>
                                 <button onclick="deleteLibraryItem(${index})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">🗑️</button>
                             </div>
@@ -4573,6 +4591,10 @@
             const imageUrl = document.getElementById('itemImageUrl')?.value.trim() || '';
             const description = document.getElementById('itemDescription')?.value.trim() || '';
             const answer = document.getElementById('flashcardAnswer')?.value.trim() || '';
+            const folder = document.getElementById('flashcardFolder')?.value.trim() || 'General';
+            const flashcardImage = document.getElementById('flashcardImage')?.value.trim() || '';
+            const duration = document.getElementById('movieDuration')?.value || 0;
+            const timesWatched = document.getElementById('movieTimesWatched')?.value || 1;
             const rating = window.currentItemRating || 0;
             
             if (!title) {
@@ -4593,11 +4615,18 @@
             const item = {
                 title,
                 author,
-                imageUrl,
+                imageUrl: currentLibraryCategory === 'flashcards' ? flashcardImage : imageUrl,
                 description,
                 answer,
+                folder,
+                duration: parseInt(duration) || 0,
+                timesWatched: parseInt(timesWatched) || 1,
                 rating,
-                dateAdded: editIndex !== null ? library[currentLibraryCategory][editIndex].dateAdded : new Date().toISOString()
+                dateAdded: editIndex !== null ? library[currentLibraryCategory][editIndex].dateAdded : new Date().toISOString(),
+                // Sistema de repetición espaciada para flashcards
+                nextReview: currentLibraryCategory === 'flashcards' ? (editIndex !== null ? library[currentLibraryCategory][editIndex].nextReview : new Date().toISOString()) : null,
+                interval: currentLibraryCategory === 'flashcards' ? (editIndex !== null ? library[currentLibraryCategory][editIndex].interval : 0) : null,
+                easeFactor: currentLibraryCategory === 'flashcards' ? (editIndex !== null ? library[currentLibraryCategory][editIndex].easeFactor : 2.5) : null
             };
             
             if (editIndex !== null) {
@@ -5337,9 +5366,11 @@
             const input = document.getElementById('newActivityInput');
             const dateInput = document.getElementById('activityDate');
             const timeInput = document.getElementById('activityTime');
+            const recurrenceInput = document.getElementById('activityRecurrence');
             const activity = input.value.trim();
             const date = dateInput.value;
             const time = timeInput.value;
+            const recurrence = recurrenceInput.value;
             
             if (activity === '') {
                 alert('⚠️ Por favor escribe una actividad');
@@ -5356,6 +5387,7 @@
                 text: activity,
                 date: date,
                 time: time || '00:00',
+                recurrence: recurrence,
                 completed: false
             };
             
@@ -5365,6 +5397,7 @@
             input.value = '';
             dateInput.value = '';
             timeInput.value = '';
+            recurrenceInput.value = 'none';
             
             renderActivities();
         }
@@ -5559,6 +5592,153 @@
                     </div>
                 `;
             }).join('');
+        }
+        
+        // ===================================
+        // 🧠 SISTEMA DE REPETICIÓN ESPACIADA (FLASHCARDS)
+        // ===================================
+        
+        function startFlashcardReview() {
+            const today = new Date();
+            const flashcardsToReview = library.flashcards.filter(card => {
+                if (!card.nextReview) return true; // Nueva flashcard
+                return new Date(card.nextReview) <= today;
+            });
+            
+            if (flashcardsToReview.length === 0) {
+                alert('🎉 ¡No hay flashcards para repasar hoy! Vuelve mañana.');
+                return;
+            }
+            
+            // Iniciar sesión de repaso
+            window.currentReviewSession = {
+                cards: flashcardsToReview,
+                currentIndex: 0,
+                showingAnswer: false
+            };
+            
+            showReviewModal();
+        }
+        
+        function showReviewModal() {
+            const session = window.currentReviewSession;
+            const card = session.cards[session.currentIndex];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'reviewModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>🧠 Repaso de Flashcards</h3>
+                        <p style="color: #a78bfa; font-size: 0.9em;">${session.currentIndex + 1} / ${session.cards.length}</p>
+                    </div>
+                    <div class="modal-body" style="min-height: 300px; display: flex; flex-direction: column; justify-content: center;">
+                        ${card.folder ? `<div style="background: #fef3ff; padding: 8px 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; color: #ff6b9d; font-weight: 600;">📁 ${card.folder}</div>` : ''}
+                        
+                        <div id="flashcardContent" style="text-align: center; padding: 20px;">
+                            <h2 style="color: #667eea; margin-bottom: 20px; font-size: 1.5em;">${card.title}</h2>
+                            ${card.imageUrl ? `<img src="${card.imageUrl}" style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 20px;">` : ''}
+                            
+                            ${!session.showingAnswer ? `
+                                <button onclick="showAnswer()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">
+                                    👁️ Ver Respuesta
+                                </button>
+                            ` : `
+                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                                    <p style="color: #6b4c9a; font-size: 1.2em; line-height: 1.6;">${card.answer}</p>
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button onclick="rateFlashcard('hard')" style="flex: 1; min-width: 120px; padding: 15px; background: #ef4444; color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer;">
+                                        ❌ Difícil<br><small>Repetir pronto</small>
+                                    </button>
+                                    <button onclick="rateFlashcard('good')" style="flex: 1; min-width: 120px; padding: 15px; background: #f59e0b; color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer;">
+                                        🤔 Regular<br><small>Necesito repaso</small>
+                                    </button>
+                                    <button onclick="rateFlashcard('easy')" style="flex: 1; min-width: 120px; padding: 15px; background: #10b981; color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer;">
+                                        ✅ Fácil<br><small>La recordé bien</small>
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                    <button onclick="closeReviewModal()" style="width: 100%; margin-top: 15px; padding: 12px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer;">Cerrar Sesión</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function showAnswer() {
+            window.currentReviewSession.showingAnswer = true;
+            document.getElementById('reviewModal').remove();
+            showReviewModal();
+        }
+        
+        function rateFlashcard(difficulty) {
+            const session = window.currentReviewSession;
+            const card = session.cards[session.currentIndex];
+            
+            // Encontrar el índice de la card en la biblioteca
+            const cardIndex = library.flashcards.findIndex(c => c.title === card.title && c.answer === card.answer);
+            
+            if (cardIndex !== -1) {
+                const now = new Date();
+                let interval = library.flashcards[cardIndex].interval || 0;
+                
+                // Algoritmo de repetición espaciada
+                if (difficulty === 'hard') {
+                    interval = 0; // Repetir hoy
+                } else if (difficulty === 'good') {
+                    if (interval === 0) interval = 1; // 1 día
+                    else interval = Math.ceil(interval * 1.5); // Aumentar 50%
+                } else if (difficulty === 'easy') {
+                    if (interval === 0) interval = 1; // 1 día
+                    else if (interval === 1) interval = 3; // 3 días
+                    else if (interval === 3) interval = 7; // 1 semana
+                    else if (interval === 7) interval = 14; // 2 semanas
+                    else if (interval === 14) interval = 30; // 1 mes
+                    else if (interval === 30) interval = 90; // 3 meses
+                    else if (interval === 90) interval = 180; // 6 meses
+                    else if (interval === 180) interval = 365; // 1 año
+                    else interval = Math.ceil(interval * 2); // Duplicar
+                }
+                
+                const nextReview = new Date(now.getTime() + interval * 24 * 60 * 60 * 1000);
+                library.flashcards[cardIndex].interval = interval;
+                library.flashcards[cardIndex].nextReview = nextReview.toISOString();
+                
+                saveLibrary();
+            }
+            
+            // Siguiente tarjeta
+            session.currentIndex++;
+            session.showingAnswer = false;
+            
+            if (session.currentIndex < session.cards.length) {
+                document.getElementById('reviewModal').remove();
+                showReviewModal();
+            } else {
+                document.getElementById('reviewModal').remove();
+                alert(`🎉 ¡Sesión completada! Repasaste ${session.cards.length} flashcard${session.cards.length > 1 ? 's' : ''}.`);
+                renderLibraryContent();
+            }
+        }
+        
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            if (modal) modal.remove();
+            window.currentReviewSession = null;
+        }
+        
+        function reviewSingleFlashcard(index) {
+            window.currentReviewSession = {
+                cards: [library.flashcards[index]],
+                currentIndex: 0,
+                showingAnswer: false
+            };
+            showReviewModal();
         }
         
         // Guardar todo antes de cerrar o cambiar de pestaña
