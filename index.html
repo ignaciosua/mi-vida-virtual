@@ -6707,6 +6707,11 @@
             console.log('📅 Mostrando actividades de:', selectedStr);
             console.log('📋 Total actividades pendientes:', gameState.activities.pending.length);
             
+            // MOSTRAR TODAS LAS ACTIVIDADES CON SU RECURRENCIA
+            gameState.activities.pending.forEach(act => {
+                console.log('🔍 Actividad:', act.text, '| Fecha:', act.date, '| Recurrencia:', act.recurrence);
+            });
+            
             // Filtrar actividades de la fecha seleccionada O que se repiten diariamente
             const selectedActivities = gameState.activities.pending.filter(activity => {
                 // Si es la fecha exacta de la actividad
