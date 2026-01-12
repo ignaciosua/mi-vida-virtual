@@ -6668,21 +6668,26 @@
                 return;
             }
             
+            // Obtener fecha de HOY en formato YYYY-MM-DD
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + 
+                           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(today.getDate()).padStart(2, '0');
+            
+            console.log('📅 Fecha de hoy:', todayStr);
             console.log('📋 Total actividades pendientes:', gameState.activities.pending.length);
             
-            // MOSTRAR TODAS LAS ACTIVIDADES (sin filtrar por fecha)
-            console.log('🔍 MOSTRANDO TODAS LAS ACTIVIDADES:');
-            gameState.activities.pending.forEach((act, i) => {
-                console.log(`  ${i+1}. "${act.text}" - Fecha: "${act.date}"`);
+            // Filtrar solo actividades de HOY
+            const todayActivities = gameState.activities.pending.filter(activity => {
+                console.log(`Comparando: "${activity.date}" === "${todayStr}"`);
+                return activity.date === todayStr;
             });
             
-            // Ordenar por fecha e importancia
-            const sortedPending = [...gameState.activities.pending].sort((a, b) => {
-                // Primero por fecha
-                const dateCompare = a.date.localeCompare(b.date);
-                if (dateCompare !== 0) return dateCompare;
-                
-                // Luego por importancia (descendente)
+            console.log('✅ Actividades de HOY:', todayActivities.length);
+            
+            // Ordenar por importancia y hora
+            const sortedPending = [...todayActivities].sort((a, b) => {
+                // Primero por importancia (descendente)
                 const importanceDiff = (b.importance || 2) - (a.importance || 2);
                 if (importanceDiff !== 0) return importanceDiff;
                 
@@ -6693,8 +6698,9 @@
             if (sortedPending.length === 0) {
                 pendingContainer.innerHTML = `
                     <div style="text-align: center; padding: 20px;">
-                        <p style="color: #a78bfa; margin-bottom: 10px; font-size: 1.1em;">🌸 No hay actividades</p>
-                        <p style="color: #999; font-size: 0.85em;">¡Agrega tu primera actividad!</p>
+                        <p style="color: #a78bfa; margin-bottom: 10px; font-size: 1.1em;">🌸 No hay actividades para hoy</p>
+                        <p style="color: #999; font-size: 0.85em;">Fecha de hoy: ${todayStr}</p>
+                        <p style="color: #999; font-size: 0.85em;">Total en sistema: ${gameState.activities.pending.length} actividades</p>
                     </div>
                 `;
             } else {
