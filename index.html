@@ -6703,13 +6703,16 @@
             
             // Filtrar actividades de la fecha seleccionada O que se repiten diariamente
             const selectedActivities = gameState.activities.pending.filter(activity => {
-                // Si es la fecha exacta
+                // Si es la fecha exacta de la actividad
                 if (activity.date === selectedStr) {
                     return true;
                 }
-                // Si se repite diariamente y la fecha de la actividad es anterior o igual a la seleccionada
-                if (activity.recurrence === 'daily' && activity.date <= selectedStr) {
-                    return true;
+                // Si se repite diariamente: mostrar desde su fecha de inicio en adelante
+                if (activity.recurrence === 'daily') {
+                    const activityDate = new Date(activity.date + 'T00:00:00');
+                    const selectedDateObj = new Date(selectedStr + 'T00:00:00');
+                    // Mostrar si la fecha seleccionada es igual o posterior a la fecha de inicio
+                    return selectedDateObj >= activityDate;
                 }
                 return false;
             });
