@@ -1451,6 +1451,33 @@
                         <option value="monthly">Mensualmente</option>
                         <option value="yearly">Anualmente</option>
                     </select>
+                    
+                    <!-- Nivel de importancia -->
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; color: #6b4c9a; font-weight: 600;">⭐ Nivel de importancia:</label>
+                        <select id="activityImportance" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                            <option value="5">⭐⭐⭐⭐⭐ Muy importante</option>
+                            <option value="4">⭐⭐⭐⭐ Importante</option>
+                            <option value="3" selected>⭐⭐⭐ Normal</option>
+                            <option value="2">⭐⭐ Poco importante</option>
+                            <option value="1">⭐ Opcional</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Impacto en estadísticas -->
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; color: #6b4c9a; font-weight: 600;">📊 Afecta a:</label>
+                        <select id="activityStatEffect" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                            <option value="none">Ninguna estadística</option>
+                            <option value="autoestima,15">💎 Autoestima (+15%)</option>
+                            <option value="higiene,20">🚿 Higiene (+20%)</option>
+                            <option value="ejercicio,25">💪 Ejercicio (+25%)</option>
+                            <option value="productividad,20">📚 Productividad (+20%)</option>
+                            <option value="social,15">👥 Social (+15%)</option>
+                            <option value="descanso,10">😴 Descanso (+10%)</option>
+                        </select>
+                    </div>
+                    
                     <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
                 </div>
                 
@@ -4522,6 +4549,24 @@
             const container = document.getElementById('libraryContent');
             const items = library[currentLibraryCategory] || [];
             
+            // Calcular totales y horas
+            const totalMovies = library.peliculas?.length || 0;
+            const totalSeries = library.series?.length || 0;
+            const totalBooks = library.libros?.length || 0;
+            const totalFlashcards = library.flashcards?.length || 0;
+            
+            const totalMovieHours = library.peliculas?.reduce((sum, movie) => {
+                const duration = movie.duration || 0;
+                const times = movie.timesWatched || 1;
+                return sum + (duration * times / 60);
+            }, 0) || 0;
+            
+            const totalSeriesHours = library.series?.reduce((sum, series) => {
+                const duration = series.duration || 0;
+                const times = series.timesWatched || 1;
+                return sum + (duration * times / 60);
+            }, 0) || 0;
+            
             // Filtrar items
             let filteredItems = items.filter(item => {
                 let matchSearch = true;
@@ -4561,6 +4606,40 @@
             };
             
             let html = `
+                <!-- Contador de totales -->
+                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);">
+                    <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">📊 Mi Biblioteca</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                        <div style="background: white; padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 1.5em; margin-bottom: 5px;">🎬</div>
+                            <div style="font-weight: bold; color: #667eea; font-size: 1.3em;">${totalMovies}</div>
+                            <div style="font-size: 0.85em; color: #6b7280;">Películas</div>
+                            ${totalMovieHours > 0 ? `<div style="font-size: 0.75em; color: #a78bfa; margin-top: 3px;">${totalMovieHours.toFixed(1)}h vistas</div>` : ''}
+                        </div>
+                        <div style="background: white; padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 1.5em; margin-bottom: 5px;">📺</div>
+                            <div style="font-weight: bold; color: #667eea; font-size: 1.3em;">${totalSeries}</div>
+                            <div style="font-size: 0.85em; color: #6b7280;">Series</div>
+                            ${totalSeriesHours > 0 ? `<div style="font-size: 0.75em; color: #a78bfa; margin-top: 3px;">${totalSeriesHours.toFixed(1)}h vistas</div>` : ''}
+                        </div>
+                        <div style="background: white; padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 1.5em; margin-bottom: 5px;">📚</div>
+                            <div style="font-weight: bold; color: #667eea; font-size: 1.3em;">${totalBooks}</div>
+                            <div style="font-size: 0.85em; color: #6b7280;">Libros</div>
+                        </div>
+                        <div style="background: white; padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 1.5em; margin-bottom: 5px;">🧠</div>
+                            <div style="font-weight: bold; color: #667eea; font-size: 1.3em;">${totalFlashcards}</div>
+                            <div style="font-size: 0.85em; color: #6b7280;">Flashcards</div>
+                        </div>
+                    </div>
+                    ${(totalMovieHours + totalSeriesHours) > 0 ? `
+                        <div style="margin-top: 12px; padding: 10px; background: rgba(167, 139, 250, 0.1); border-radius: 10px; text-align: center;">
+                            <span style="color: #667eea; font-weight: 600;">⏱️ Total: ${(totalMovieHours + totalSeriesHours).toFixed(1)} horas de contenido visto</span>
+                        </div>
+                    ` : ''}
+                </div>
+                
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; color: white;">
                     <h3 style="margin-bottom: 15px;">📚 ${categoryNames[currentLibraryCategory]}</h3>
                     
@@ -4683,9 +4762,10 @@
                             </select>
                         ` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `<input type="url" id="flashcardImage" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'peliculas' || currentLibraryCategory === 'series' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory !== 'flashcards' && currentLibraryCategory !== 'peliculas' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'libros' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
@@ -6181,11 +6261,15 @@
             const timeInput = document.getElementById('activityTime');
             const categoryInput = document.getElementById('activityCategory');
             const recurrenceInput = document.getElementById('activityRecurrence');
+            const importanceInput = document.getElementById('activityImportance');
+            const statEffectInput = document.getElementById('activityStatEffect');
             const activity = input.value.trim();
             const date = dateInput.value;
             const time = timeInput.value;
             const category = categoryInput.value;
             const recurrence = recurrenceInput.value;
+            const importance = parseInt(importanceInput.value);
+            const statEffect = statEffectInput.value;
             
             if (activity === '') {
                 alert('⚠️ Por favor escribe una actividad');
@@ -6204,6 +6288,8 @@
                 time: time || '00:00',
                 category: category || 'personal',
                 recurrence: recurrence,
+                importance: importance,
+                statEffect: statEffect,
                 completed: false
             };
             
@@ -6215,6 +6301,8 @@
             timeInput.value = '';
             categoryInput.value = 'personal';
             recurrenceInput.value = 'none';
+            importanceInput.value = '3';
+            statEffectInput.value = 'none';
             
             renderActivities();
             renderMonthlyCalendar();
@@ -6226,6 +6314,22 @@
                 gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
                 activity.completed = true;
                 gameState.activities.completed.push(activity);
+                
+                // Aplicar efecto de estadística si existe
+                if (activity.statEffect && activity.statEffect !== 'none') {
+                    const [statName, statValue] = activity.statEffect.split(',');
+                    const boost = parseInt(statValue);
+                    
+                    // Aplicar el boost a la estadística correspondiente
+                    if (gameState.stats[statName]) {
+                        gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + boost);
+                        renderStats();
+                        
+                        // Mostrar notificación
+                        console.log(`✅ Actividad completada! +${boost}% a ${statName}`);
+                    }
+                }
+                
                 saveState();
                 renderActivities();
             }
@@ -6355,15 +6459,23 @@
                 return activityDate.getMonth() === currentMonth && activityDate.getFullYear() === currentYear;
             });
             
-            // Renderizar pendientes del mes (ordenar por fecha y hora)
-            const sortedPending = [...thisMonthActivities].sort((a, b) => {
+            // Filtrar solo las más importantes (3+ estrellas)
+            const importantActivities = thisMonthActivities.filter(a => (a.importance || 3) >= 3);
+            
+            // Renderizar pendientes del mes (ordenar por importancia primero, luego por fecha)
+            const sortedPending = [...importantActivities].sort((a, b) => {
+                // Primero por importancia (descendente)
+                const importanceDiff = (b.importance || 3) - (a.importance || 3);
+                if (importanceDiff !== 0) return importanceDiff;
+                
+                // Luego por fecha (ascendente)
                 const dateA = new Date(`${a.date}T${a.time}`);
                 const dateB = new Date(`${b.date}T${b.time}`);
                 return dateA - dateB;
             });
             
             if (sortedPending.length === 0) {
-                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades pendientes este mes 🌸</p>';
+                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades importantes este mes 🌸</p>';
             } else {
                 pendingContainer.innerHTML = sortedPending.map(activity => {
                     const activityDate = new Date(`${activity.date}T${activity.time}`);
@@ -6374,13 +6486,34 @@
                     });
                     const formattedTime = activity.time;
                     const cat = categoryColors[activity.category || 'personal'];
+                    const importance = activity.importance || 3;
+                    const stars = '⭐'.repeat(importance);
+                    
+                    // Parsear el efecto de estadística
+                    let statInfo = '';
+                    if (activity.statEffect && activity.statEffect !== 'none') {
+                        const [statName, statValue] = activity.statEffect.split(',');
+                        const statIcons = {
+                            'autoestima': '💎',
+                            'higiene': '🚿',
+                            'ejercicio': '💪',
+                            'productividad': '📚',
+                            'social': '👥',
+                            'descanso': '😴'
+                        };
+                        statInfo = `<div style="margin-top: 5px; padding: 5px 10px; background: rgba(167, 139, 250, 0.2); border-radius: 8px; font-size: 0.8em; color: #667eea;">${statIcons[statName] || '📊'} ${statName.charAt(0).toUpperCase() + statName.slice(1)} +${statValue}%</div>`;
+                    }
                     
                     return `
-                        <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center;">
+                        <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: start;">
                             <button onclick="toggleActivity(${activity.id})" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid ${cat.border}; background: white; cursor: pointer; flex-shrink: 0; transition: all 0.2s;"></button>
                             <div style="flex: 1;">
-                                <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
+                                    <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                    <span style="font-size: 0.9em;">${stars}</span>
+                                </div>
                                 <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''}</p>
+                                ${statInfo}
                             </div>
                             <button onclick="deleteActivity(${activity.id})" style="background: #ff4d4f; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; flex-shrink: 0;">🗑️</button>
                         </div>

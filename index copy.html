@@ -250,10 +250,19 @@
 
         @keyframes pulse {
             0%, 100% {
-                transform: scale(1);
+                transform: translateX(-50%) scale(1);
             }
             50% {
-                transform: scale(1.3);
+                transform: translateX(-50%) scale(1.05);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
             }
         }
 
@@ -1223,6 +1232,10 @@
                 <span class="tab-icon">🌱</span>
                 <span class="tab-label">Cuidarme</span>
             </button>
+            <button class="tab" onclick="switchTab('ejercicio')">
+                <span class="tab-icon">🏃</span>
+                <span class="tab-label">Ejercicio</span>
+            </button>
             <button class="tab" onclick="switchTab('crecer')">
                 <span class="tab-icon">🧠</span>
                 <span class="tab-label">Crecer</span>
@@ -1234,6 +1247,10 @@
             <button class="tab" onclick="switchTab('ideas')">
                 <span class="tab-icon">💡</span>
                 <span class="tab-label">Ideas</span>
+            </button>
+            <button class="tab" onclick="switchTab('calendario')">
+                <span class="tab-icon">📅</span>
+                <span class="tab-label">Calendario</span>
             </button>
             <button class="tab" onclick="switchTab('resumen')">
                 <span class="tab-icon">📊</span>
@@ -1264,10 +1281,6 @@
         <div class="tab-content" id="tab-cuidarme">
             <div class="stats-container" id="statsCuidarme"></div>
             <div class="buttons-container">
-                <button class="action-button btn-exercise" id="btnExercise">
-                    <span class="button-icon">🏃</span>
-                    <span class="button-text">Ejercicio</span>
-                </button>
                 <button class="action-button btn-selfcare" id="btnSelfcare">
                     <span class="button-icon">💖</span>
                     <span class="button-text">Autoestima</span>
@@ -1277,6 +1290,28 @@
                     <span class="button-text">Vida Social</span>
                 </button>
             </div>
+        </div>
+
+        <!-- Tab: Ejercicio -->
+        <div class="tab-content" id="tab-ejercicio">
+            <!-- Stats y botón en proporción 1:2 HASTA ARRIBA -->
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 20px;">
+                <div class="stats-container" id="statsEjercicio" style="margin: 0;"></div>
+                <button class="action-button btn-exercise" id="btnExercise" style="height: 100%; margin: 0;">
+                    <span class="button-icon">🏃</span>
+                    <span class="button-text">Ejercicio</span>
+                </button>
+            </div>
+            
+            <!-- Ejercicio del día -->
+            <div id="todayExercise" style="background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; color: white; box-shadow: 0 8px 20px rgba(255, 107, 157, 0.3);">
+                <div style="font-size: 2.5em; margin-bottom: 10px;">💪</div>
+                <h2 style="margin-bottom: 10px; font-size: 1.5em;">Hoy te toca:</h2>
+                <div id="todayMuscle" style="font-size: 2em; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Glúteo 🍑</div>
+            </div>
+            
+            <!-- Calendario semanal de ejercicio -->
+            <div id="exerciseCalendar" style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
         </div>
 
         <!-- Tab: Crecer -->
@@ -1306,6 +1341,7 @@
                     <button onclick="openLibraryCategory('libros')" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">📖 Libros</button>
                     <button onclick="openLibraryCategory('peliculas')" style="padding: 10px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">🎬 Películas</button>
                     <button onclick="openLibraryCategory('series')" style="padding: 10px 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">📺 Series</button>
+                    <button onclick="openLibraryCategory('flashcards')" style="padding: 10px 20px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer; font-weight: 600;">🧠 Flashcards</button>
                 </div>
             </div>
             <div id="libraryContent" style="padding: 15px;"></div>
@@ -1349,33 +1385,91 @@
             
             <!-- Pestañas de estados de ideas -->
             <div style="display: flex; gap: 8px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.5); padding: 10px; border-radius: 20px; flex-wrap: wrap;">
-                <button class="idea-state-tab active" onclick="switchIdeaState('pendientes')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2); transition: all 0.3s ease;">
+                <button class="idea-state-tab active" onclick="switchIdeaState('pendientes')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2); transition: all 0.3s ease;">
                     💭 Pendientes
                 </button>
-                <button class="idea-state-tab" onclick="switchIdeaState('grabadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                <button class="idea-state-tab" onclick="switchIdeaState('guionada')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                    📝 Guion
+                </button>
+                <button class="idea-state-tab" onclick="switchIdeaState('grabadas')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
                     🎥 Grabadas
                 </button>
-                <button class="idea-state-tab" onclick="switchIdeaState('editadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                <button class="idea-state-tab" onclick="switchIdeaState('editadas')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
                     ✂️ Editadas
                 </button>
-                <button class="idea-state-tab" onclick="switchIdeaState('publicadas')" style="flex: 1; min-width: 120px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
+                <button class="idea-state-tab" onclick="switchIdeaState('publicadas')" style="flex: 1; min-width: 100px; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.85em; font-weight: 600; color: #6b4c9a; cursor: pointer; box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2); transition: all 0.3s ease;">
                     📤 Publicadas
                 </button>
             </div>
             
             <!-- Contenedor de ideas (cambia según la pestaña seleccionada) -->
             <div id="ideasContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 200px;"></div>
+            
+            <!-- Calendario de Videos Programados -->
+            <div style="margin-top: 30px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
+                <h3 style="color: #ff6b9d; margin-bottom: 15px; text-align: center;">🎬 Calendario de Videos</h3>
+                <p style="text-align: center; color: #a78bfa; font-size: 0.9em; margin-bottom: 15px;">Videos programados para publicar</p>
+                <div id="scheduledVideos" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+        </div>
+
+        <!-- Tab: Calendario -->
+        <div class="tab-content" id="tab-calendario">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #ff6b9d; margin-bottom: 10px;">📅 Actividades del Día</h2>
+                <p style="color: #a78bfa; font-size: 0.95em;">Calendario general - Todas tus actividades</p>
+            </div>
+            
+            <!-- Vista de Actividades -->
+            <div id="calendar-actividades" class="calendar-view" style="display: block;">
+                <!-- Lista de actividades pendientes (Arriba) -->
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #ff6b9d; margin-bottom: 12px;">🕒 Pendientes (Este mes)</h3>
+                    <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                </div>
+                
+                <!-- Agregar nueva actividad -->
+                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
+                    <h3 style="color: #6b4c9a; margin-bottom: 15px;">✨ Nueva Actividad</h3>
+                    <input type="text" id="newActivityInput" placeholder="¿Qué vas a hacer?" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                        <input type="date" id="activityDate" style="flex: 1; min-width: 140px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                        <input type="time" id="activityTime" style="flex: 1; min-width: 120px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                    </div>
+                    <select id="activityCategory" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
+                        <option value="personal">🌸 Personal</option>
+                        <option value="escuela">📚 Escuela</option>
+                        <option value="trabajo">💼 Trabajo</option>
+                        <option value="ejercicio">💪 Ejercicio</option>
+                        <option value="salud">❤️ Salud</option>
+                        <option value="social">👥 Social</option>
+                    </select>
+                    <select id="activityRecurrence" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
+                        <option value="none">No se repite</option>
+                        <option value="daily">Diariamente</option>
+                        <option value="weekly">Semanalmente</option>
+                        <option value="monthly">Mensualmente</option>
+                        <option value="yearly">Anualmente</option>
+                    </select>
+                    <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
+                </div>
+                
+                <!-- Navegador de mes -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">
+                    <button onclick="changeMonth(-1)" style="background: rgba(255,255,255,0.3); border: none; border-radius: 50%; width: 40px; height: 40px; color: white; font-size: 1.2em; cursor: pointer; font-weight: bold;">‹</button>
+                    <h3 id="currentMonthLabel" style="color: white; margin: 0; font-size: 1.2em;"></h3>
+                    <button onclick="changeMonth(1)" style="background: rgba(255,255,255,0.3); border: none; border-radius: 50%; width: 40px; height: 40px; color: white; font-size: 1.2em; cursor: pointer; font-weight: bold;">›</button>
+                </div>
+                
+                <!-- Vista de calendario mensual -->
+                <div id="monthlyCalendar" style="background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1); overflow-x: auto;"></div>
+                
+            </div>
         </div>
 
         <!-- Tab: Resumen -->
         <div class="tab-content" id="tab-resumen">
-            <!-- Bloque 1: Base del día -->
-            <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(168, 224, 99, 0.2);">
-                <h4 style="color: #388e3c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🌱</span> Base del día</h4>
-                <div id="dailyChecksContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
-            </div>
-            
-            <!-- Bloque 2: Rutina sugerida -->
+            <!-- Bloque 1: Rutina sugerida -->
             <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.2);">
                 <h4 style="color: #1976d2; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🧭</span> Rutina sugerida (Hoy)</h4>
                 <div id="suggestedRoutineContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
@@ -1400,12 +1494,22 @@
         <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
         
         <!-- Botón de backup accesible -->
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button onclick="exportBackup()" style="flex: 1; background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.3);">
+        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+            <button onclick="exportBackup()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.3);">
                 📥 Descargar Backup
             </button>
-            <button onclick="importBackup()" style="flex: 1; background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">
+            <button onclick="importBackup()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);">
                 📤 Restaurar Backup
+            </button>
+            <button onclick="recoverFromAutoBackup()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);">
+                🔄 Recuperar Últimos Datos
+            </button>
+        </div>
+        
+        <!-- Herramienta de diagnóstico -->
+        <div style="margin-top: 15px;">
+            <button onclick="showDiagnostics()" style="width: 100%; background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);">
+                🔍 Ver Todos Mis Datos Guardados
             </button>
         </div>
     </div>
@@ -2473,14 +2577,23 @@
                 }
             });
 
-            // Renderizar estadísticas de Cuidarme (ejercicio, autoestima, vida social)
+            // Renderizar estadísticas de Cuidarme (autoestima, vida social)
             const cuidarmeContainer = document.getElementById('statsCuidarme');
             cuidarmeContainer.innerHTML = '';
-            ['ejercicio', 'autoestima', 'vidaSocial'].forEach(key => {
+            ['autoestima', 'vidaSocial'].forEach(key => {
                 if (gameState.stats[key]) {
                     cuidarmeContainer.appendChild(createStatElement(key, gameState.stats[key]));
                 }
             });
+
+            // Renderizar estadísticas de Ejercicio
+            const ejercicioContainer = document.getElementById('statsEjercicio');
+            if (ejercicioContainer) {
+                ejercicioContainer.innerHTML = '';
+                if (gameState.stats.ejercicio) {
+                    ejercicioContainer.appendChild(createStatElement('ejercicio', gameState.stats.ejercicio));
+                }
+            }
 
             // Renderizar estadísticas de Crecer (idiomas, aprendizaje, profesión)
             const crecerContainer = document.getElementById('statsCrecer');
@@ -2504,7 +2617,7 @@
 
         // Crear elemento de estadística
         function createStatElement(key, stat) {
-            const percentage = Math.round(stat.value);
+            const percentage = isNaN(stat.value) ? 0 : Math.round(stat.value);
             const isGrowthStat = ['idiomas', 'aprendizaje', 'contenido', 'profesion'].includes(key);
             
             // Determinar clase de color según porcentaje
@@ -2995,7 +3108,7 @@
             
             // Agregar clase active al tab clickeado
             const tabs = document.querySelectorAll('.tab');
-            const tabNames = ['existir', 'cuidarme', 'crecer', 'biblioteca', 'ideas', 'resumen'];
+            const tabNames = ['existir', 'cuidarme', 'ejercicio', 'crecer', 'biblioteca', 'ideas', 'calendario', 'resumen'];
             const index = tabNames.indexOf(tabName);
             if (index !== -1) {
                 tabs[index].classList.add('active');
@@ -3009,10 +3122,22 @@
                 renderLibraryContent();
             }
             
+            // Si es ejercicio, renderizar calendario
+            if (tabName === 'ejercicio') {
+                renderExerciseCalendar();
+            }
+            
             // Si es ideas, renderizar ideas
             if (tabName === 'ideas') {
                 renderIdeas();
                 updateContenidoBar();
+                renderScheduledVideos();
+            }
+            
+            // Si es calendario, renderizar calendario
+            if (tabName === 'calendario') {
+                renderMonthlyCalendar();
+                renderActivities();
             }
         }
 
@@ -4225,30 +4350,164 @@
 
         // ===== SISTEMA DE BIBLIOTECA =====
         
-        let library = {
-            libros: [],
-            peliculas: [],
-            series: []
-        };
+        // IMPORTANTE: NO inicializar library aquí, se carga desde localStorage
+        let library = null;
         
         let currentLibraryCategory = 'libros';
         let libraryFilters = {
             search: '',
             letter: '',
-            rating: 0
+            rating: 0,
+            folder: ''
         };
+        
+        // Obtener todas las carpetas únicas de flashcards (incluyendo carpetas vacías)
+        function getFlashcardFolders() {
+            if (!library || !library.flashcards) return ['General'];
+            const folders = [...new Set(library.flashcards.map(f => f.folder || 'General'))];
+            // Agregar carpetas creadas manualmente desde localStorage
+            const manualFolders = JSON.parse(localStorage.getItem('flashcardFolders') || '[]');
+            const allFolders = [...new Set([...folders, ...manualFolders])];
+            return allFolders.sort();
+        }
+        
+        // Filtrar por carpeta
+        function filterByFolder(folder) {
+            libraryFilters.folder = folder;
+            renderLibraryContent();
+        }
+        
+        // Abrir modal para crear carpeta
+        function openCreateFolderModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>➕ Nueva Carpeta</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Nombre de la carpeta:</label>
+                        <input type="text" id="newFolderName" placeholder="Ej: Matemáticas, Historia..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em;">
+                        <p style="color: #9ca3af; font-size: 0.85em; margin-top: 10px;">💡 Puedes crear carpetas para organizar tus flashcards por temas</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="createFolder()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Crear</button>
+                        <button onclick="closeFolderModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            setTimeout(() => document.getElementById('newFolderName').focus(), 100);
+        }
+        
+        // Crear carpeta y guardarla en localStorage
+        function createFolder() {
+            const folderName = document.getElementById('newFolderName').value.trim();
+            if (!folderName) {
+                alert('⚠️ Por favor ingresa un nombre para la carpeta');
+                return;
+            }
+            
+            // Verificar si ya existe
+            const existingFolders = getFlashcardFolders();
+            if (existingFolders.includes(folderName)) {
+                alert('⚠️ Esta carpeta ya existe');
+                return;
+            }
+            
+            // Guardar carpeta en localStorage
+            const manualFolders = JSON.parse(localStorage.getItem('flashcardFolders') || '[]');
+            manualFolders.push(folderName);
+            localStorage.setItem('flashcardFolders', JSON.stringify(manualFolders));
+            
+            // Filtrar por la nueva carpeta
+            libraryFilters.folder = folderName;
+            closeFolderModal();
+            renderLibraryContent();
+            
+            // Mostrar mensaje
+            setTimeout(() => {
+                alert(`✅ Carpeta "${folderName}" creada. Ahora puedes agregar flashcards a esta carpeta.`);
+            }, 100);
+        }
+        
+        // Cerrar modal de carpeta
+        function closeFolderModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#newFolderName')) {
+                    modal.remove();
+                }
+            });
+        }
         
         // Cargar biblioteca desde localStorage
         function loadLibrary() {
             const saved = localStorage.getItem('library');
             if (saved) {
-                library = JSON.parse(saved);
+                try {
+                    const loadedLibrary = JSON.parse(saved);
+                    // Solo cargar si hay datos válidos
+                    if (loadedLibrary && typeof loadedLibrary === 'object') {
+                        library = loadedLibrary;
+                        console.log('📚 Biblioteca cargada:', library);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('❌ Error al cargar biblioteca:', error);
+                    // Intentar recuperar del backup
+                    const backup = localStorage.getItem('library_backup');
+                    if (backup) {
+                        try {
+                            library = JSON.parse(backup);
+                            console.log('⚠️ Biblioteca recuperada del backup');
+                            // Guardar el backup como versión actual
+                            saveLibrary();
+                            return;
+                        } catch (backupError) {
+                            console.error('❌ Error al recuperar backup:', backupError);
+                        }
+                    }
+                }
+            }
+            
+            // Solo si no hay datos guardados, inicializar vacío
+            if (!library) {
+                library = {
+                    libros: [],
+                    peliculas: [],
+                    series: [],
+                    flashcards: []
+                };
+                console.log('🆕 Biblioteca inicializada vacía');
+            }
+            
+            // Asegurar que flashcards exista en bibliotecas antiguas
+            if (!library.flashcards) {
+                library.flashcards = [];
             }
         }
         
         // Guardar biblioteca en localStorage
         function saveLibrary() {
-            localStorage.setItem('library', JSON.stringify(library));
+            try {
+                // Crear backup antes de guardar
+                const currentLibrary = localStorage.getItem('library');
+                if (currentLibrary) {
+                    localStorage.setItem('library_backup', currentLibrary);
+                }
+                
+                // Guardar nueva versión
+                localStorage.setItem('library', JSON.stringify(library));
+                console.log('💾 Biblioteca guardada correctamente');
+                
+                // Mostrar indicador visual
+                showSaveIndicator('Biblioteca guardada ✓');
+            } catch (error) {
+                console.error('❌ Error al guardar biblioteca:', error);
+                alert('⚠️ Error al guardar. Tus cambios pueden no haberse guardado.');
+            }
         }
         
         // Abrir categoría de biblioteca
@@ -4268,6 +4527,7 @@
                 let matchSearch = true;
                 let matchLetter = true;
                 let matchRating = true;
+                let matchFolder = true;
                 
                 if (libraryFilters.search) {
                     const search = libraryFilters.search.toLowerCase();
@@ -4283,7 +4543,11 @@
                     matchRating = item.rating === libraryFilters.rating;
                 }
                 
-                return matchSearch && matchLetter && matchRating;
+                if (currentLibraryCategory === 'flashcards' && libraryFilters.folder) {
+                    matchFolder = (item.folder || 'General') === libraryFilters.folder;
+                }
+                
+                return matchSearch && matchLetter && matchRating && matchFolder;
             });
             
             // Ordenar por título
@@ -4292,12 +4556,26 @@
             const categoryNames = {
                 libros: 'Libros',
                 peliculas: 'Películas',
-                series: 'Series'
+                series: 'Series',
+                flashcards: 'Flashcards'
             };
             
             let html = `
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; color: white;">
                     <h3 style="margin-bottom: 15px;">📚 ${categoryNames[currentLibraryCategory]}</h3>
+                    
+                    ${currentLibraryCategory === 'flashcards' ? `
+                        <!-- Selector de carpetas para flashcards -->
+                        <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                            <select id="folderFilter" onchange="filterByFolder(this.value)" style="flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 0.95em;">
+                                <option value="">📂 Todas las carpetas</option>
+                                ${getFlashcardFolders().map(folder => 
+                                    `<option value="${folder}" ${libraryFilters.folder === folder ? 'selected' : ''}>📁 ${folder}</option>`
+                                ).join('')}
+                            </select>
+                            <button onclick="openCreateFolderModal()" style="padding: 12px 20px; background: rgba(255,255,255,0.3); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap;">➕ Carpeta</button>
+                        </div>
+                    ` : ''}
                     
                     <!-- Barra de búsqueda -->
                     <input type="text" id="librarySearch" placeholder="🔍 Buscar por título o autor..." 
@@ -4305,24 +4583,27 @@
                            value="${libraryFilters.search}" oninput="updateLibrarySearch(this.value)">
                     
                     <!-- Filtros alfabéticos -->
-                    <div style="margin-bottom: 15px; overflow-x: auto; white-space: nowrap; padding: 10px 0;">
+                    ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px; overflow-x: auto; white-space: nowrap; padding: 10px 0;">
                         <button onclick="filterByLetter('')" style="padding: 8px 12px; margin: 0 5px; background: ${libraryFilters.letter === '' ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.letter === '' ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Todas</button>
                         ${'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => 
                             `<button onclick="filterByLetter('${letter}')" style="padding: 8px 12px; margin: 0 3px; background: ${libraryFilters.letter === letter ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.letter === letter ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">${letter}</button>`
                         ).join('')}
-                    </div>
+                    </div>` : ''}
                     
                     <!-- Filtros por rating -->
-                    <div style="margin-bottom: 15px;">
-                        <button onclick="filterByRating(0)" style="padding: 8px 15px; margin: 0 5px; background: ${libraryFilters.rating === 0 ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === 0 ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">Todas ⭐</button>
+                    ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                        <button onclick="filterByRating(0)" style="padding: 10px 15px; background: ${libraryFilters.rating === 0 ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === 0 ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; min-width: 90px;">Todas ⭐</button>
                         ${[5,4,3,2,1].map(rating => 
-                            `<button onclick="filterByRating(${rating})" style="padding: 8px 15px; margin: 0 5px; background: ${libraryFilters.rating === rating ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === rating ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer;">${'⭐'.repeat(rating)}</button>`
+                            `<button onclick="filterByRating(${rating})" style="padding: 10px 15px; background: ${libraryFilters.rating === rating ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === rating ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; min-width: 80px;">${'⭐'.repeat(rating)}</button>`
                         ).join('')}
-                    </div>
+                    </div>` : ''}
                     
-                    <button onclick="openAddItemModal()" style="width: 100%; padding: 15px; background: white; color: #667eea; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
-                        ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : 'Serie'}
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="openAddItemModal()" style="flex: 1; padding: 15px; background: white; color: #667eea; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
+                            ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard'}
+                        </button>
+                        ${currentLibraryCategory === 'flashcards' ? `<button onclick="startFlashcardReview()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">🧠 Repasar</button>` : ''}
+                    </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
@@ -4337,10 +4618,19 @@
                             ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">` : ''}
                             <h4 style="color: #667eea; margin-bottom: 5px;">${item.title}</h4>
                             ${item.author ? `<p style="color: #a78bfa; font-size: 0.9em; margin-bottom: 10px;">por ${item.author}</p>` : ''}
-                            <div style="color: #fbbf24; margin-bottom: 10px;">${'⭐'.repeat(item.rating || 0)}${'☆'.repeat(5 - (item.rating || 0))}</div>
+                            ${currentLibraryCategory !== 'flashcards' ? `<div style="color: #fbbf24; margin-bottom: 10px;">${'⭐'.repeat(item.rating || 0)}${'☆'.repeat(5 - (item.rating || 0))}</div>` : ''}
                             ${item.description ? `<p style="color: #6b7280; font-size: 0.85em; line-height: 1.4; margin-bottom: 10px;">${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}</p>` : ''}
-                            <div style="display: flex; gap: 10px;">
-                                <button onclick="viewLibraryItem(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">Ver</button>
+                            ${currentLibraryCategory === 'peliculas' && item.duration ? `
+                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
+                                    <div style="color: #6b4c9a;">⏱️ ${item.duration} min | 👁️ ${item.timesWatched || 1}x</div>
+                                    <div style="color: #ff6b9d; font-weight: 600;">Total: ${((item.duration || 0) * (item.timesWatched || 1))} min (${Math.floor(((item.duration || 0) * (item.timesWatched || 1)) / 60)}h ${((item.duration || 0) * (item.timesWatched || 1)) % 60}m)</div>
+                                </div>
+                            ` : ''}
+                            ${currentLibraryCategory === 'flashcards' && item.folder ? `<p style="color: #ff6b9d; font-size: 0.85em; margin-bottom: 10px;">📁 ${item.folder}</p>` : ''}
+                            <div style="display: flex; gap: 10px;">${currentLibraryCategory === 'flashcards' ? `
+                                    <button onclick="reviewSingleFlashcard(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">🧠 Repasar</button>
+                                ` : `<button onclick="viewLibraryItem(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">Ver</button>`}
+                                <button onclick="editLibraryItem(${index})" style="padding: 8px 12px; background: #a78bfa; color: white; border: none; border-radius: 8px; cursor: pointer;">✏️</button>
                                 <button onclick="deleteLibraryItem(${index})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">🗑️</button>
                             </div>
                         </div>
@@ -4371,36 +4661,52 @@
         }
         
         // Abrir modal para agregar item
-        function openAddItemModal() {
-            const categoryName = currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : 'Serie';
+        function openAddItemModal(editIndex = null) {
+            const isEditing = editIndex !== null;
+            const item = isEditing ? library[currentLibraryCategory][editIndex] : null;
+            const categoryName = currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard';
             
             const modal = document.createElement('div');
             modal.className = 'modal show';
             modal.innerHTML = `
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
-                        <h3>➕ Agregar ${categoryName}</h3>
+                        <h3>${isEditing ? '✏️ Editar' : '➕ Agregar'} ${categoryName}</h3>
                     </div>
                     <div class="modal-body">
-                        <input type="text" id="itemTitle" placeholder="Título *" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
-                        ${currentLibraryCategory === 'libros' ? '<input type="text" id="itemAuthor" placeholder="Autor *" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">' : ''}
-                        <input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
-                        <textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;"></textarea>
-                        <div style="margin-bottom: 15px;">
+                        <input type="text" id="itemTitle" placeholder="${currentLibraryCategory === 'flashcards' ? 'Pregunta *' : 'Título *'}" value="${isEditing ? item.title : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                        ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing ? item.author || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'flashcards' ? `<textarea id="flashcardAnswer" placeholder="Respuesta *" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.answer || '' : ''}</textarea>` : ''}
+                        ${currentLibraryCategory === 'flashcards' ? `
+                            <select id="flashcardFolder" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; background: white;">
+                                ${getFlashcardFolders().length === 0 ? '<option value="General">General</option>' : getFlashcardFolders().map(folder => `<option value="${folder}" ${(isEditing ? (item.folder || 'General') : (libraryFilters.folder || 'General')) === folder ? 'selected' : ''}>${folder}</option>`).join('')}
+                            </select>
+                        ` : ''}
+                        ${currentLibraryCategory === 'flashcards' ? `<input type="url" id="flashcardImage" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory !== 'flashcards' && currentLibraryCategory !== 'peliculas' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory !== 'flashcards' ? `<textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>` : ''}
+                        ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
                             <div id="ratingSelector" style="font-size: 2em; cursor: pointer;">
                                 ${'<span onclick="selectRating(1)">☆</span><span onclick="selectRating(2)">☆</span><span onclick="selectRating(3)">☆</span><span onclick="selectRating(4)">☆</span><span onclick="selectRating(5)">☆</span>'}
                             </div>
-                        </div>
+                        </div>` : ''}
                     </div>
                     <div style="display: flex; gap: 10px; padding: 20px;">
-                        <button onclick="saveLibraryItem()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="saveLibraryItem(${editIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
                         <button onclick="closeLibraryModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
-            window.currentItemRating = 0;
+            window.currentItemRating = isEditing ? item.rating : 0;
+            
+            // Si estamos editando, mostrar las estrellas correctamente
+            if (isEditing && item.rating) {
+                setTimeout(() => selectRating(item.rating), 50);
+            }
         }
         
         // Seleccionar rating
@@ -4413,15 +4719,25 @@
         }
         
         // Guardar item de biblioteca
-        function saveLibraryItem() {
+        function saveLibraryItem(editIndex = null) {
             const title = document.getElementById('itemTitle').value.trim();
             const author = document.getElementById('itemAuthor')?.value.trim() || '';
-            const imageUrl = document.getElementById('itemImageUrl').value.trim();
-            const description = document.getElementById('itemDescription').value.trim();
+            const imageUrl = document.getElementById('itemImageUrl')?.value.trim() || '';
+            const description = document.getElementById('itemDescription')?.value.trim() || '';
+            const answer = document.getElementById('flashcardAnswer')?.value.trim() || '';
+            const folder = document.getElementById('flashcardFolder')?.value.trim() || 'General';
+            const flashcardImage = document.getElementById('flashcardImage')?.value.trim() || '';
+            const duration = document.getElementById('movieDuration')?.value || 0;
+            const timesWatched = document.getElementById('movieTimesWatched')?.value || 1;
             const rating = window.currentItemRating || 0;
             
+            console.log('💾 Guardando item en categoría:', currentLibraryCategory);
+            console.log('📝 Título:', title);
+            console.log('📝 Respuesta:', answer);
+            console.log('📝 Carpeta:', folder);
+            
             if (!title) {
-                alert('⚠️ Por favor ingresa un título');
+                alert('⚠️ Por favor ingresa ' + (currentLibraryCategory === 'flashcards' ? 'una pregunta' : 'un título'));
                 return;
             }
             
@@ -4430,19 +4746,53 @@
                 return;
             }
             
+            if (currentLibraryCategory === 'flashcards' && !answer) {
+                alert('⚠️ Por favor ingresa la respuesta');
+                return;
+            }
+            
+            // Asegurar que la categoría existe
+            if (!library[currentLibraryCategory]) {
+                library[currentLibraryCategory] = [];
+                console.log('🆕 Creando categoría:', currentLibraryCategory);
+            }
+            
             const item = {
                 title,
                 author,
-                imageUrl,
+                imageUrl: currentLibraryCategory === 'flashcards' ? flashcardImage : imageUrl,
                 description,
+                answer,
+                folder,
+                duration: parseInt(duration) || 0,
+                timesWatched: parseInt(timesWatched) || 1,
                 rating,
-                dateAdded: new Date().toISOString()
+                dateAdded: editIndex !== null ? library[currentLibraryCategory][editIndex].dateAdded : new Date().toISOString(),
+                // Sistema de repetición espaciada para flashcards
+                nextReview: currentLibraryCategory === 'flashcards' ? (editIndex !== null ? library[currentLibraryCategory][editIndex].nextReview : new Date().toISOString()) : null,
+                interval: currentLibraryCategory === 'flashcards' ? (editIndex !== null ? library[currentLibraryCategory][editIndex].interval : 0) : null,
+                easeFactor: currentLibraryCategory === 'flashcards' ? (editIndex !== null ? library[currentLibraryCategory][editIndex].easeFactor : 2.5) : null
             };
             
-            library[currentLibraryCategory].push(item);
+            if (editIndex !== null) {
+                // Editar item existente
+                library[currentLibraryCategory][editIndex] = item;
+                console.log('✏️ Item editado');
+            } else {
+                // Agregar nuevo item
+                library[currentLibraryCategory].push(item);
+                console.log('➕ Item agregado. Total:', library[currentLibraryCategory].length);
+            }
+            
             saveLibrary();
             closeLibraryModal();
             renderLibraryContent();
+            console.log('✅ Item guardado exitosamente');
+        }
+        
+        // Editar item de biblioteca
+        function editLibraryItem(index) {
+            openAddItemModal(index);
         }
         
         // Ver detalle de item
@@ -4488,6 +4838,472 @@
             });
         }
 
+        // ===== CALENDARIO DE EJERCICIO SEMANAL =====
+        
+        // Cargar plan de ejercicios desde localStorage
+        let exercisePlan = JSON.parse(localStorage.getItem('exercisePlan')) || {
+            0: { muscle: 'Glúteo', icon: '🍑', color: '#ff6b9d', exercises: [] },
+            1: { muscle: 'Lunes', icon: '💪', color: '#667eea', exercises: [] },
+            2: { muscle: 'Martes', icon: '💪', color: '#4facfe', exercises: [] },
+            3: { muscle: 'Miércoles', icon: '💪', color: '#f093fb', exercises: [] },
+            4: { muscle: 'Jueves', icon: '💪', color: '#ffd89b', exercises: [] },
+            5: { muscle: 'Viernes', icon: '💪', color: '#a8edea', exercises: [] },
+            6: { muscle: 'Sábado', icon: '💪', color: '#ffeaa7', exercises: [] }
+        };
+        
+        // Historial de entrenamientos
+        let workoutHistory = JSON.parse(localStorage.getItem('workoutHistory')) || {};
+        
+        function saveExercisePlan() {
+            localStorage.setItem('exercisePlan', JSON.stringify(exercisePlan));
+            localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
+        }
+        
+        function renderExerciseCalendar() {
+            const container = document.getElementById('exerciseCalendar');
+            const todayMuscleDiv = document.getElementById('todayMuscle');
+            const today = new Date().getDay(); // 0 = Domingo
+            
+            // Actualizar el texto de "Hoy te toca"
+            if (todayMuscleDiv) {
+                todayMuscleDiv.textContent = `${exercisePlan[today].muscle} ${exercisePlan[today].icon}`;
+            }
+            
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px;">';
+            
+            const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            
+            for (let i = 0; i < 7; i++) {
+                const plan = exercisePlan[i];
+                const isToday = i === today;
+                const exerciseCount = plan.exercises?.length || 0;
+                
+                html += `
+                    <div style="
+                        background: ${isToday ? `linear-gradient(135deg, ${plan.color} 0%, ${plan.color}dd 100%)` : 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)'};
+                        padding: 15px;
+                        border-radius: 15px;
+                        text-align: center;
+                        box-shadow: ${isToday ? '0 8px 20px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.1)'};
+                        transform: ${isToday ? 'scale(1.05)' : 'scale(1)'};
+                        transition: all 0.3s ease;
+                        border: ${isToday ? '3px solid white' : 'none'};
+                        cursor: pointer;
+                    " onclick="openDayExercises(${i})">
+                        <div style="font-size: 2em; margin-bottom: 8px;">${plan.icon}</div>
+                        <div style="font-weight: bold; font-size: 1em; color: ${isToday ? 'white' : '#6b7280'}; margin-bottom: 5px;">${days[i]}</div>
+                        <div style="font-size: 1.1em; font-weight: 700; color: ${isToday ? 'white' : plan.color}; margin-bottom: 8px;">${plan.muscle}</div>
+                        <div style="font-size: 0.85em; color: ${isToday ? 'rgba(255,255,255,0.9)' : '#9ca3af'}; margin-bottom: 8px;">${exerciseCount} ejercicio${exerciseCount !== 1 ? 's' : ''}</div>
+                        <button onclick="event.stopPropagation(); editDayMuscle(${i})" style="background: rgba(255,255,255,${isToday ? '0.3' : '0.5'}); border: none; border-radius: 8px; padding: 5px 10px; font-size: 0.8em; color: ${isToday ? 'white' : '#6b7280'}; cursor: pointer; font-weight: 600;">✏️ Editar</button>
+                        ${isToday ? '<div style="margin-top: 8px; padding: 6px; background: rgba(255,255,255,0.3); border-radius: 8px; color: white; font-weight: 600; font-size: 0.85em;">¡HOY!</div>' : ''}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            
+            // Mensaje motivacional
+            html += `
+                <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); border-radius: 15px; text-align: center;">
+                    <p style="color: #ff6b9d; font-weight: 600; margin: 0;">💪 ${exercisePlan[today].muscle} hoy - ¡Tú puedes!</p>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // Editar músculo del día
+        function editDayMuscle(dayIndex) {
+            const day = exercisePlan[dayIndex];
+            const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>✏️ Editar ${dayNames[dayIndex]}</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Grupo muscular:</label>
+                        <input type="text" id="muscleName" value="${day.muscle}" placeholder="Ej: Glúteo, Pierna, Pecho..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1em;">
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Icono:</label>
+                        <select id="muscleIcon" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1.5em; background: white;">
+                            <option value="🍑" ${day.icon === '🍑' ? 'selected' : ''}>🍑 Glúteo</option>
+                            <option value="🦵" ${day.icon === '🦵' ? 'selected' : ''}>🦵 Pierna</option>
+                            <option value="💪" ${day.icon === '💪' ? 'selected' : ''}>💪 Brazo</option>
+                            <option value="🏋️" ${day.icon === '🏋️' ? 'selected' : ''}>🏋️ Pecho</option>
+                            <option value="🔙" ${day.icon === '🔙' ? 'selected' : ''}>🔙 Espalda</option>
+                            <option value="🤸" ${day.icon === '🤸' ? 'selected' : ''}>🤸 Core</option>
+                            <option value="🧘" ${day.icon === '🧘' ? 'selected' : ''}>🧘 Flexibilidad</option>
+                            <option value="🏃" ${day.icon === '🏃' ? 'selected' : ''}>🏃 Cardio</option>
+                            <option value="🚴" ${day.icon === '🚴' ? 'selected' : ''}>🚴 Ciclismo</option>
+                            <option value="🏊" ${day.icon === '🏊' ? 'selected' : ''}>🏊 Natación</option>
+                        </select>
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Color:</label>
+                        <input type="color" id="muscleColor" value="${day.color}" style="width: 100%; height: 50px; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer;">
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveDayMuscle(${dayIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="closeDayMuscleModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function saveDayMuscle(dayIndex) {
+            const muscle = document.getElementById('muscleName').value.trim();
+            const icon = document.getElementById('muscleIcon').value;
+            const color = document.getElementById('muscleColor').value;
+            
+            if (!muscle) {
+                alert('⚠️ Por favor ingresa el grupo muscular');
+                return;
+            }
+            
+            exercisePlan[dayIndex].muscle = muscle;
+            exercisePlan[dayIndex].icon = icon;
+            exercisePlan[dayIndex].color = color;
+            
+            saveExercisePlan();
+            renderExerciseCalendar();
+            closeDayMuscleModal();
+        }
+        
+        function closeDayMuscleModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#muscleName')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Abrir vista de ejercicios del día
+        function openDayExercises(dayIndex) {
+            const day = exercisePlan[dayIndex];
+            const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const today = new Date().getDay();
+            const isToday = dayIndex === today;
+            
+            if (!day.exercises) day.exercises = [];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.zIndex = '10000';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 650px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, ${day.color} 0%, ${day.color}dd 100%); color: white;">
+                        <h3>${day.icon} ${dayNames[dayIndex]} - ${day.muscle}</h3>
+                        ${isToday ? '<div style="background: rgba(255,255,255,0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.9em; margin-top: 8px;">📅 Hoy</div>' : ''}
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 20px;">
+                            <button onclick="addExerciseToDay(${dayIndex})" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1em; font-weight: bold; cursor: pointer;">➕ Agregar Ejercicio</button>
+                        </div>
+                        
+                        <div id="exercisesList${dayIndex}"></div>
+                        
+                        ${day.exercises.length === 0 ? `
+                            <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+                                <div style="font-size: 3em; margin-bottom: 10px;">🏋️</div>
+                                <p>No hay ejercicios programados</p>
+                                <p style="font-size: 0.9em;">Agrega ejercicios para este día</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div style="padding: 20px;">
+                        <button onclick="closeDayExercisesModal()" style="width: 100%; padding: 15px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            renderDayExercises(dayIndex);
+        }
+        
+        function renderDayExercises(dayIndex) {
+            const container = document.getElementById(`exercisesList${dayIndex}`);
+            if (!container) return;
+            
+            const day = exercisePlan[dayIndex];
+            const exercises = day.exercises || [];
+            
+            if (exercises.length === 0) return;
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+            
+            exercises.forEach((exercise, index) => {
+                const history = workoutHistory[`${dayIndex}-${index}`] || [];
+                const lastWorkout = history.length > 0 ? history[history.length - 1] : null;
+                
+                // Calcular si debe aumentar peso (3 semanas = 21 días)
+                let shouldIncreaseWeight = false;
+                if (lastWorkout) {
+                    const daysSinceLastIncrease = Math.floor((Date.now() - (lastWorkout.lastWeightIncrease || lastWorkout.date)) / (1000 * 60 * 60 * 24));
+                    shouldIncreaseWeight = daysSinceLastIncrease >= 21;
+                }
+                
+                html += `
+                    <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); padding: 15px; border-radius: 12px; border-left: 4px solid ${day.color};">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: bold; font-size: 1.1em; color: #1f2937; margin-bottom: 5px;">${exercise.name}</div>
+                                ${exercise.notes ? `<div style="font-size: 0.9em; color: #6b7280; margin-bottom: 8px;">📝 ${exercise.notes}</div>` : ''}
+                                <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 0.95em;">
+                                    <span style="color: #667eea;">🔢 ${exercise.sets} sets</span>
+                                    <span style="color: #4facfe;">🔁 ${exercise.reps} reps</span>
+                                    <span style="color: #f093fb;">⚖️ ${exercise.weight} kg</span>
+                                </div>
+                                ${lastWorkout ? `
+                                    <div style="margin-top: 8px; padding: 8px; background: rgba(102, 126, 234, 0.1); border-radius: 8px; font-size: 0.85em; color: #667eea;">
+                                        📅 Última vez: ${new Date(lastWorkout.date).toLocaleDateString()} - ${lastWorkout.weight}kg
+                                    </div>
+                                ` : ''}
+                                ${shouldIncreaseWeight ? `
+                                    <div style="margin-top: 8px; padding: 8px; background: linear-gradient(135deg, #ffd89b 0%, #f093fb 100%); border-radius: 8px; font-size: 0.85em; color: white; font-weight: 600;">
+                                        🔥 ¡Han pasado 3 semanas! Es hora de aumentar el peso
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div style="display: flex; gap: 5px; flex-shrink: 0;">
+                                <button onclick="editExercise(${dayIndex}, ${index})" style="background: #f3f4f6; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.9em;">✏️</button>
+                                <button onclick="deleteExercise(${dayIndex}, ${index})" style="background: #fee2e2; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 0.9em;">🗑️</button>
+                            </div>
+                        </div>
+                        <button onclick="logWorkout(${dayIndex}, ${index})" style="width: 100%; padding: 10px; background: linear-gradient(135deg, ${day.color} 0%, ${day.color}dd 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95em;">✅ Registrar realizado hoy</button>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function closeDayExercisesModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('[id^="exercisesList"]')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Agregar ejercicio
+        function addExerciseToDay(dayIndex) {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.zIndex = '10001';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <h3>➕ Nuevo Ejercicio</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Nombre del ejercicio:</label>
+                        <input type="text" id="exerciseName" placeholder="Ej: Sentadilla búlgara" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1em;">
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Sets:</label>
+                                <input type="number" id="exerciseSets" value="3" min="1" max="10" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Reps:</label>
+                                <input type="number" id="exerciseReps" value="12" min="1" max="50" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Peso (kg):</label>
+                                <input type="number" id="exerciseWeight" value="0" min="0" step="2.5" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                        </div>
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Notas (opcional):</label>
+                        <textarea id="exerciseNotes" placeholder="Técnica, ajustes, recordatorios..." rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveExercise(${dayIndex}, null)" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="closeExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Editar ejercicio
+        function editExercise(dayIndex, exerciseIndex) {
+            const exercise = exercisePlan[dayIndex].exercises[exerciseIndex];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.zIndex = '10001';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <h3>✏️ Editar Ejercicio</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Nombre del ejercicio:</label>
+                        <input type="text" id="exerciseName" value="${exercise.name}" placeholder="Ej: Sentadilla búlgara" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1em;">
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Sets:</label>
+                                <input type="number" id="exerciseSets" value="${exercise.sets}" min="1" max="10" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Reps:</label>
+                                <input type="number" id="exerciseReps" value="${exercise.reps}" min="1" max="50" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em;">Peso (kg):</label>
+                                <input type="number" id="exerciseWeight" value="${exercise.weight}" min="0" step="2.5" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em; text-align: center;">
+                            </div>
+                        </div>
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Notas (opcional):</label>
+                        <textarea id="exerciseNotes" placeholder="Técnica, ajustes, recordatorios..." rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical;">${exercise.notes || ''}</textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveExercise(${dayIndex}, ${exerciseIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
+                        <button onclick="closeExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function saveExercise(dayIndex, exerciseIndex) {
+            const name = document.getElementById('exerciseName').value.trim();
+            const sets = parseInt(document.getElementById('exerciseSets').value);
+            const reps = parseInt(document.getElementById('exerciseReps').value);
+            const weight = parseFloat(document.getElementById('exerciseWeight').value);
+            const notes = document.getElementById('exerciseNotes').value.trim();
+            
+            if (!name) {
+                alert('⚠️ Por favor ingresa el nombre del ejercicio');
+                return;
+            }
+            
+            const exercise = { name, sets, reps, weight, notes };
+            
+            if (exerciseIndex === null) {
+                // Nuevo ejercicio
+                if (!exercisePlan[dayIndex].exercises) exercisePlan[dayIndex].exercises = [];
+                exercisePlan[dayIndex].exercises.push(exercise);
+            } else {
+                // Editar ejercicio existente
+                exercisePlan[dayIndex].exercises[exerciseIndex] = exercise;
+            }
+            
+            saveExercisePlan();
+            renderDayExercises(dayIndex);
+            renderExerciseCalendar();
+            closeExerciseModal();
+        }
+        
+        function deleteExercise(dayIndex, exerciseIndex) {
+            if (confirm('¿Eliminar este ejercicio?')) {
+                exercisePlan[dayIndex].exercises.splice(exerciseIndex, 1);
+                saveExercisePlan();
+                renderDayExercises(dayIndex);
+                renderExerciseCalendar();
+            }
+        }
+        
+        function closeExerciseModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#exerciseName')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Registrar entrenamiento realizado
+        function logWorkout(dayIndex, exerciseIndex) {
+            const exercise = exercisePlan[dayIndex].exercises[exerciseIndex];
+            const key = `${dayIndex}-${exerciseIndex}`;
+            
+            if (!workoutHistory[key]) workoutHistory[key] = [];
+            
+            const lastWorkout = workoutHistory[key].length > 0 ? workoutHistory[key][workoutHistory[key].length - 1] : null;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.style.zIndex = '10002';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>✅ Registrar Entrenamiento</h3>
+                        <div style="font-size: 0.9em; margin-top: 5px; opacity: 0.9;">${exercise.name}</div>
+                    </div>
+                    <div class="modal-body">
+                        ${lastWorkout ? `
+                            <div style="background: rgba(102, 126, 234, 0.1); padding: 12px; border-radius: 10px; margin-bottom: 15px;">
+                                <div style="font-weight: 600; color: #667eea; margin-bottom: 5px;">📊 Última vez:</div>
+                                <div style="font-size: 0.95em; color: #6b7280;">Peso: ${lastWorkout.weight}kg</div>
+                            </div>
+                        ` : ''}
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">¿Qué peso usaste hoy?</label>
+                        <input type="number" id="workoutWeight" value="${exercise.weight}" min="0" step="2.5" style="width: 100%; padding: 15px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 1.2em; text-align: center;">
+                        
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Notas de esta sesión (opcional):</label>
+                        <textarea id="workoutNotes" placeholder="¿Cómo te sentiste? ¿Algún ajuste?" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveWorkoutLog(${dayIndex}, ${exerciseIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">💪 Registrar</button>
+                        <button onclick="closeWorkoutModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function saveWorkoutLog(dayIndex, exerciseIndex) {
+            const weight = parseFloat(document.getElementById('workoutWeight').value);
+            const notes = document.getElementById('workoutNotes').value.trim();
+            const key = `${dayIndex}-${exerciseIndex}`;
+            
+            if (!workoutHistory[key]) workoutHistory[key] = [];
+            
+            const lastWorkout = workoutHistory[key].length > 0 ? workoutHistory[key][workoutHistory[key].length - 1] : null;
+            
+            // Si el peso aumentó, actualizar fecha de último aumento
+            let lastWeightIncrease = lastWorkout?.lastWeightIncrease || Date.now();
+            if (!lastWorkout || weight > lastWorkout.weight) {
+                lastWeightIncrease = Date.now();
+            }
+            
+            workoutHistory[key].push({
+                date: Date.now(),
+                weight: weight,
+                notes: notes,
+                lastWeightIncrease: lastWeightIncrease
+            });
+            
+            // Actualizar el peso del ejercicio con el último usado
+            exercisePlan[dayIndex].exercises[exerciseIndex].weight = weight;
+            
+            saveExercisePlan();
+            renderDayExercises(dayIndex);
+            closeWorkoutModal();
+            
+            alert('✅ ¡Entrenamiento registrado! 💪');
+        }
+        
+        function closeWorkoutModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#workoutWeight')) {
+                    modal.remove();
+                }
+            });
+        }
+
         // ===== SISTEMA DE GESTIÓN DE IDEAS =====
         
         // Estado actual de la vista de ideas
@@ -4497,24 +5313,49 @@
         function loadIdeas() {
             const saved = localStorage.getItem('ideas');
             if (saved) {
-                gameState.ideas = JSON.parse(saved);
+                try {
+                    const loadedIdeas = JSON.parse(saved);
+                    if (loadedIdeas && typeof loadedIdeas === 'object') {
+                        gameState.ideas = loadedIdeas;
+                        console.log('💡 Ideas cargadas:', gameState.ideas);
+                    }
+                } catch (error) {
+                    console.error('❌ Error al cargar ideas:', error);
+                }
             }
         }
         
         // Guardar ideas
         function saveIdeas() {
-            localStorage.setItem('ideas', JSON.stringify(gameState.ideas));
+            try {
+                // Backup antes de guardar
+                const currentIdeas = localStorage.getItem('ideas');
+                if (currentIdeas) {
+                    localStorage.setItem('ideas_backup', currentIdeas);
+                }
+                
+                localStorage.setItem('ideas', JSON.stringify(gameState.ideas));
+                console.log('💾 Ideas guardadas correctamente');
+            } catch (error) {
+                console.error('❌ Error al guardar ideas:', error);
+            }
         }
         
         // Actualizar barra de contenido
         function updateContenidoBar() {
-            const contenidoValue = gameState.stats.contenido ? gameState.stats.contenido.value : 100;
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
+            }
+            
+            const contenidoValue = isNaN(gameState.stats.contenido.value) ? 0 : gameState.stats.contenido.value;
             const bar = document.getElementById('contenidoBar');
             const value = document.getElementById('contenidoValue');
             
             if (bar && value) {
-                value.textContent = `${Math.round(contenidoValue)}%`;
-                bar.style.width = `${contenidoValue}%`;
+                const displayValue = Math.round(contenidoValue);
+                value.textContent = `${displayValue}%`;
+                bar.style.width = `${Math.max(0, Math.min(100, contenidoValue))}%`;
                 
                 // Cambiar color según nivel
                 if (contenidoValue >= 70) {
@@ -4533,7 +5374,7 @@
             
             // Actualizar estilos de las pestañas
             document.querySelectorAll('.idea-state-tab').forEach((tab, index) => {
-                const states = ['pendientes', 'grabadas', 'editadas', 'publicadas'];
+                const states = ['pendientes', 'guionada', 'grabadas', 'editadas', 'publicadas'];
                 if (states[index] === state) {
                     tab.style.background = 'linear-gradient(135deg, #ffd89b 0%, #f093fb 100%)';
                     tab.style.color = 'white';
@@ -4567,10 +5408,16 @@
             if (!gameState.ideas) {
                 gameState.ideas = {
                     pendientes: [],
+                    guionada: [],
                     grabadas: [],
                     editadas: [],
                     publicadas: []
                 };
+            }
+            
+            // Asegurar que guionada existe en estados antiguos
+            if (!gameState.ideas.guionada) {
+                gameState.ideas.guionada = [];
             }
             
             const idea = {
@@ -4583,17 +5430,20 @@
             
             gameState.ideas.pendientes.push(idea);
             
-            // Sumar porcentaje a la barra de contenido
-            if (gameState.stats.contenido) {
-                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + percentage);
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
             }
+            
+            // Sumar porcentaje a la barra de contenido
+            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + percentage);
             
             input.value = '';
             saveIdeas();
             saveState();
-            renderIdeas();
-            renderStats();
             updateContenidoBar();
+            renderIdeas();
+            // No llamar renderStats aquí para evitar sobrescribir contenido
             
             // Feedback visual
             alert(`✨ Idea agregada! +${percentage}% a Contenido`);
@@ -4616,7 +5466,8 @@
             if (ideas.length === 0) {
                 const emptyMessages = {
                     pendientes: '💭 No hay ideas pendientes. ¡Agrega una nueva arriba!',
-                    grabadas: '🎥 No hay ideas grabadas aún. Graba tus ideas pendientes.',
+                    guionada: '📝 No hay ideas con guion escrito. Escribe el guion de tus ideas pendientes.',
+                    grabadas: '🎥 No hay ideas grabadas aún. Graba tus ideas con guion.',
                     editadas: '✂️ No hay ideas editadas. Edita tus videos grabados.',
                     publicadas: '📤 No hay ideas publicadas. Programa tus videos editados.'
                 };
@@ -4688,6 +5539,19 @@
             
             // Botón de acción principal según estado
             if (section === 'pendientes') {
+                const guionBtn = createActionButton('📝', () => openGuionModal(section, index));
+                actions.appendChild(guionBtn);
+            } else if (section === 'guionada') {
+                // Botón para VER el guion
+                const viewGuionBtn = createActionButton('👁️', () => viewGuion(section, index));
+                viewGuionBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                actions.appendChild(viewGuionBtn);
+                
+                // Botón para EDITAR el guion
+                const editGuionBtn = createActionButton('✏️', () => openGuionModal(section, index));
+                actions.appendChild(editGuionBtn);
+                
+                // Botón para mover a grabadas
                 const recordBtn = createActionButton('🎥', () => moveIdea(section, index, 'grabadas', idea.percentage));
                 actions.appendChild(recordBtn);
             } else if (section === 'grabadas') {
@@ -4740,22 +5604,204 @@
             return btn;
         }
         
+        // Abrir modal para escribir/editar guion
+        function openGuionModal(section, index) {
+            const idea = gameState.ideas[section][index];
+            const isEditing = idea.guion !== undefined;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>📝 ${isEditing ? 'Editar' : 'Escribir'} Guion e Investigación</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Idea:</label>
+                            <p style="background: #f3f4f6; padding: 12px; border-radius: 10px; color: #6b7280;">${idea.text}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Guion / Notas:</label>
+                            <textarea id="guionText" rows="8" placeholder="Escribe tu guion aquí..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: inherit;">${idea.guion?.text || ''}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">URLs de Investigación (una por línea):</label>
+                            <textarea id="guionUrls" rows="4" placeholder="https://ejemplo.com&#10;https://otro-sitio.com" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: monospace;">${idea.guion?.urls?.join('\n') || ''}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">URLs de Imágenes (una por línea):</label>
+                            <textarea id="guionImages" rows="3" placeholder="https://imagen1.jpg&#10;https://imagen2.png" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: monospace;">${idea.guion?.images?.join('\n') || ''}</textarea>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 15px; border-radius: 10px;">
+                            <p style="color: #6b4c9a; font-size: 0.9em; margin: 0;">💡 <strong>Tip:</strong> Usa este espacio para escribir tu guion completo, agregar links de investigación e imágenes que vas a usar.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveGuion('${section}', ${index})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">💾 Guardar y Mover a Guionada</button>
+                        <button onclick="closeGuionModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Guardar guion y mover a guionada
+        function saveGuion(section, index) {
+            const guionText = document.getElementById('guionText').value.trim();
+            const guionUrls = document.getElementById('guionUrls').value.trim();
+            const guionImages = document.getElementById('guionImages').value.trim();
+            
+            if (!guionText) {
+                alert('⚠️ Por favor escribe al menos algo en el guion');
+                return;
+            }
+            
+            const idea = gameState.ideas[section][index];
+            
+            // Agregar información del guion
+            idea.guion = {
+                text: guionText,
+                urls: guionUrls ? guionUrls.split('\n').filter(url => url.trim()) : [],
+                images: guionImages ? guionImages.split('\n').filter(img => img.trim()) : [],
+                updatedAt: new Date().toISOString()
+            };
+            
+            // Si está en pendientes, moverla a guionada
+            if (section === 'pendientes') {
+                gameState.ideas[section].splice(index, 1);
+                gameState.ideas.guionada.push(idea);
+            }
+            
+            saveIdeas();
+            closeGuionModal();
+            renderCurrentIdeaState();
+        }
+        
+        // Cerrar modal del guion
+        function closeGuionModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#guionText')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Ver guion como documento (estilo Word con imágenes intercaladas)
+        function viewGuion(section, index) {
+            const idea = gameState.ideas[section][index];
+            
+            if (!idea.guion) {
+                alert('⚠️ Esta idea no tiene guion aún');
+                return;
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            
+            // Procesar el texto y crear el documento
+            let guionHTML = '';
+            const textParts = idea.guion.text.split('\n');
+            const images = idea.guion.images || [];
+            
+            // Crear documento con texto e imágenes intercaladas
+            // Distribuir imágenes a lo largo del texto
+            const imageInterval = Math.ceil(textParts.length / (images.length + 1));
+            let imageIndex = 0;
+            
+            textParts.forEach((paragraph, i) => {
+                if (paragraph.trim()) {
+                    guionHTML += `<p style="margin-bottom: 15px; color: #374151; line-height: 1.8; text-align: justify;">${paragraph}</p>`;
+                }
+                
+                // Insertar imagen cada cierto número de párrafos
+                if (imageIndex < images.length && (i + 1) % imageInterval === 0) {
+                    guionHTML += `
+                        <div style="margin: 20px 0; text-align: center;">
+                            <img src="${images[imageIndex]}" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onerror="this.style.display='none'" />
+                        </div>
+                    `;
+                    imageIndex++;
+                }
+            });
+            
+            // Agregar imágenes restantes al final
+            while (imageIndex < images.length) {
+                guionHTML += `
+                    <div style="margin: 20px 0; text-align: center;">
+                        <img src="${images[imageIndex]}" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onerror="this.style.display='none'" />
+                    </div>
+                `;
+                imageIndex++;
+            }
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; margin: -20px -20px 20px -20px; border-radius: 20px 20px 0 0;">
+                        <h3 style="margin: 0; color: white;">📝 ${idea.text}</h3>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 0.9em;">Última actualización: ${new Date(idea.guion.updatedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                    
+                    <div class="modal-body" style="padding: 20px; background: white; font-family: 'Georgia', 'Times New Roman', serif;">
+                        ${guionHTML}
+                        
+                        ${idea.guion.urls && idea.guion.urls.length > 0 ? `
+                            <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); border-radius: 15px; border-left: 4px solid #ff6b9d;">
+                                <h4 style="color: #6b4c9a; margin-bottom: 15px; font-size: 1.1em;">🔗 Enlaces de Investigación</h4>
+                                ${idea.guion.urls.map(url => `
+                                    <div style="margin-bottom: 10px;">
+                                        <a href="${url}" target="_blank" style="color: #667eea; text-decoration: none; word-break: break-all; display: block; padding: 8px; background: white; border-radius: 8px; transition: all 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='white'">
+                                            🌐 ${url}
+                                        </a>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; padding: 20px; background: #f9fafb; margin: 0 -20px -20px -20px; border-radius: 0 0 20px 20px;">
+                        <button onclick="openGuionModal('${section}', ${index})" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">✏️ Editar</button>
+                        <button onclick="closeGuionViewModal()" style="padding: 12px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Cerrar modal de vista del guion
+        function closeGuionViewModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.innerHTML.includes('Enlaces de Investigación') || modal.innerHTML.includes('Última actualización')) {
+                    modal.remove();
+                }
+            });
+        }
+        
         // Mover idea de una sección a otra
         function moveIdea(fromSection, index, toSection, percentage) {
             const idea = gameState.ideas[fromSection][index];
             gameState.ideas[fromSection].splice(index, 1);
             gameState.ideas[toSection].push(idea);
             
-            // Sumar porcentaje adicional a la barra
-            if (gameState.stats.contenido) {
-                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + percentage);
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
             }
+            
+            // Sumar porcentaje adicional a la barra
+            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + percentage);
             
             saveIdeas();
             saveState();
-            renderIdeas();
-            renderStats();
             updateContenidoBar();
+            renderIdeas();
+            // No llamar renderStats aquí para evitar sobrescribir contenido
             
             // Feedback
             const messages = {
@@ -4831,16 +5877,19 @@
             gameState.ideas.editadas.splice(index, 1);
             gameState.ideas.publicadas.push(idea);
             
-            // Sumar porcentaje
-            if (gameState.stats.contenido) {
-                gameState.stats.contenido.value = Math.min(100, gameState.stats.contenido.value + idea.percentage);
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
             }
+            
+            // Sumar porcentaje
+            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + idea.percentage);
             
             saveIdeas();
             saveState();
-            renderIdeas();
-            renderStats();
             updateContenidoBar();
+            renderIdeas();
+            // No llamar renderStats aquí para evitar sobrescribir contenido
             
             cancelSchedule();
             alert(`🎉 Idea programada para publicarse! +${idea.percentage}% a Contenido`);
@@ -4864,16 +5913,20 @@
             
             gameState.ideas[section].splice(index, 1);
             
-            // Restar porcentaje de la barra (solo si no está en 0)
-            if (gameState.stats.contenido && gameState.stats.contenido.value > 0) {
-                gameState.stats.contenido.value = Math.max(0, gameState.stats.contenido.value - percentage);
+            // Asegurar que la estadística de contenido existe
+            if (!gameState.stats.contenido) {
+                gameState.stats.contenido = { ...STATS_CONFIG.contenido };
             }
+            
+            // Restar porcentaje de la barra (solo si no está en 0)
+            const currentValue = gameState.stats.contenido.value || 0;
+            gameState.stats.contenido.value = Math.max(0, currentValue - percentage);
             
             saveIdeas();
             saveState();
-            renderIdeas();
-            renderStats();
             updateContenidoBar();
+            renderIdeas();
+            // No llamar renderStats aquí para evitar sobrescribir contenido
             
             alert(`🗑️ Idea eliminada. -${percentage}% de Contenido`);
         }
@@ -4951,12 +6004,639 @@
             input.click();
         }
         
+        // Recuperar desde backup automático
+        function recoverFromAutoBackup() {
+            const libraryBackup = localStorage.getItem('library_backup');
+            const ideasBackup = localStorage.getItem('ideas_backup');
+            
+            if (!libraryBackup && !ideasBackup) {
+                alert('❌ No hay backups automáticos disponibles');
+                return;
+            }
+            
+            let message = '🔄 Backups disponibles:\n\n';
+            if (libraryBackup) message += '✓ Biblioteca\n';
+            if (ideasBackup) message += '✓ Ideas\n';
+            message += '\n¿Quieres recuperar estos datos? Esto reemplazará los datos actuales.';
+            
+            if (!confirm(message)) {
+                return;
+            }
+            
+            try {
+                let recovered = false;
+                
+                // Recuperar biblioteca
+                if (libraryBackup) {
+                    localStorage.setItem('library', libraryBackup);
+                    recovered = true;
+                    console.log('✅ Biblioteca recuperada del backup');
+                }
+                
+                // Recuperar ideas
+                if (ideasBackup) {
+                    localStorage.setItem('ideas', ideasBackup);
+                    recovered = true;
+                    console.log('✅ Ideas recuperadas del backup');
+                }
+                
+                if (recovered) {
+                    alert('✅ Datos recuperados exitosamente. La página se recargará.');
+                    location.reload();
+                } else {
+                    alert('⚠️ No se pudo recuperar ningún dato');
+                }
+            } catch (error) {
+                alert('❌ Error al recuperar datos: ' + error.message);
+                console.error('Error en recuperación:', error);
+            }
+        }
+        
+        // Mostrar diagnóstico de datos
+        function showDiagnostics() {
+            const library = localStorage.getItem('library');
+            const libraryBackup = localStorage.getItem('library_backup');
+            const ideas = localStorage.getItem('ideas');
+            const gameState = localStorage.getItem('gameState');
+            
+            let html = `
+                <div class="modal show" style="z-index: 10000;">
+                    <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+                        <div class="modal-header">
+                            <h3>🔍 Diagnóstico de Datos</h3>
+                        </div>
+                        <div class="modal-body" style="text-align: left;">
+            `;
+            
+            // Biblioteca
+            html += '<h4 style="color: #667eea; margin-top: 20px;">📚 Biblioteca</h4>';
+            if (library) {
+                const lib = JSON.parse(library);
+                html += `<p><strong>Libros:</strong> ${lib.libros?.length || 0}</p>`;
+                html += `<p><strong>Películas:</strong> ${lib.peliculas?.length || 0}</p>`;
+                html += `<p><strong>Series:</strong> ${lib.series?.length || 0}</p>`;
+                
+                if (lib.peliculas && lib.peliculas.length > 0) {
+                    html += '<details style="margin-top: 10px;"><summary style="cursor: pointer; color: #667eea; font-weight: 600;">Ver películas guardadas</summary>';
+                    html += '<div style="margin-top: 10px; background: #f5f5f5; padding: 10px; border-radius: 8px; max-height: 200px; overflow-y: auto;">';
+                    lib.peliculas.forEach((movie, i) => {
+                        html += `<div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 5px;">
+                            <strong>${i + 1}. ${movie.title}</strong><br>
+                            <small>Rating: ${'⭐'.repeat(movie.rating || 0)}</small><br>
+                            ${movie.description ? `<small style="color: #666;">${movie.description.substring(0, 100)}${movie.description.length > 100 ? '...' : ''}</small>` : ''}
+                        </div>`;
+                    });
+                    html += '</div></details>';
+                }
+            } else {
+                html += '<p style="color: red;">❌ No hay datos de biblioteca</p>';
+            }
+            
+            // Backup de biblioteca
+            html += '<h4 style="color: #ff9800; margin-top: 20px;">💾 Backup Automático de Biblioteca</h4>';
+            if (libraryBackup) {
+                const libBackup = JSON.parse(libraryBackup);
+                html += `<p>✅ Backup disponible</p>`;
+                html += `<p><strong>Películas en backup:</strong> ${libBackup.peliculas?.length || 0}</p>`;
+                
+                if (libBackup.peliculas && libBackup.peliculas.length > 0) {
+                    html += '<details style="margin-top: 10px;"><summary style="cursor: pointer; color: #ff9800; font-weight: 600;">Ver películas en backup</summary>';
+                    html += '<div style="margin-top: 10px; background: #fff3e0; padding: 10px; border-radius: 8px; max-height: 200px; overflow-y: auto;">';
+                    libBackup.peliculas.forEach((movie, i) => {
+                        html += `<div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 5px;">
+                            <strong>${i + 1}. ${movie.title}</strong><br>
+                            <small>Rating: ${'⭐'.repeat(movie.rating || 0)}</small><br>
+                            ${movie.description ? `<small style="color: #666;">${movie.description.substring(0, 100)}${movie.description.length > 100 ? '...' : ''}</small>` : ''}
+                        </div>`;
+                    });
+                    html += '</div></details>';
+                }
+            } else {
+                html += '<p style="color: #999;">⚠️ No hay backup automático aún</p>';
+            }
+            
+            // Ideas
+            html += '<h4 style="color: #ff6b9d; margin-top: 20px;">💡 Ideas</h4>';
+            if (ideas) {
+                const id = JSON.parse(ideas);
+                const total = (id.pendientes?.length || 0) + (id.guionada?.length || 0) + (id.grabadas?.length || 0) + (id.editadas?.length || 0) + (id.publicadas?.length || 0);
+                html += `<p>Total: ${total} ideas</p>`;
+            } else {
+                html += '<p style="color: #999;">Sin ideas guardadas</p>';
+            }
+            
+            html += `
+                        </div>
+                        <button onclick="closeDiagnostics()" style="width: 100%; margin-top: 20px; padding: 15px; background: #667eea; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">✕ Cerrar</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        
+        function closeDiagnostics() {
+            const modal = document.querySelector('.modal.show');
+            if (modal) modal.remove();
+        }
+        
+        // ===================================
+        // 📅 CALENDARIO
+        // ===================================
+        
+        // Inicializar actividades si no existen
+        if (!gameState.activities) {
+            gameState.activities = { pending: [], completed: [] };
+        }
+        
+        function switchCalendarView(view) {
+            // Actualizar botones
+            document.querySelectorAll('.calendar-view-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (view === 'actividades' && btn.textContent.includes('Actividades')) {
+                    btn.classList.add('active');
+                    btn.style.background = 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)';
+                    btn.style.color = 'white';
+                    btn.style.boxShadow = '0 4px 15px rgba(255, 107, 157, 0.3)';
+                } else if (view === 'videos' && btn.textContent.includes('Videos')) {
+                    btn.classList.add('active');
+                    btn.style.background = 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)';
+                    btn.style.color = 'white';
+                    btn.style.boxShadow = '0 4px 15px rgba(255, 107, 157, 0.3)';
+                } else {
+                    btn.style.background = 'linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%)';
+                    btn.style.color = '#6b4c9a';
+                    btn.style.boxShadow = '0 2px 8px rgba(167, 139, 250, 0.2)';
+                }
+            });
+            
+            // Mostrar vista correspondiente
+            document.getElementById('calendar-actividades').style.display = view === 'actividades' ? 'block' : 'none';
+            document.getElementById('calendar-videos').style.display = view === 'videos' ? 'block' : 'none';
+        }
+        
+        function addActivity() {
+            const input = document.getElementById('newActivityInput');
+            const dateInput = document.getElementById('activityDate');
+            const timeInput = document.getElementById('activityTime');
+            const categoryInput = document.getElementById('activityCategory');
+            const recurrenceInput = document.getElementById('activityRecurrence');
+            const activity = input.value.trim();
+            const date = dateInput.value;
+            const time = timeInput.value;
+            const category = categoryInput.value;
+            const recurrence = recurrenceInput.value;
+            
+            if (activity === '') {
+                alert('⚠️ Por favor escribe una actividad');
+                return;
+            }
+            
+            if (date === '') {
+                alert('⚠️ Por favor selecciona una fecha');
+                return;
+            }
+            
+            const newActivity = {
+                id: Date.now(),
+                text: activity,
+                date: date,
+                time: time || '00:00',
+                category: category || 'personal',
+                recurrence: recurrence,
+                completed: false
+            };
+            
+            gameState.activities.pending.push(newActivity);
+            saveState();
+            
+            input.value = '';
+            dateInput.value = '';
+            timeInput.value = '';
+            categoryInput.value = 'personal';
+            recurrenceInput.value = 'none';
+            
+            renderActivities();
+            renderMonthlyCalendar();
+        }
+        
+        function toggleActivity(id) {
+            const activity = gameState.activities.pending.find(a => a.id === id);
+            if (activity) {
+                gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+                activity.completed = true;
+                gameState.activities.completed.push(activity);
+                saveState();
+                renderActivities();
+            }
+        }
+        
+        function deleteActivity(id, completed = false) {
+            if (completed) {
+                gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
+            } else {
+                gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+            }
+            saveState();
+            renderActivities();
+        }
+        
+        // Variable para el mes actual del calendario
+        let currentCalendarMonth = new Date();
+        
+        function changeMonth(delta) {
+            currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
+            renderMonthlyCalendar();
+            renderActivities();
+        }
+        
+        // Colores por categoría
+        const categoryColors = {
+            personal: { bg: '#fef3ff', border: '#ff6b9d', text: '#ff6b9d', icon: '🌸' },
+            escuela: { bg: '#e0f2fe', border: '#3b82f6', text: '#3b82f6', icon: '📚' },
+            trabajo: { bg: '#f0fdf4', border: '#10b981', text: '#10b981', icon: '💼' },
+            ejercicio: { bg: '#fff7ed', border: '#f97316', text: '#f97316', icon: '💪' },
+            salud: { bg: '#fef2f2', border: '#ef4444', text: '#ef4444', icon: '❤️' },
+            social: { bg: '#faf5ff', border: '#a855f7', text: '#a855f7', icon: '👥' }
+        };
+        
+        function renderMonthlyCalendar() {
+            const container = document.getElementById('monthlyCalendar');
+            if (!container) return;
+            
+            const year = currentCalendarMonth.getFullYear();
+            const month = currentCalendarMonth.getMonth();
+            
+            // Actualizar label del mes
+            const monthLabel = document.getElementById('currentMonthLabel');
+            if (monthLabel) {
+                const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                monthLabel.textContent = `${monthNames[month]} ${year}`;
+            }
+            
+            // Obtener primer día del mes y total de días
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay(); // 0 = domingo
+            
+            // Crear HTML del calendario
+            let html = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin: 0 auto; max-width: 100%;">';
+            
+            // Encabezados de días
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            dayNames.forEach(day => {
+                html += `<div style="text-align: center; font-weight: 600; color: #ff6b9d; padding: 5px; font-size: 0.75em;">${day}</div>`;
+            });
+            
+            // Espacios vacíos antes del primer día
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                html += '<div></div>';
+            }
+            
+            // Días del mes
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = isCurrentMonth && day === today.getDate();
+                
+                // Obtener actividades del día
+                const dayActivities = gameState.activities.pending.filter(a => a.date === dateStr);
+                
+                // Obtener colores de las categorías presentes
+                const categoriesInDay = [...new Set(dayActivities.map(a => a.category || 'personal'))];
+                const dayColor = categoriesInDay.length === 1 ? categoryColors[categoriesInDay[0]] : null;
+                
+                html += `
+                    <div style="
+                        min-height: 50px;
+                        padding: 4px;
+                        background: ${isToday ? 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)' : (dayColor ? dayColor.bg : '#fff')};
+                        border: 2px solid ${isToday ? '#ff6b9d' : (dayColor ? dayColor.border : '#ffe5f3')};
+                        border-radius: 8px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        box-shadow: ${isToday ? '0 4px 15px rgba(255, 107, 157, 0.3)' : '0 2px 5px rgba(0,0,0,0.05)'};
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="font-weight: 600; color: ${isToday ? 'white' : '#333'}; margin-bottom: 2px; font-size: 0.9em;">${day}</div>
+                        ${dayActivities.length > 0 ? `
+                            <div style="display: flex; gap: 2px; flex-wrap: wrap; justify-content: center;">
+                                ${categoriesInDay.slice(0, 3).map(cat => `
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${categoryColors[cat].border};"></div>
+                                `).join('')}
+                                ${categoriesInDay.length > 3 ? `<div style="font-size: 0.6em; color: ${isToday ? 'white' : '#666'};">+${categoriesInDay.length - 3}</div>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function renderActivities() {
+            const pendingContainer = document.getElementById('activitiesPending');
+            
+            if (!pendingContainer) return;
+            
+            // Filtrar solo actividades del mes actual
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            const thisMonthActivities = gameState.activities.pending.filter(activity => {
+                const activityDate = new Date(activity.date);
+                return activityDate.getMonth() === currentMonth && activityDate.getFullYear() === currentYear;
+            });
+            
+            // Renderizar pendientes del mes (ordenar por fecha y hora)
+            const sortedPending = [...thisMonthActivities].sort((a, b) => {
+                const dateA = new Date(`${a.date}T${a.time}`);
+                const dateB = new Date(`${b.date}T${b.time}`);
+                return dateA - dateB;
+            });
+            
+            if (sortedPending.length === 0) {
+                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades pendientes este mes 🌸</p>';
+            } else {
+                pendingContainer.innerHTML = sortedPending.map(activity => {
+                    const activityDate = new Date(`${activity.date}T${activity.time}`);
+                    const formattedDate = activityDate.toLocaleDateString('es-ES', { 
+                        weekday: 'short', 
+                        day: 'numeric', 
+                        month: 'short' 
+                    });
+                    const formattedTime = activity.time;
+                    const cat = categoryColors[activity.category || 'personal'];
+                    
+                    return `
+                        <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center;">
+                            <button onclick="toggleActivity(${activity.id})" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid ${cat.border}; background: white; cursor: pointer; flex-shrink: 0; transition: all 0.2s;"></button>
+                            <div style="flex: 1;">
+                                <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''}</p>
+                            </div>
+                            <button onclick="deleteActivity(${activity.id})" style="background: #ff4d4f; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; flex-shrink: 0;">🗑️</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+        
+        function renderScheduledVideos() {
+            const container = document.getElementById('scheduledVideos');
+            if (!container) return;
+            
+            // Obtener videos programados de las ideas
+            const scheduledVideos = gameState.ideas.publicadas.filter(idea => idea.scheduledDate);
+            
+            if (scheduledVideos.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const sortedVideos = [...scheduledVideos].sort((a, b) => {
+                return new Date(a.scheduledDate) - new Date(b.scheduledDate);
+            });
+            
+            container.innerHTML = sortedVideos.map(video => {
+                const videoDate = new Date(video.scheduledDate);
+                const formattedDate = videoDate.toLocaleDateString('es-ES', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                return `
+                    <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(255,107,157,0.15);">
+                        <p style="margin: 0; font-weight: 600; color: #ff6b9d;">🎬 ${video.text}</p>
+                        <p style="margin: 5px 0 0 0; font-size: 0.85em; color: #a78bfa;">📅 ${formattedDate}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ===================================
+        // 🧠 SISTEMA DE REPETICIÓN ESPACIADA (FLASHCARDS)
+        // ===================================
+        
+        function startFlashcardReview() {
+            const today = new Date();
+            const flashcardsToReview = library.flashcards.filter(card => {
+                if (!card.nextReview) return true; // Nueva flashcard
+                return new Date(card.nextReview) <= today;
+            });
+            
+            if (flashcardsToReview.length === 0) {
+                alert('🎉 ¡No hay flashcards para repasar hoy! Vuelve mañana.');
+                return;
+            }
+            
+            // Iniciar sesión de repaso
+            window.currentReviewSession = {
+                cards: flashcardsToReview,
+                currentIndex: 0,
+                showingAnswer: false
+            };
+            
+            showReviewModal();
+        }
+        
+        function showReviewModal() {
+            const session = window.currentReviewSession;
+            const card = session.cards[session.currentIndex];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'reviewModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>🧠 Repaso de Flashcards</h3>
+                        <p style="color: #a78bfa; font-size: 0.9em;">${session.currentIndex + 1} / ${session.cards.length}</p>
+                    </div>
+                    <div class="modal-body" style="min-height: 300px; display: flex; flex-direction: column; justify-content: center;">
+                        ${card.folder ? `<div style="background: #fef3ff; padding: 8px 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; color: #ff6b9d; font-weight: 600;">📁 ${card.folder}</div>` : ''}
+                        
+                        <div id="flashcardContent" style="text-align: center; padding: 20px;">
+                            <h2 style="color: #667eea; margin-bottom: 20px; font-size: 1.5em;">${card.title}</h2>
+                            ${card.imageUrl ? `<img src="${card.imageUrl}" style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 20px;">` : ''}
+                            
+                            ${!session.showingAnswer ? `
+                                <button onclick="showAnswer()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">
+                                    👁️ Ver Respuesta
+                                </button>
+                            ` : `
+                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                                    <p style="color: #6b4c9a; font-size: 1.2em; line-height: 1.6;">${card.answer}</p>
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button onclick="rateFlashcard('hard')" style="flex: 1; min-width: 120px; padding: 15px; background: #ef4444; color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer;">
+                                        ❌ Difícil<br><small>Repetir pronto</small>
+                                    </button>
+                                    <button onclick="rateFlashcard('good')" style="flex: 1; min-width: 120px; padding: 15px; background: #f59e0b; color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer;">
+                                        🤔 Regular<br><small>Necesito repaso</small>
+                                    </button>
+                                    <button onclick="rateFlashcard('easy')" style="flex: 1; min-width: 120px; padding: 15px; background: #10b981; color: white; border: none; border-radius: 15px; font-weight: 600; cursor: pointer;">
+                                        ✅ Fácil<br><small>La recordé bien</small>
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                    <button onclick="closeReviewModal()" style="width: 100%; margin-top: 15px; padding: 12px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer;">Cerrar Sesión</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function showAnswer() {
+            window.currentReviewSession.showingAnswer = true;
+            document.getElementById('reviewModal').remove();
+            showReviewModal();
+        }
+        
+        function rateFlashcard(difficulty) {
+            const session = window.currentReviewSession;
+            const card = session.cards[session.currentIndex];
+            
+            // Encontrar el índice de la card en la biblioteca
+            const cardIndex = library.flashcards.findIndex(c => c.title === card.title && c.answer === card.answer);
+            
+            if (cardIndex !== -1) {
+                const now = new Date();
+                let interval = library.flashcards[cardIndex].interval || 0;
+                
+                // Algoritmo de repetición espaciada
+                if (difficulty === 'hard') {
+                    interval = 0; // Repetir hoy
+                } else if (difficulty === 'good') {
+                    if (interval === 0) interval = 1; // 1 día
+                    else interval = Math.ceil(interval * 1.5); // Aumentar 50%
+                } else if (difficulty === 'easy') {
+                    if (interval === 0) interval = 1; // 1 día
+                    else if (interval === 1) interval = 3; // 3 días
+                    else if (interval === 3) interval = 7; // 1 semana
+                    else if (interval === 7) interval = 14; // 2 semanas
+                    else if (interval === 14) interval = 30; // 1 mes
+                    else if (interval === 30) interval = 90; // 3 meses
+                    else if (interval === 90) interval = 180; // 6 meses
+                    else if (interval === 180) interval = 365; // 1 año
+                    else interval = Math.ceil(interval * 2); // Duplicar
+                }
+                
+                const nextReview = new Date(now.getTime() + interval * 24 * 60 * 60 * 1000);
+                library.flashcards[cardIndex].interval = interval;
+                library.flashcards[cardIndex].nextReview = nextReview.toISOString();
+                
+                saveLibrary();
+            }
+            
+            // Siguiente tarjeta
+            session.currentIndex++;
+            session.showingAnswer = false;
+            
+            if (session.currentIndex < session.cards.length) {
+                document.getElementById('reviewModal').remove();
+                showReviewModal();
+            } else {
+                document.getElementById('reviewModal').remove();
+                alert(`🎉 ¡Sesión completada! Repasaste ${session.cards.length} flashcard${session.cards.length > 1 ? 's' : ''}.`);
+                renderLibraryContent();
+            }
+        }
+        
+        function closeReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            if (modal) modal.remove();
+            window.currentReviewSession = null;
+        }
+        
+        function reviewSingleFlashcard(index) {
+            window.currentReviewSession = {
+                cards: [library.flashcards[index]],
+                currentIndex: 0,
+                showingAnswer: false
+            };
+            showReviewModal();
+        }
+        
         // Guardar todo antes de cerrar o cambiar de pestaña
         function saveBeforeExit() {
             saveState();
             saveSelfcareCooldowns();
             saveLibrary();
             console.log('💾 Datos guardados automáticamente');
+        }
+        
+        // Indicador visual de guardado
+        function showSaveIndicator(message = 'Guardado ✓') {
+            // Remover indicador anterior si existe
+            const oldIndicator = document.getElementById('saveIndicator');
+            if (oldIndicator) oldIndicator.remove();
+            
+            const indicator = document.createElement('div');
+            indicator.id = 'saveIndicator';
+            indicator.textContent = message;
+            indicator.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-weight: 600;
+                font-size: 0.9em;
+                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+                z-index: 10000;
+                animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 2.7s;
+                pointer-events: none;
+            `;
+            
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                indicator.remove();
+            }, 3000);
+        }
+        
+        // Agregar estilos de animación si no existen
+        if (!document.getElementById('saveIndicatorStyles')) {
+            const style = document.createElement('style');
+            style.id = 'saveIndicatorStyles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
         }
         
         // Registrar service worker y detectar actualizaciones
@@ -4966,10 +6646,10 @@
                     .then(registration => {
                         console.log('✅ Service Worker registrado');
                         
-                        // Verificar actualizaciones cada 5 minutos
+                        // Verificar actualizaciones cada 30 segundos (más frecuente)
                         setInterval(() => {
                             registration.update();
-                        }, 5 * 60 * 1000);
+                        }, 30 * 1000);
                         
                         // Detectar cuando hay actualización disponible
                         registration.addEventListener('updatefound', () => {
@@ -4982,6 +6662,16 @@
                                 }
                             });
                         });
+                        
+                        // Recargar cuando se activa un nuevo service worker
+                        let refreshing = false;
+                        navigator.serviceWorker.addEventListener('controllerchange', () => {
+                            if (!refreshing) {
+                                refreshing = true;
+                                console.log('🔄 Recargando con nueva versión...');
+                                window.location.reload();
+                            }
+                        });
                     })
                     .catch(err => {
                         console.log('❌ Error al registrar Service Worker:', err);
@@ -4992,25 +6682,53 @@
         // Mostrar botón de actualización
         function mostrarBotonActualizar() {
             const boton = document.createElement('div');
-            boton.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); color: white; padding: 15px 30px; border-radius: 25px; box-shadow: 0 8px 25px rgba(66, 165, 245, 0.5); cursor: pointer; z-index: 99999; font-weight: 600; animation: bounce 2s infinite;';
-            boton.innerHTML = '🔄 Nueva versión disponible - Toca para actualizar';
+            boton.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6); cursor: pointer; z-index: 99999; font-weight: 700; animation: pulse 2s infinite; max-width: 90%; text-align: center; font-size: 1.1em;';
+            boton.innerHTML = '🎉 ¡NUEVA VERSIÓN! Se agregaron Flashcards 🧠<br><span style="font-size: 0.9em; opacity: 0.9;">Toca aquí para actualizar ahora</span>';
             boton.onclick = () => {
-                window.location.reload();
+                // Forzar actualización
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+                }
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
             };
             document.body.appendChild(boton);
+        }
+        
+        // Mostrar indicador de auto-guardado
+        function showAutoSaveIndicator() {
+            const indicator = document.createElement('div');
+            indicator.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 10px 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); z-index: 9999; font-weight: 600; font-size: 0.9em; opacity: 0; transition: opacity 0.3s ease;';
+            indicator.innerHTML = '💾 Guardado automático';
+            document.body.appendChild(indicator);
+            
+            // Fade in
+            setTimeout(() => {
+                indicator.style.opacity = '1';
+            }, 10);
+            
+            // Fade out después de 2 segundos
+            setTimeout(() => {
+                indicator.style.opacity = '0';
+                setTimeout(() => {
+                    indicator.remove();
+                }, 300);
+            }, 2000);
         }
 
         // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
+            // PRIMERO: Cargar todos los datos guardados
+            loadLibrary();
+            loadIdeas();
+            
             // Iniciar el reloj INMEDIATAMENTE
             updateClock();
             setInterval(updateClock, 1000);
             
             // Siempre iniciar el juego (startGame verifica si hay perfil)
             startGame();
-            
-            // Cargar biblioteca
-            loadLibrary();
             
             // ===== GUARDADO AUTOMÁTICO MEJORADO =====
             
@@ -5031,10 +6749,11 @@
                 saveBeforeExit();
             });
             
-            // Guardar periódicamente cada 30 segundos
+            // Guardar periódicamente cada 10 segundos (más frecuente)
             setInterval(() => {
                 saveBeforeExit();
-            }, 30000);
+                showAutoSaveIndicator();
+            }, 10000);
             
             // Registrar Service Worker para funcionalidad offline
             if ('serviceWorker' in navigator) {
