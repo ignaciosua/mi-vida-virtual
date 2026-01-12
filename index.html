@@ -1431,15 +1431,15 @@
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
                         <div>
-                            <label style="font-size: 0.8em; color: #7c3aed; font-weight: 600; margin-bottom: 4px; display: block;">📅 Desde</label>
-                            <input type="date" id="activityDateFrom" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em; background: white;">
+                            <label style="font-size: 0.75em; color: #7c3aed; font-weight: 600; margin-bottom: 3px; display: block;">📅 Desde</label>
+                            <input type="date" id="activityDateFrom" style="width: 100%; padding: 8px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.85em; background: white;">
                         </div>
                         <div>
-                            <label style="font-size: 0.8em; color: #7c3aed; font-weight: 600; margin-bottom: 4px; display: block;">📅 Hasta</label>
-                            <input type="date" id="activityDateTo" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em; background: white;">
+                            <label style="font-size: 0.75em; color: #7c3aed; font-weight: 600; margin-bottom: 3px; display: block;">📅 Hasta</label>
+                            <input type="date" id="activityDateTo" style="width: 100%; padding: 8px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.85em; background: white;">
                         </div>
                     </div>
-                    <p style="font-size: 0.75em; color: #7c3aed; margin: -8px 0 12px 0; opacity: 0.8;">💡 Dejar "Hasta" vacío = se repite siempre</p>
+                    <p style="font-size: 0.7em; color: #7c3aed; margin: -8px 0 12px 0; opacity: 0.8;">💡 Dejar "Hasta" vacío = se repite siempre</p>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
                         <div>
@@ -6363,19 +6363,36 @@
         function toggleActivity(id) {
             const activity = gameState.activities.pending.find(a => a.id === id);
             if (activity) {
-                // Solo cambiar el estado de completada
-                activity.completed = !activity.completed;
+                // Inicializar completedDates si no existe
+                if (!activity.completedDates) {
+                    activity.completedDates = [];
+                }
                 
-                // Si se marca como completada, aplicar efecto de estadística
-                if (activity.completed && activity.statEffect && activity.statEffect !== 'none') {
-                    const [statName, statValue] = activity.statEffect.split(',');
-                    const boost = parseInt(statValue);
+                // Obtener fecha actual seleccionada
+                const currentDateStr = selectedDate.getFullYear() + '-' + 
+                                      String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                                      String(selectedDate.getDate()).padStart(2, '0');
+                
+                // Verificar si ya está completada en esta fecha
+                const index = activity.completedDates.indexOf(currentDateStr);
+                
+                if (index > -1) {
+                    // Ya está completada, desmarcar
+                    activity.completedDates.splice(index, 1);
+                } else {
+                    // No está completada, marcar
+                    activity.completedDates.push(currentDateStr);
                     
-                    // Aplicar el boost a la estadística correspondiente
-                    if (gameState.stats[statName]) {
-                        gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + boost);
-                        renderStats();
-                        console.log(`✅ Actividad completada! +${boost}% a ${statName}`);
+                    // Aplicar efecto de estadística
+                    if (activity.statEffect && activity.statEffect !== 'none') {
+                        const [statName, statValue] = activity.statEffect.split(',');
+                        const boost = parseInt(statValue);
+                        
+                        if (gameState.stats[statName]) {
+                            gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + boost);
+                            renderStats();
+                            console.log(`✅ Actividad completada! +${boost}% a ${statName}`);
+                        }
                     }
                 }
                 
@@ -6742,11 +6759,15 @@
             
             console.log('✅ Actividades encontradas:', selectedActivities.length);
             
-            // Ordenar por importancia y hora
+            // Ordenar por completadas (al final) y luego por importancia y hora
             const sortedPending = [...selectedActivities].sort((a, b) => {
+                // Verificar si están completadas en la fecha seleccionada
+                const aCompleted = a.completedDates && a.completedDates.includes(selectedStr);
+                const bCompleted = b.completedDates && b.completedDates.includes(selectedStr);
+                
                 // Primero las no completadas
-                if (a.completed !== b.completed) {
-                    return a.completed ? 1 : -1;
+                if (aCompleted !== bCompleted) {
+                    return aCompleted ? 1 : -1;
                 }
                 // Luego por importancia (descendente)
                 const importanceDiff = (b.importance || 2) - (a.importance || 2);
@@ -6768,7 +6789,8 @@
                     const cat = categoryColors[activity.category || 'personal'];
                     const importance = activity.importance || 2;
                     const stars = '⭐'.repeat(importance);
-                    const isCompleted = activity.completed;
+                    // Verificar si está completada en la fecha seleccionada
+                    const isCompleted = activity.completedDates && activity.completedDates.includes(selectedStr);
                     
                     return `
                         <div style="background: ${isCompleted ? '#f3f4f6' : cat.bg}; padding: 15px; border-radius: 15px; border-left: 4px solid ${isCompleted ? '#9ca3af' : cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,${isCompleted ? '0.05' : '0.1'}); display: flex; gap: 12px; align-items: center; transition: all 0.3s;">
