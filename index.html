@@ -4635,28 +4635,24 @@
             };
             
             let html = `
-                <!-- Contador de totales -->
-                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 12px 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(255, 107, 157, 0.15);">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px;">
-                        <div style="background: white; padding: 8px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1.2em; margin-bottom: 3px;">🎬</div>
-                            <div style="font-weight: bold; color: #667eea; font-size: 1.1em;">${totalMovies}</div>
-                            <div style="font-size: 0.75em; color: #6b7280;">Películas</div>
-                        </div>
-                        <div style="background: white; padding: 8px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1.2em; margin-bottom: 3px;">📺</div>
-                            <div style="font-weight: bold; color: #667eea; font-size: 1.1em;">${totalSeries}</div>
-                            <div style="font-size: 0.75em; color: #6b7280;">Series</div>
-                        </div>
-                        <div style="background: white; padding: 8px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 1.2em; margin-bottom: 3px;">📚</div>
-                            <div style="font-weight: bold; color: #667eea; font-size: 1.1em;">${totalBooks}</div>
-                            <div style="font-size: 0.75em; color: #6b7280;">Libros</div>
-                        </div>
+                <!-- Contador de totales - Versión mini -->
+                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px 12px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1); display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 0.9em;">🎬</span>
+                        <span style="font-weight: bold; color: #667eea; font-size: 0.85em;">${totalMovies}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 0.9em;">📺</span>
+                        <span style="font-weight: bold; color: #667eea; font-size: 0.85em;">${totalSeries}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 0.9em;">📚</span>
+                        <span style="font-weight: bold; color: #667eea; font-size: 0.85em;">${totalBooks}</span>
                     </div>
                     ${(totalMovieHours + totalSeriesHours) > 0 ? `
-                        <div style="margin-top: 8px; padding: 6px; background: rgba(167, 139, 250, 0.1); border-radius: 8px; text-align: center;">
-                            <span style="color: #667eea; font-weight: 600; font-size: 0.8em;">⏱️ Películas: ${totalMovieHours.toFixed(1)}h | Series: ${totalSeriesHours.toFixed(1)}h | Total: ${(totalMovieHours + totalSeriesHours).toFixed(1)}h</span>
+                        <div style="border-left: 2px solid rgba(102, 126, 234, 0.3); padding-left: 12px; display: flex; align-items: center; gap: 4px;">
+                            <span style="font-size: 0.8em;">⏱️</span>
+                            <span style="color: #667eea; font-weight: 600; font-size: 0.75em;">${(totalMovieHours + totalSeriesHours).toFixed(1)}h</span>
                         </div>
                     ` : ''}
                 </div>
@@ -4697,13 +4693,14 @@
                             `<button onclick="filterByRating(${rating})" style="padding: 10px 15px; background: ${libraryFilters.rating === rating ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === rating ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; min-width: 80px;">${'⭐'.repeat(rating)}</button>`
                         ).join('')}
                     </div>` : ''}
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="openAddItemModal()" style="flex: 1; padding: 15px; background: white; color: #667eea; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
-                            ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard'}
-                        </button>
-                        ${currentLibraryCategory === 'flashcards' ? `<button onclick="startFlashcardReview()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">🧠 Repasar</button>` : ''}
-                    </div>
+                </div>
+                
+                <!-- Botón de agregar abajo -->
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button onclick="openAddItemModal()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                        ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard'}
+                    </button>
+                    ${currentLibraryCategory === 'flashcards' ? `<button onclick="startFlashcardReview()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);">🧠 Repasar</button>` : ''}
                 </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
@@ -6331,6 +6328,7 @@
             
             renderActivities();
             renderMonthlyCalendar();
+            renderWrongActivities();
         }
         
         function toggleActivity(id) {
