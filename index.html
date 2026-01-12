@@ -1422,6 +1422,12 @@
             
             <!-- Vista de Actividades -->
             <div id="calendar-actividades" class="calendar-view" style="display: block;">
+                <!-- Lista de actividades pendientes (Arriba) -->
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #ff6b9d; margin-bottom: 12px;">🕒 Pendientes (Este mes)</h3>
+                    <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                </div>
+                
                 <!-- Agregar nueva actividad -->
                 <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
                     <h3 style="color: #6b4c9a; margin-bottom: 15px;">✨ Nueva Actividad</h3>
@@ -1458,29 +1464,12 @@
                 <!-- Vista de calendario mensual -->
                 <div id="monthlyCalendar" style="background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1); overflow-x: auto;"></div>
                 
-                <!-- Lista de actividades pendientes -->
-                <div style="margin-top: 20px;">
-                    <h3 style="color: #ff6b9d; margin-bottom: 12px;">🕒 Pendientes</h3>
-                    <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
-                </div>
-                
-                <!-- Lista de actividades completadas -->
-                <div style="margin-top: 20px;">
-                    <h3 style="color: #56ab2f; margin-bottom: 12px;">✔️ Completadas</h3>
-                    <div id="activitiesCompleted" style="display: flex; flex-direction: column; gap: 10px;"></div>
-                </div>
             </div>
         </div>
 
         <!-- Tab: Resumen -->
         <div class="tab-content" id="tab-resumen">
-            <!-- Bloque 1: Base del día -->
-            <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(168, 224, 99, 0.2);">
-                <h4 style="color: #388e3c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🌱</span> Base del día</h4>
-                <div id="dailyChecksContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
-            </div>
-            
-            <!-- Bloque 2: Rutina sugerida -->
+            <!-- Bloque 1: Rutina sugerida -->
             <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.2);">
                 <h4 style="color: #1976d2; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🧭</span> Rutina sugerida (Hoy)</h4>
                 <div id="suggestedRoutineContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
@@ -4372,11 +4361,14 @@
             folder: ''
         };
         
-        // Obtener todas las carpetas únicas de flashcards
+        // Obtener todas las carpetas únicas de flashcards (incluyendo carpetas vacías)
         function getFlashcardFolders() {
-            if (!library || !library.flashcards) return [];
+            if (!library || !library.flashcards) return ['General'];
             const folders = [...new Set(library.flashcards.map(f => f.folder || 'General'))];
-            return folders.sort();
+            // Agregar carpetas creadas manualmente desde localStorage
+            const manualFolders = JSON.parse(localStorage.getItem('flashcardFolders') || '[]');
+            const allFolders = [...new Set([...folders, ...manualFolders])];
+            return allFolders.sort();
         }
         
         // Filtrar por carpeta
@@ -4409,7 +4401,7 @@
             setTimeout(() => document.getElementById('newFolderName').focus(), 100);
         }
         
-        // Crear carpeta (simplemente la agregamos al filtro y estará disponible al crear flashcards)
+        // Crear carpeta y guardarla en localStorage
         function createFolder() {
             const folderName = document.getElementById('newFolderName').value.trim();
             if (!folderName) {
@@ -4424,7 +4416,12 @@
                 return;
             }
             
-            // Filtrar por la nueva carpeta (estará vacía hasta que agregues flashcards)
+            // Guardar carpeta en localStorage
+            const manualFolders = JSON.parse(localStorage.getItem('flashcardFolders') || '[]');
+            manualFolders.push(folderName);
+            localStorage.setItem('flashcardFolders', JSON.stringify(manualFolders));
+            
+            // Filtrar por la nueva carpeta
             libraryFilters.folder = folderName;
             closeFolderModal();
             renderLibraryContent();
@@ -6345,19 +6342,28 @@
         
         function renderActivities() {
             const pendingContainer = document.getElementById('activitiesPending');
-            const completedContainer = document.getElementById('activitiesCompleted');
             
-            if (!pendingContainer || !completedContainer) return;
+            if (!pendingContainer) return;
             
-            // Renderizar pendientes (ordenar por fecha y hora)
-            const sortedPending = [...gameState.activities.pending].sort((a, b) => {
+            // Filtrar solo actividades del mes actual
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            const thisMonthActivities = gameState.activities.pending.filter(activity => {
+                const activityDate = new Date(activity.date);
+                return activityDate.getMonth() === currentMonth && activityDate.getFullYear() === currentYear;
+            });
+            
+            // Renderizar pendientes del mes (ordenar por fecha y hora)
+            const sortedPending = [...thisMonthActivities].sort((a, b) => {
                 const dateA = new Date(`${a.date}T${a.time}`);
                 const dateB = new Date(`${b.date}T${b.time}`);
                 return dateA - dateB;
             });
             
             if (sortedPending.length === 0) {
-                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades pendientes 🌸</p>';
+                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades pendientes este mes 🌸</p>';
             } else {
                 pendingContainer.innerHTML = sortedPending.map(activity => {
                     const activityDate = new Date(`${activity.date}T${activity.time}`);
@@ -6380,21 +6386,6 @@
                         </div>
                     `;
                 }).join('');
-            }
-            
-            // Renderizar completadas
-            if (gameState.activities.completed.length === 0) {
-                completedContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades completadas aún 💫</p>';
-            } else {
-                completedContainer.innerHTML = gameState.activities.completed.slice(-5).reverse().map(activity => `
-                    <div style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center; opacity: 0.8;">
-                        <div style="width: 30px; height: 30px; border-radius: 50%; background: #56ab2f; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2em; flex-shrink: 0;">✓</div>
-                        <div style="flex: 1;">
-                            <p style="margin: 0; font-weight: 600; color: #333; text-decoration: line-through;">${activity.text}</p>
-                        </div>
-                        <button onclick="deleteActivity(${activity.id}, true)" style="background: rgba(255,255,255,0.5); color: #666; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; flex-shrink: 0;">🗑️</button>
-                    </div>
-                `).join('');
             }
         }
         
