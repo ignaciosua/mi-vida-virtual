@@ -1402,6 +1402,15 @@
                 </button>
             </div>
             
+            <!-- Menú de ordenamiento -->
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); padding: 12px; border-radius: 15px;">
+                <span style="font-weight: 600; color: #6b4c9a; font-size: 0.9em;">🔄 Ordenar:</span>
+                <select id="ideaSortOrder" onchange="renderIdeas()" style="flex: 1; padding: 8px 12px; border: 2px solid #a78bfa; border-radius: 10px; font-size: 0.9em; cursor: pointer; background: white; color: #6b4c9a; font-weight: 500;">
+                    <option value="newest">Más recientes primero</option>
+                    <option value="oldest">Más antiguas primero</option>
+                </select>
+            </div>
+            
             <!-- Contenedor de ideas (cambia según la pestaña seleccionada) -->
             <div id="ideasContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 200px;"></div>
             
@@ -2634,6 +2643,9 @@
                 const hoursElapsed = (now - gameState.lastUpdate) / (1000 * 60 * 60);
                 
                 Object.keys(gameState.stats).forEach(key => {
+                    // Excluir contenido del decaimiento (es progresivo, no decae)
+                    if (key === 'contenido') return;
+                    
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
                     gameState.stats[key].value = Math.max(0, gameState.stats[key].value - decayAmount);
                 });
@@ -3249,6 +3261,9 @@
             
             if (hoursElapsed > 0) {
                 Object.keys(gameState.stats).forEach(key => {
+                    // Excluir contenido del decaimiento (es progresivo, no decae)
+                    if (key === 'contenido') return;
+                    
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
                     gameState.stats[key].value = Math.max(0, gameState.stats[key].value - decayAmount);
                 });
@@ -5617,7 +5632,7 @@
             if (!container) return;
             
             container.innerHTML = '';
-            const ideas = gameState.ideas[currentIdeaState] || [];
+            let ideas = gameState.ideas[currentIdeaState] || [];
             
             if (ideas.length === 0) {
                 const emptyMessages = {
@@ -5631,8 +5646,23 @@
                 return;
             }
             
-            ideas.forEach((idea, index) => {
-                const ideaCard = createIdeaCard(idea, currentIdeaState, index);
+            // Obtener orden seleccionado
+            const sortOrder = document.getElementById('ideaSortOrder')?.value || 'newest';
+            
+            // Crear copia y ordenar según selección
+            ideas = [...ideas];
+            if (sortOrder === 'oldest') {
+                // Más antiguas primero (orden original, las primeras son las más antiguas)
+                // No hacer nada, mantener orden original
+            } else {
+                // Más recientes primero (invertir)
+                ideas.reverse();
+            }
+            
+            ideas.forEach((idea, displayIndex) => {
+                // Calcular el índice original basado en el ordenamiento
+                const originalIndex = sortOrder === 'oldest' ? displayIndex : (gameState.ideas[currentIdeaState].length - 1 - displayIndex);
+                const ideaCard = createIdeaCard(idea, currentIdeaState, originalIndex);
                 container.appendChild(ideaCard);
             });
         }
