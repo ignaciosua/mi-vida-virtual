@@ -5281,7 +5281,7 @@
                     </div>
                     <div style="display: flex; gap: 10px; padding: 20px;">
                         <button onclick="saveExercise(${dayIndex}, null)" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
-                        <button onclick="closeExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                        <button onclick="closeDynamicExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
                     </div>
                 </div>
             `;
@@ -5324,7 +5324,7 @@
                     </div>
                     <div style="display: flex; gap: 10px; padding: 20px;">
                         <button onclick="saveExercise(${dayIndex}, ${exerciseIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
-                        <button onclick="closeExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                        <button onclick="closeDynamicExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
                     </div>
                 </div>
             `;
@@ -5357,7 +5357,7 @@
             saveExercisePlan();
             renderDayExercises(dayIndex);
             renderExerciseCalendar();
-            closeExerciseModal();
+            closeDynamicExerciseModal();
         }
         
         function deleteExercise(dayIndex, exerciseIndex) {
@@ -5369,7 +5369,7 @@
             }
         }
         
-        function closeExerciseModal() {
+        function closeDynamicExerciseModal() {
             const modals = document.querySelectorAll('.modal');
             modals.forEach(modal => {
                 if (modal.querySelector('#exerciseName')) {
