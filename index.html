@@ -6996,7 +6996,7 @@
             
             console.log('✅ Actividades encontradas:', selectedActivities.length);
             
-            // Ordenar por completadas (al final) y luego por importancia y hora
+            // Ordenar por completadas (al final) y luego por hora
             const sortedPending = [...selectedActivities].sort((a, b) => {
                 // Verificar si están completadas en la fecha seleccionada
                 const aCompleted = a.completedDates && a.completedDates.includes(selectedStr);
@@ -7006,10 +7006,7 @@
                 if (aCompleted !== bCompleted) {
                     return aCompleted ? 1 : -1;
                 }
-                // Luego por importancia (descendente)
-                const importanceDiff = (b.importance || 2) - (a.importance || 2);
-                if (importanceDiff !== 0) return importanceDiff;
-                // Finalmente por hora
+                // Luego por hora (ordenar por horario)
                 return (a.time || '00:00').localeCompare(b.time || '00:00');
             });
             
