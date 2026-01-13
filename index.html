@@ -1496,6 +1496,20 @@
                         </div>
                     </div>
                     
+                    <!-- Recurrencia (Opcional) -->
+                    <div style="margin-bottom: 10px; padding: 12px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); border-radius: 12px; border: 2px dashed #ffa8c5;">
+                        <label style="display: block; margin-bottom: 8px; color: #ff6b9d; font-weight: 600; display: flex; align-items: center; gap: 5px;">🔄 Repetir actividad (opcional)</label>
+                        <select id="activityRecurrence" onchange="toggleRecurrenceOptions(this.value)" style="width: 100%; padding: 12px; border: 2px solid #ffc4e1; border-radius: 12px; font-size: 1em; background: white; color: #6b4c9a; font-weight: 500;">
+                            <option value="none">⭕ No repetir</option>
+                            <option value="weekly">📅 Cada semana (mismo día)</option>
+                            <option value="biweekly">🗓️ Cada 2 semanas (quincenal)</option>
+                            <option value="monthly">📆 Cada mes (mismo día)</option>
+                        </select>
+                        <div id="recurrenceInfo" style="display: none; margin-top: 8px; padding: 10px; background: rgba(255, 255, 255, 0.8); border-radius: 8px; font-size: 0.85em; color: #6b4c9a;">
+                            <p style="margin: 0;">✨ <strong>Ejemplo:</strong> Si la programas para un domingo, se creará automáticamente para todos los siguientes según la frecuencia elegida.</p>
+                        </div>
+                    </div>
+                    
                     <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
                 </div>
                 
@@ -6371,6 +6385,7 @@
             const importanceInput = document.getElementById('activityImportance');
             const statEffectInput = document.getElementById('activityStatEffect');
             const statPercentageInput = document.getElementById('activityStatPercentage');
+            const recurrenceInput = document.getElementById('activityRecurrence');
             const activity = input.value.trim();
             const time = timeInput.value;
             const category = categoryInput.value;
@@ -6379,6 +6394,7 @@
             const importance = parseInt(importanceInput.value);
             const statEffect = statEffectInput.value;
             const statPercentage = statEffect !== 'none' ? parseInt(statPercentageInput.value) : 0;
+            const recurrence = recurrenceInput.value;
             
             if (activity === '') {
                 alert('⚠️ Por favor escribe una actividad');
@@ -6395,19 +6411,34 @@
             // dateTo puede ser vacío (indefinido)
             const finalDateTo = dateTo || 'indefinido';
             
-            const newActivity = {
-                id: Date.now(),
-                text: activity,
-                dateFrom: finalDateFrom,
-                dateTo: finalDateTo,
-                time: time || '20:00',
-                category: category || 'personal',
-                importance: importance,
-                statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
-                completed: false
-            };
-            
-            gameState.activities.pending.push(newActivity);
+            // Si hay recurrencia, crear múltiples instancias de la actividad
+            if (recurrence !== 'none') {
+                createRecurringActivities({
+                    text: activity,
+                    dateFrom: finalDateFrom,
+                    dateTo: finalDateTo,
+                    time: time || '20:00',
+                    category: category || 'personal',
+                    importance: importance,
+                    statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
+                    recurrence: recurrence
+                });
+            } else {
+                // Actividad única (comportamiento original)
+                const newActivity = {
+                    id: Date.now(),
+                    text: activity,
+                    dateFrom: finalDateFrom,
+                    dateTo: finalDateTo,
+                    time: time || '20:00',
+                    category: category || 'personal',
+                    importance: importance,
+                    statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
+                    completed: false
+                };
+                
+                gameState.activities.pending.push(newActivity);
+            }
             saveState();
             
             console.log('✅ Actividad agregada:', newActivity);
@@ -6421,7 +6452,9 @@
             importanceInput.value = '2';
             statEffectInput.value = 'none';
             statPercentageInput.value = '15';
+            recurrenceInput.value = 'none';
             document.getElementById('statPercentageContainer').style.display = 'none';
+            document.getElementById('recurrenceInfo').style.display = 'none';
             
             console.log('🔄 Llamando a renderActivities()...');
             renderActivities();
@@ -6432,7 +6465,8 @@
             switchTab('calendario');
             
             // Confirmación visual
-            alert(`✅ Actividad "${activity}" agregada exitosamente!\n📅 Fecha: ${finalDate}\n⏰ Hora: ${time || '20:00'}`);
+            const recurrenceText = recurrence !== 'none' ? `\n🔄 Recurrencia: ${recurrence === 'weekly' ? 'Semanal' : recurrence === 'biweekly' ? 'Quincenal' : 'Mensual'}` : '';
+            alert(`✅ Actividad "${activity}" agregada exitosamente!\n📅 Fecha inicio: ${finalDateFrom}\n⏰ Hora: ${time || '20:00'}${recurrenceText}`);
             
             // Scroll al contenedor de actividades para que el usuario vea la actividad
             setTimeout(() => {
@@ -6722,10 +6756,75 @@
             }
         }
         
+        // Mostrar/ocultar información de recurrencia
+        function toggleRecurrenceOptions(recurrence) {
+            const info = document.getElementById('recurrenceInfo');
+            if (recurrence && recurrence !== 'none') {
+                info.style.display = 'block';
+            } else {
+                info.style.display = 'none';
+            }
+        }
+        
         function changeMonth(delta) {
             currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
             renderMonthlyCalendar();
             renderActivities();
+        }
+        
+        // Crear actividades recurrentes
+        function createRecurringActivities(activityTemplate) {
+            const startDate = new Date(activityTemplate.dateFrom);
+            const endDate = activityTemplate.dateTo !== 'indefinido' ? new Date(activityTemplate.dateTo) : null;
+            
+            // Definir el límite: si no hay fecha fin, crear para los próximos 6 meses
+            const maxDate = endDate || new Date(startDate.getTime() + (180 * 24 * 60 * 60 * 1000)); // 6 meses
+            
+            // Calcular el intervalo en días según la recurrencia
+            let intervalDays = 0;
+            switch(activityTemplate.recurrence) {
+                case 'weekly':
+                    intervalDays = 7;
+                    break;
+                case 'biweekly':
+                    intervalDays = 14;
+                    break;
+                case 'monthly':
+                    intervalDays = 30;
+                    break;
+            }
+            
+            let currentDate = new Date(startDate);
+            let instanceCount = 0;
+            const maxInstances = 52; // Máximo 52 instancias (1 año si es semanal)
+            
+            while (currentDate <= maxDate && instanceCount < maxInstances) {
+                const newActivity = {
+                    id: Date.now() + instanceCount, // ID único para cada instancia
+                    text: activityTemplate.text,
+                    dateFrom: currentDate.toISOString().split('T')[0],
+                    dateTo: currentDate.toISOString().split('T')[0],
+                    time: activityTemplate.time,
+                    category: activityTemplate.category,
+                    importance: activityTemplate.importance,
+                    statEffect: activityTemplate.statEffect,
+                    completed: false,
+                    recurrence: activityTemplate.recurrence // Marcar que es parte de una recurrencia
+                };
+                
+                gameState.activities.pending.push(newActivity);
+                instanceCount++;
+                
+                // Avanzar a la siguiente fecha
+                if (activityTemplate.recurrence === 'monthly') {
+                    // Para mensual, mantener el mismo día del mes
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                } else {
+                    currentDate.setDate(currentDate.getDate() + intervalDays);
+                }
+            }
+            
+            console.log(`✅ Se crearon ${instanceCount} instancias de la actividad recurrente`);
         }
         
         // Colores por categoría
