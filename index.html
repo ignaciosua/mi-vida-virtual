@@ -6377,7 +6377,6 @@
         
         function addActivity() {
             const input = document.getElementById('newActivityInput');
-            const dateInput = document.getElementById('activityDate');
             const timeInput = document.getElementById('activityTime');
             const categoryInput = document.getElementById('activityCategory');
             const dateFromInput = document.getElementById('activityDateFrom');
@@ -6394,7 +6393,7 @@
             const importance = parseInt(importanceInput.value);
             const statEffect = statEffectInput.value;
             const statPercentage = statEffect !== 'none' ? parseInt(statPercentageInput.value) : 0;
-            const recurrence = recurrenceInput.value;
+            const recurrence = recurrenceInput ? recurrenceInput.value : 'none';
             
             if (activity === '') {
                 alert('⚠️ Por favor escribe una actividad');
@@ -6412,7 +6411,7 @@
             const finalDateTo = dateTo || 'indefinido';
             
             // Si hay recurrencia, crear múltiples instancias de la actividad
-            if (recurrence !== 'none') {
+            if (recurrence && recurrence !== 'none') {
                 createRecurringActivities({
                     text: activity,
                     dateFrom: finalDateFrom,
@@ -6423,6 +6422,7 @@
                     statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
                     recurrence: recurrence
                 });
+                console.log('✅ Actividades recurrentes creadas');
             } else {
                 // Actividad única (comportamiento original)
                 const newActivity = {
@@ -6438,10 +6438,10 @@
                 };
                 
                 gameState.activities.pending.push(newActivity);
+                console.log('✅ Actividad agregada:', newActivity);
             }
             saveState();
             
-            console.log('✅ Actividad agregada:', newActivity);
             console.log('📊 Total actividades ahora:', gameState.activities.pending.length);
             
             input.value = '';
@@ -6452,9 +6452,13 @@
             importanceInput.value = '2';
             statEffectInput.value = 'none';
             statPercentageInput.value = '15';
-            recurrenceInput.value = 'none';
-            document.getElementById('statPercentageContainer').style.display = 'none';
-            document.getElementById('recurrenceInfo').style.display = 'none';
+            if (recurrenceInput) {
+                recurrenceInput.value = 'none';
+                const recurrenceInfo = document.getElementById('recurrenceInfo');
+                if (recurrenceInfo) recurrenceInfo.style.display = 'none';
+            }
+            const statPercentageContainer = document.getElementById('statPercentageContainer');
+            if (statPercentageContainer) statPercentageContainer.style.display = 'none';
             
             console.log('🔄 Llamando a renderActivities()...');
             renderActivities();
