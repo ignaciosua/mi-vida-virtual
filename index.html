@@ -1429,7 +1429,13 @@
             <div id="calendar-actividades" class="calendar-view" style="display: block;">
                 <!-- Lista de actividades pendientes (Arriba) -->
                 <div style="margin-bottom: 20px;">
-                    <h3 id="activitiesTitle" style="color: #ff6b9d; margin-bottom: 12px;">📅 Actividades de Hoy</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 id="activitiesTitle" style="color: #ff6b9d; margin: 0;">📅 Actividades de Hoy</h3>
+                        <select id="activitiesSortOrder" onchange="changeActivitiesSortOrder()" style="padding: 8px 12px; border: 2px solid #ffc4e1; border-radius: 10px; font-size: 0.85em; background: white; color: #ff6b9d; font-weight: 600; cursor: pointer;">
+                            <option value="time">⏰ Por horario</option>
+                            <option value="importance">⭐ Por importancia</option>
+                        </select>
+                    </div>
                     <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
                 </div>
                 
@@ -6742,6 +6748,18 @@
         // Variable para la fecha seleccionada en el calendario
         let selectedDate = new Date();
         
+        // Variable para el orden de actividades (por defecto: por horario)
+        let activitiesSortOrder = 'time';
+        
+        // Función para cambiar el orden de las actividades
+        function changeActivitiesSortOrder() {
+            const selector = document.getElementById('activitiesSortOrder');
+            if (selector) {
+                activitiesSortOrder = selector.value;
+                renderActivities();
+            }
+        }
+        
         // Función para seleccionar un día en el calendario
         function selectCalendarDay(year, month, day) {
             selectedDate = new Date(year, month, day);
@@ -6996,7 +7014,7 @@
             
             console.log('✅ Actividades encontradas:', selectedActivities.length);
             
-            // Ordenar por completadas (al final) y luego por hora
+            // Ordenar por completadas (al final) y luego según la opción seleccionada
             const sortedPending = [...selectedActivities].sort((a, b) => {
                 // Verificar si están completadas en la fecha seleccionada
                 const aCompleted = a.completedDates && a.completedDates.includes(selectedStr);
@@ -7006,8 +7024,17 @@
                 if (aCompleted !== bCompleted) {
                     return aCompleted ? 1 : -1;
                 }
-                // Luego por hora (ordenar por horario)
-                return (a.time || '00:00').localeCompare(b.time || '00:00');
+                
+                // Ordenar según la opción seleccionada
+                if (activitiesSortOrder === 'importance') {
+                    // Por importancia (descendente) y luego por hora
+                    const importanceDiff = (b.importance || 2) - (a.importance || 2);
+                    if (importanceDiff !== 0) return importanceDiff;
+                    return (a.time || '00:00').localeCompare(b.time || '00:00');
+                } else {
+                    // Por hora (ordenar por horario) - OPCIÓN POR DEFECTO
+                    return (a.time || '00:00').localeCompare(b.time || '00:00');
+                }
             });
             
             if (sortedPending.length === 0) {
