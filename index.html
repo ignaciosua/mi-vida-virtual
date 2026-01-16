@@ -1333,19 +1333,9 @@
                 <p style="color: #a78bfa; font-size: 0.95em;">Registra cómo te sientes cada día</p>
             </div>
             
-            <!-- Selector de fecha -->
-            <div style="background: linear-gradient(135deg, #e0f7fa 0%, #e1f5fe 100%); padding: 15px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(100, 181, 246, 0.1); border: 2px solid #64b5f6;">
-                <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; justify-content: center;">
-                    <label style="font-weight: 600; color: #01579b; font-size: 1.05em;">📅 Selecciona el día:</label>
-                    <input type="date" id="selectedEmotionalDate" min="2026-01-01" max="2026-12-31" style="padding: 10px 15px; border: 2px solid #64b5f6; border-radius: 12px; font-size: 1em; font-weight: 600; color: #01579b; background: white; cursor: pointer; transition: all 0.3s ease;" onchange="updateSelectedDate()">
-                    <button onclick="setToday()" style="padding: 10px 20px; background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">📍 Hoy</button>
-                </div>
-                <p id="selectedDateText" style="text-align: center; color: #01579b; font-weight: 600; margin-top: 12px; font-size: 0.95em;">Fecha seleccionada: Hoy</p>
-            </div>
-            
             <!-- Selector de emoción actual -->
             <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
-                <h3 style="color: #6b4c9a; margin-bottom: 15px; text-align: center;">✨ ¿Cómo te sentiste ese día?</h3>
+                <h3 style="color: #6b4c9a; margin-bottom: 15px; text-align: center;">✨ ¿Cómo te sientes hoy?</h3>
                 <div id="emotionSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;">
                     <button onclick="selectEmotion('feliz')" style="padding: 15px 10px; background: linear-gradient(135deg, #ffeb99 0%, #fffacd 100%); border: 3px solid #ffd700; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);">
                         😊 Feliz
@@ -1369,10 +1359,7 @@
                         🤒 Enferma
                     </button>
                 </div>
-                <p id="selectedEmotionText" style="text-align: center; color: #ff6b9d; font-weight: 600; min-height: 24px; margin-bottom: 12px;">Selecciona una emoción para marcar días</p>
-                <button onclick="markSelectedDateEmotion()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; border-radius: 15px; font-size: 1.05em; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(167, 139, 250, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(167, 139, 250, 0.3)'">
-                    ✨ Marcar Emoción en Fecha Seleccionada
-                </button>
+                <p id="selectedEmotionText" style="text-align: center; color: #ff6b9d; font-weight: 600; min-height: 24px;">Selecciona una emoción para marcar días</p>
             </div>
             
             <!-- Calendario emocional 2026 -->
@@ -7496,7 +7483,6 @@
         // Datos del calendario emocional
         let emotionalData = {};
         let selectedEmotion = null;
-        let selectedEmotionalDate = null; // Fecha seleccionada para marcar emociones
         
         // Colores pastel para cada emoción
         const EMOTION_COLORS = {
@@ -7535,83 +7521,11 @@
             const saved = localStorage.getItem('emotionalData2026');
             if (saved) {
                 emotionalData = JSON.parse(saved);
-            // Inicializar con la fecha de hoy
-            setToday();
+            }
         }
         
         // Guardar datos emocionales
         function saveEmotionalData() {
-            localStorage.setItem('emotionalData2026', JSON.stringify(emotionalData));
-        }
-        
-        // Establecer fecha a hoy
-        function setToday() {
-            const today = new Date();
-            const dateInput = document.getElementById('selectedEmotionalDate');
-            if (dateInput) {
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                dateInput.value = `${year}-${month}-${day}`;
-                updateSelectedDate();
-            }
-        }
-        
-        // Actualizar fecha seleccionada
-        function updateSelectedDate() {
-            const dateInput = document.getElementById('selectedEmotionalDate');
-            const selectedDateTextEl = document.getElementById('selectedDateText');
-            const dateInput = document.getElementById('selectedEmotionalDate');
-            let dateText = 'en los días del calendario';
-            if (dateInput && dateInput.value) {
-                const [year, month, day] = dateInput.value.split('-');
-                dateText = `en el día ${day}/${month}`;
-            }
-            
-            document.getElementById('selectedEmotionText').textContent = 
-                `${EMOTION_COLORS[emotion].emoji} Has seleccionado: ${emotion.charAt(0).toUpperCase() + emotion.slice(1)} - Haz clic ${dateText} o en cualquier día del calendario`;
-        }
-        
-        // Marcar emoción en la fecha seleccionada (botón rápido)
-        function markSelectedDateEmotion() {
-            if (!selectedEmotion) {
-                alert('⚠️ Primero selecciona una emoción');
-                return;
-            }
-            
-            if (!selectedEmotionalDate) {
-                alert('⚠️ Primero selecciona una fecha');
-                return;
-            }
-            
-            // Extraer mes y día de la fecha seleccionada
-            const [year, month, day] = selectedEmotionalDate.split('-');
-            markDayEmotion(parseInt(month), parseInt(day))
-                selectedEmotionalDate = dateInput.value;
-                
-                // Formatear fecha para mostrar
-                const [year, month, day] = dateInput.value.split('-');
-                const date = new Date(year, month - 1, day);
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const formattedDate = date.toLocaleDateString('es-ES', options);
-                
-                // Verificar si es hoy
-                const today = new Date();
-                const isToday = date.getDate() === today.getDate() && 
-                               date.getMonth() === today.getMonth() && 
-                               date.getFullYear() === today.getFullYear();
-                
-                if (selectedDateTextEl) {
-                    selectedDateTextEl.textContent = `Fecha seleccionada: ${formattedDate}${isToday ? ' (Hoy)' : ''}`;
-                }
-                
-                // Actualizar el texto de selección de emoción
-                const emotionText = document.getElementById('selectedEmotionText');
-                if (emotionText && selectedEmotion) {
-                    emotionText.textContent = 
-                        `${EMOTION_COLORS[selectedEmotion].emoji} Has seleccionado: ${selectedEmotion.charAt(0).toUpperCase() + selectedEmotion.slice(1)} - Haz clic en el día ${day}/${month} o usa el selector de fecha`;
-                }
-            }
             localStorage.setItem('emotionalData2026', JSON.stringify(emotionalData));
         }
         
