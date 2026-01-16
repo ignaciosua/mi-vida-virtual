@@ -1228,10 +1228,6 @@
                 <span class="tab-icon">❤️</span>
                 <span class="tab-label">Existir</span>
             </button>
-            <button class="tab" onclick="switchTab('cuidarme')">
-                <span class="tab-icon">🌱</span>
-                <span class="tab-label">Cuidarme</span>
-            </button>
             <button class="tab" onclick="switchTab('ejercicio')">
                 <span class="tab-icon">🏃</span>
                 <span class="tab-label">Ejercicio</span>
@@ -1239,6 +1235,10 @@
             <button class="tab" onclick="switchTab('crecer')">
                 <span class="tab-icon">🧠</span>
                 <span class="tab-label">Crecer</span>
+            </button>
+            <button class="tab" onclick="switchTab('emocional')">
+                <span class="tab-icon">🌸</span>
+                <span class="tab-label">Emocional</span>
             </button>
             <button class="tab" onclick="switchTab('biblioteca')">
                 <span class="tab-icon">📚</span>
@@ -1258,7 +1258,7 @@
             </button>
         </div>
 
-        <!-- Tab: Existir -->
+        <!-- Tab: Existir (unificado con Cuidarme) -->
         <div class="tab-content active" id="tab-existir">
             <div class="stats-container" id="statsExistir"></div>
             <div class="buttons-container">
@@ -1274,13 +1274,6 @@
                     <span class="button-icon">😴</span>
                     <span class="button-text">Dormir</span>
                 </button>
-            </div>
-        </div>
-
-        <!-- Tab: Cuidarme -->
-        <div class="tab-content" id="tab-cuidarme">
-            <div class="stats-container" id="statsCuidarme"></div>
-            <div class="buttons-container">
                 <button class="action-button btn-selfcare" id="btnSelfcare">
                     <span class="button-icon">💖</span>
                     <span class="button-text">Autoestima</span>
@@ -1330,6 +1323,50 @@
                     <span class="button-icon">👩‍⚕️</span>
                     <span class="button-text">Profesión</span>
                 </button>
+            </div>
+        </div>
+
+        <!-- Tab: Estilo Emocional (NUEVO) -->
+        <div class="tab-content" id="tab-emocional">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #ff6b9d; margin-bottom: 10px;">🌸 Mi Estado Emocional 2026</h2>
+                <p style="color: #a78bfa; font-size: 0.95em;">Registra cómo te sientes cada día</p>
+            </div>
+            
+            <!-- Selector de emoción actual -->
+            <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
+                <h3 style="color: #6b4c9a; margin-bottom: 15px; text-align: center;">✨ ¿Cómo te sientes hoy?</h3>
+                <div id="emotionSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                    <button onclick="selectEmotion('feliz')" style="padding: 15px 10px; background: linear-gradient(135deg, #ffeb99 0%, #fffacd 100%); border: 3px solid #ffd700; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);">
+                        😊 Feliz
+                    </button>
+                    <button onclick="selectEmotion('motivada')" style="padding: 15px 10px; background: linear-gradient(135deg, #c8e6c9 0%, #e8f5e9 100%); border: 3px solid #81c784; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(129, 199, 132, 0.3);">
+                        💪 Motivada
+                    </button>
+                    <button onclick="selectEmotion('triste')" style="padding: 15px 10px; background: linear-gradient(135deg, #b3d9ff 0%, #e6f2ff 100%); border: 3px solid #64b5f6; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);">
+                        😢 Triste
+                    </button>
+                    <button onclick="selectEmotion('cansada')" style="padding: 15px 10px; background: linear-gradient(135deg, #d1c4e9 0%, #ede7f6 100%); border: 3px solid #9575cd; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(149, 117, 205, 0.3);">
+                        😴 Cansada
+                    </button>
+                    <button onclick="selectEmotion('enojada')" style="padding: 15px 10px; background: linear-gradient(135deg, #ffccbc 0%, #ffe0d1 100%); border: 3px solid #ff8a65; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(255, 138, 101, 0.3);">
+                        😠 Enojada
+                    </button>
+                    <button onclick="selectEmotion('estresada')" style="padding: 15px 10px; background: linear-gradient(135deg, #f8bbd0 0%, #fce4ec 100%); border: 3px solid #f48fb1; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(244, 143, 177, 0.3);">
+                        😰 Estresada
+                    </button>
+                    <button onclick="selectEmotion('enferma')" style="padding: 15px 10px; background: linear-gradient(135deg, #ffcccc 0%, #ffe6e6 100%); border: 3px solid #ef9a9a; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(239, 154, 154, 0.3);">
+                        🤒 Enferma
+                    </button>
+                </div>
+                <p id="selectedEmotionText" style="text-align: center; color: #ff6b9d; font-weight: 600; min-height: 24px;">Selecciona una emoción para marcar días</p>
+            </div>
+            
+            <!-- Calendario emocional 2026 -->
+            <div style="background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1); overflow-x: auto;">
+                <h3 style="color: #6b4c9a; margin-bottom: 15px; text-align: center;">📅 Calendario Emocional 2026</h3>
+                <p style="text-align: center; color: #a78bfa; font-size: 0.85em; margin-bottom: 15px;">Haz clic en los días para marcar tus emociones. Puedes añadir varias por día.</p>
+                <div id="emotionalCalendar2026" style="overflow-x: auto;"></div>
             </div>
         </div>
 
@@ -2709,21 +2746,12 @@
 
         // Renderizar estadísticas
         function renderStats() {
-            // Renderizar estadísticas de Existir (hambre, sueño, hidratación)
+            // Renderizar estadísticas de Existir (ahora incluye todas: hambre, sueño, hidratación, autoestima, vida social)
             const existirContainer = document.getElementById('statsExistir');
             existirContainer.innerHTML = '';
-            ['hambre', 'sueño', 'hidratacion'].forEach(key => {
+            ['hambre', 'sueño', 'hidratacion', 'autoestima', 'vidaSocial'].forEach(key => {
                 if (gameState.stats[key]) {
                     existirContainer.appendChild(createStatElement(key, gameState.stats[key]));
-                }
-            });
-
-            // Renderizar estadísticas de Cuidarme (autoestima, vida social)
-            const cuidarmeContainer = document.getElementById('statsCuidarme');
-            cuidarmeContainer.innerHTML = '';
-            ['autoestima', 'vidaSocial'].forEach(key => {
-                if (gameState.stats[key]) {
-                    cuidarmeContainer.appendChild(createStatElement(key, gameState.stats[key]));
                 }
             });
 
@@ -3274,7 +3302,7 @@
             
             // Agregar clase active al tab clickeado
             const tabs = document.querySelectorAll('.tab');
-            const tabNames = ['existir', 'cuidarme', 'ejercicio', 'crecer', 'biblioteca', 'ideas', 'calendario', 'resumen'];
+            const tabNames = ['existir', 'ejercicio', 'crecer', 'emocional', 'biblioteca', 'ideas', 'calendario', 'resumen'];
             const index = tabNames.indexOf(tabName);
             if (index !== -1) {
                 tabs[index].classList.add('active');
@@ -3304,6 +3332,11 @@
             if (tabName === 'calendario') {
                 renderMonthlyCalendar();
                 renderActivities();
+            }
+            
+            // Si es emocional, renderizar calendario emocional
+            if (tabName === 'emocional') {
+                renderEmotionalCalendar2026();
             }
         }
 
@@ -7443,6 +7476,186 @@
             document.body.appendChild(boton);
         }
         
+        // ========================================
+        // CALENDARIO EMOCIONAL 2026
+        // ========================================
+        
+        // Datos del calendario emocional
+        let emotionalData = {};
+        let selectedEmotion = null;
+        
+        // Colores pastel para cada emoción
+        const EMOTION_COLORS = {
+            'feliz': { bg: '#ffeb99', border: '#ffd700', emoji: '😊' },
+            'motivada': { bg: '#c8e6c9', border: '#81c784', emoji: '💪' },
+            'triste': { bg: '#b3d9ff', border: '#64b5f6', emoji: '😢' },
+            'cansada': { bg: '#d1c4e9', border: '#9575cd', emoji: '😴' },
+            'enojada': { bg: '#ffccbc', border: '#ff8a65', emoji: '😠' },
+            'estresada': { bg: '#f8bbd0', border: '#f48fb1', emoji: '😰' },
+            'enferma': { bg: '#ffcccc', border: '#ef9a9a', emoji: '🤒' }
+        };
+        
+        // Días de cada mes en 2026
+        const DAYS_IN_MONTH_2026 = {
+            1: 31,  // Enero
+            2: 28,  // Febrero (2026 no es bisiesto)
+            3: 31,  // Marzo
+            4: 30,  // Abril
+            5: 31,  // Mayo
+            6: 30,  // Junio
+            7: 31,  // Julio
+            8: 31,  // Agosto
+            9: 30,  // Septiembre
+            10: 31, // Octubre
+            11: 30, // Noviembre
+            12: 31  // Diciembre
+        };
+        
+        const MONTH_NAMES = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        
+        // Cargar datos emocionales
+        function loadEmotionalData() {
+            const saved = localStorage.getItem('emotionalData2026');
+            if (saved) {
+                emotionalData = JSON.parse(saved);
+            }
+        }
+        
+        // Guardar datos emocionales
+        function saveEmotionalData() {
+            localStorage.setItem('emotionalData2026', JSON.stringify(emotionalData));
+        }
+        
+        // Seleccionar emoción
+        function selectEmotion(emotion) {
+            selectedEmotion = emotion;
+            
+            // Actualizar botones
+            document.querySelectorAll('#emotionSelector button').forEach(btn => {
+                btn.style.transform = 'scale(1)';
+                const emotionName = btn.textContent.trim().split(' ')[1].toLowerCase();
+                if (EMOTION_COLORS[emotionName]) {
+                    btn.style.boxShadow = `0 4px 12px ${EMOTION_COLORS[emotionName].border}33`;
+                }
+            });
+            
+            // Destacar el botón seleccionado
+            event.target.style.transform = 'scale(1.05)';
+            event.target.style.boxShadow = `0 6px 20px ${EMOTION_COLORS[emotion].border}66`;
+            
+            // Actualizar texto
+            document.getElementById('selectedEmotionText').textContent = 
+                `${EMOTION_COLORS[emotion].emoji} Has seleccionado: ${emotion.charAt(0).toUpperCase() + emotion.slice(1)} - Haz clic en los días para marcarlos`;
+        }
+        
+        // Marcar día con emoción
+        function markDayEmotion(month, day) {
+            if (!selectedEmotion) {
+                alert('⚠️ Primero selecciona una emoción');
+                return;
+            }
+            
+            const dateKey = `2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            
+            // Inicializar si no existe
+            if (!emotionalData[dateKey]) {
+                emotionalData[dateKey] = [];
+            }
+            
+            // Si ya tiene esta emoción, quitarla (toggle)
+            const index = emotionalData[dateKey].indexOf(selectedEmotion);
+            if (index > -1) {
+                emotionalData[dateKey].splice(index, 1);
+                // Si no quedan emociones, eliminar el día
+                if (emotionalData[dateKey].length === 0) {
+                    delete emotionalData[dateKey];
+                }
+            } else {
+                // Añadir la emoción (máximo 4 emociones por día para los cuadrantes)
+                if (emotionalData[dateKey].length < 4) {
+                    emotionalData[dateKey].push(selectedEmotion);
+                } else {
+                    alert('⚠️ Ya tienes 4 emociones en este día (límite de cuadrantes)');
+                    return;
+                }
+            }
+            
+            saveEmotionalData();
+            renderEmotionalCalendar2026();
+        }
+        
+        // Renderizar calendario emocional 2026
+        function renderEmotionalCalendar2026() {
+            const container = document.getElementById('emotionalCalendar2026');
+            if (!container) return;
+            
+            let html = '<table style="width: 100%; border-collapse: separate; border-spacing: 2px; min-width: 800px;">';
+            
+            // Encabezado con números de días
+            html += '<tr><th style="padding: 8px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border-radius: 8px; font-weight: 600; min-width: 80px;">Mes</th>';
+            for (let day = 1; day <= 31; day++) {
+                html += `<th style="padding: 6px 4px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); color: #6b4c9a; border-radius: 6px; font-size: 0.85em; font-weight: 600; min-width: 28px;">${day}</th>`;
+            }
+            html += '</tr>';
+            
+            // Filas de meses
+            for (let month = 1; month <= 12; month++) {
+                const daysInMonth = DAYS_IN_MONTH_2026[month];
+                html += '<tr>';
+                html += `<td style="padding: 8px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; font-weight: 600; border-radius: 8px; text-align: center; font-size: 0.9em;">${MONTH_NAMES[month - 1]}</td>`;
+                
+                for (let day = 1; day <= 31; day++) {
+                    if (day <= daysInMonth) {
+                        const dateKey = `2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                        const emotions = emotionalData[dateKey] || [];
+                        
+                        // Determinar el estilo según las emociones
+                        let cellContent = '';
+                        let cellStyle = 'padding: 4px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; min-height: 40px; position: relative; background: white; border: 2px solid #e0e0e0;';
+                        
+                        if (emotions.length === 0) {
+                            // Sin emociones
+                            cellStyle += 'background: white;';
+                        } else if (emotions.length === 1) {
+                            // Una emoción - todo el cuadro
+                            const emotion = emotions[0];
+                            const color = EMOTION_COLORS[emotion];
+                            cellStyle += `background: ${color.bg}; border: 2px solid ${color.border};`;
+                            cellContent = `<div style="font-size: 1.2em;">${color.emoji}</div>`;
+                        } else {
+                            // Múltiples emociones - dividir en cuadrantes
+                            cellStyle += 'padding: 0;';
+                            cellContent = '<div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 40px;">';
+                            
+                            for (let i = 0; i < 4; i++) {
+                                if (emotions[i]) {
+                                    const emotion = emotions[i];
+                                    const color = EMOTION_COLORS[emotion];
+                                    cellContent += `<div style="background: ${color.bg}; border: 1px solid ${color.border}; display: flex; align-items: center; justify-content: center; font-size: 0.85em;">${color.emoji}</div>`;
+                                } else {
+                                    cellContent += `<div style="background: white; border: 1px solid #e0e0e0;"></div>`;
+                                }
+                            }
+                            
+                            cellContent += '</div>';
+                        }
+                        
+                        html += `<td onclick="markDayEmotion(${month}, ${day})" style="${cellStyle}" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 12px rgba(167, 139, 250, 0.4)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">${cellContent}</td>`;
+                    } else {
+                        // Día no válido (mes con menos de 31 días)
+                        html += '<td style="background: #f5f5f5; border-radius: 8px;"></td>';
+                    }
+                }
+                html += '</tr>';
+            }
+            
+            html += '</table>';
+            container.innerHTML = html;
+        }
+        
         // Mostrar indicador de auto-guardado
         function showAutoSaveIndicator() {
             const indicator = document.createElement('div');
@@ -7469,6 +7682,7 @@
             // PRIMERO: Cargar todos los datos guardados
             loadLibrary();
             loadIdeas();
+            loadEmotionalData();  // Cargar datos emocionales
             
             // Iniciar el reloj INMEDIATAMENTE
             updateClock();
