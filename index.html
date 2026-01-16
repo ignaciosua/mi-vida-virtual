@@ -2667,7 +2667,15 @@
                     if (key === 'contenido') return;
                     
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
-                    gameState.stats[key].value = Math.max(0, gameState.stats[key].value - decayAmount);
+                    let newValue = gameState.stats[key].value - decayAmount;
+                    
+                    // Ejercicio tiene un mínimo de -100%
+                    if (key === 'ejercicio') {
+                        gameState.stats[key].value = Math.max(-100, newValue);
+                    } else {
+                        // Otras estadísticas pueden ser negativas sin límite
+                        gameState.stats[key].value = newValue;
+                    }
                 });
                 
                 gameState.lastUpdate = now;
@@ -2770,6 +2778,11 @@
             if (key === 'hambre' && percentage > 100) {
                 barClass = 'stat-bar-low';
             }
+            
+            // Para valores negativos, usar color rojo de advertencia
+            if (percentage < 0) {
+                barClass = 'stat-bar-low';
+            }
 
             // Información personalizada para hambre e hidratación
             let personalInfo = '';
@@ -2777,6 +2790,9 @@
                 if (percentage > 100) {
                     const exceso = Math.round(percentage - 100);
                     personalInfo = `<div style="font-size: 0.85em; color: #ef4444; margin-top: 5px; font-weight: bold;">⚠️ ¡Exceso de ${exceso}%! Estás superando la cantidad máxima necesaria</div>`;
+                } else if (percentage < 0) {
+                    const deficit = Math.abs(Math.round(percentage));
+                    personalInfo = `<div style="font-size: 0.85em; color: #ef4444; margin-top: 5px; font-weight: bold;">⚠️ ¡Déficit de ${deficit}%! Necesitas comer urgentemente</div>`;
                 } else {
                     personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
                 }
@@ -2804,10 +2820,20 @@
             }
 
             const statDiv = document.createElement('div');
-            statDiv.className = `stat-item ${(!isGrowthStat && percentage < 20) || (key === 'hambre' && percentage > 100) ? 'warning' : ''}`;
+            statDiv.className = `stat-item ${(!isGrowthStat && (percentage < 20 || percentage < 0)) || (key === 'hambre' && percentage > 100) ? 'warning' : ''}`;
             
-            // Para stats de crecimiento y hambre que pueden pasar del 100%, ajustar el ancho de la barra
-            const barWidth = (isGrowthStat || key === 'hambre') ? Math.min(percentage, 100) : percentage;
+            // Calcular ancho de barra según el tipo de estadística
+            let barWidth;
+            if (percentage < 0) {
+                // Para valores negativos, mostrar barra en 0%
+                barWidth = 0;
+            } else if (isGrowthStat) {
+                // Crecimiento sin límite, pero barra máxima al 100%
+                barWidth = Math.min(percentage, 100);
+            } else {
+                // Para el resto, limitar entre 0 y 100 visualmente
+                barWidth = Math.min(Math.max(percentage, 0), 100);
+            }
             
             // Crear barra especial para hidratación con desglose por colores
             let barHTML = '';
@@ -2821,16 +2847,23 @@
                     const refrescoPct = (breakdown.refresco / userProfile.dailyWater) * 100;
                     const cafePct = (breakdown.cafe / userProfile.dailyWater) * 100;
                     
+                    // Calcular anchos reales respetando el límite visual de 100%
+                    const aguaWidth = Math.min(aguaPct, 100);
+                    const azucaradaWidth = Math.min(azucaradaPct, Math.max(0, 100 - aguaWidth));
+                    const refrescoWidth = Math.min(refrescoPct, Math.max(0, 100 - aguaWidth - azucaradaWidth));
+                    const cafeWidth = Math.min(cafePct, Math.max(0, 100 - aguaWidth - azucaradaWidth - refrescoWidth));
+                    
                     barHTML = `
                         <div class="stat-bar-container">
-                            <div style="width: ${Math.min(aguaPct, 100)}%; height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); position: absolute; left: 0; border-radius: 10px 0 0 10px;"></div>
-                            <div style="width: ${Math.min(azucaradaPct, 100 - aguaPct)}%; height: 100%; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); position: absolute; left: ${Math.min(aguaPct, 100)}%; border-radius: ${aguaPct >= 100 ? '10px' : '0'};"></div>
-                            <div style="width: ${Math.min(refrescoPct, 100 - aguaPct - azucaradaPct)}%; height: 100%; background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); position: absolute; left: ${Math.min(aguaPct + azucaradaPct, 100)}%; border-radius: ${(aguaPct + azucaradaPct) >= 100 ? '10px' : '0'};"></div>
-                            <div style="width: ${Math.min(cafePct, 100 - aguaPct - azucaradaPct - refrescoPct)}%; height: 100%; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); position: absolute; left: ${Math.min(aguaPct + azucaradaPct + refrescoPct, 100)}%; border-radius: ${(aguaPct + azucaradaPct + refrescoPct) >= 100 ? '10px' : '0 10px 10px 0'};"></div>
+                            ${aguaWidth > 0 ? `<div style="width: ${aguaWidth}%; height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); position: absolute; left: 0; border-radius: ${aguaWidth >= 100 ? '10px' : '10px 0 0 10px'};"></div>` : ''}
+                            ${azucaradaWidth > 0 ? `<div style="width: ${azucaradaWidth}%; height: 100%; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); position: absolute; left: ${aguaWidth}%; border-radius: ${aguaWidth <= 0 ? '10px 0 0 10px' : '0'};"></div>` : ''}
+                            ${refrescoWidth > 0 ? `<div style="width: ${refrescoWidth}%; height: 100%; background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); position: absolute; left: ${aguaWidth + azucaradaWidth}%; border-radius: ${aguaWidth <= 0 && azucaradaWidth <= 0 ? '10px 0 0 10px' : '0'};"></div>` : ''}
+                            ${cafeWidth > 0 ? `<div style="width: ${cafeWidth}%; height: 100%; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); position: absolute; left: ${aguaWidth + azucaradaWidth + refrescoWidth}%; border-radius: ${(aguaWidth + azucaradaWidth + refrescoWidth + cafeWidth) >= 100 ? '0 10px 10px 0' : '0'};"></div>` : ''}
                         </div>
                     `;
                 } else {
-                    barHTML = `<div class="stat-bar-container"><div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div></div>`;
+                    // Si no hay líquidos consumidos, mostrar barra vacía
+                    barHTML = `<div class="stat-bar-container"><div class="stat-bar-fill ${barClass}" style="width: 0%"></div></div>`;
                 }
             } else {
                 barHTML = `<div class="stat-bar-container"><div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div></div>`;
@@ -3285,7 +3318,15 @@
                     if (key === 'contenido') return;
                     
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
-                    gameState.stats[key].value = Math.max(0, gameState.stats[key].value - decayAmount);
+                    let newValue = gameState.stats[key].value - decayAmount;
+                    
+                    // Ejercicio tiene un mínimo de -100%
+                    if (key === 'ejercicio') {
+                        gameState.stats[key].value = Math.max(-100, newValue);
+                    } else {
+                        // Otras estadísticas pueden ser negativas sin límite
+                        gameState.stats[key].value = newValue;
+                    }
                 });
                 
                 // Resetear desglose de hidratación si cambió el día
@@ -4689,6 +4730,12 @@
                 return sum + (duration * times / 60);
             }, 0) || 0;
             
+            const totalBookHours = library.libros?.reduce((sum, book) => {
+                const pages = book.pages || 0;
+                const timePerPage = 1.5; // minutos por página
+                return sum + (pages * timePerPage / 60);
+            }, 0) || 0;
+            
             // Filtrar items
             let filteredItems = items.filter(item => {
                 let matchSearch = true;
@@ -4742,10 +4789,10 @@
                         <span style="font-size: 0.9em;">📚</span>
                         <span style="font-weight: bold; color: #667eea; font-size: 0.85em;">${totalBooks}</span>
                     </div>
-                    ${(totalMovieHours + totalSeriesHours) > 0 ? `
+                    ${(totalMovieHours + totalSeriesHours + totalBookHours) > 0 ? `
                         <div style="border-left: 2px solid rgba(102, 126, 234, 0.3); padding-left: 12px; display: flex; align-items: center; gap: 4px;">
                             <span style="font-size: 0.8em;">⏱️</span>
-                            <span style="color: #667eea; font-weight: 600; font-size: 0.75em;">${(totalMovieHours + totalSeriesHours).toFixed(1)}h</span>
+                            <span style="color: #667eea; font-weight: 600; font-size: 0.75em;">${(totalMovieHours + totalSeriesHours + totalBookHours).toFixed(1)}h</span>
                         </div>
                     ` : ''}
                 </div>
@@ -4816,6 +4863,18 @@
                                     <div style="color: #ff6b9d; font-weight: 600;">Total: ${((item.duration || 0) * (item.timesWatched || 1))} min (${Math.floor(((item.duration || 0) * (item.timesWatched || 1)) / 60)}h ${((item.duration || 0) * (item.timesWatched || 1)) % 60}m)</div>
                                 </div>
                             ` : ''}
+                            ${currentLibraryCategory === 'series' && item.duration ? `
+                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
+                                    <div style="color: #6b4c9a;">⏱️ ${item.duration} min | 👁️ ${item.timesWatched || 1}x</div>
+                                    <div style="color: #ff6b9d; font-weight: 600;">Total: ${((item.duration || 0) * (item.timesWatched || 1))} min (${Math.floor(((item.duration || 0) * (item.timesWatched || 1)) / 60)}h ${((item.duration || 0) * (item.timesWatched || 1)) % 60}m)</div>
+                                </div>
+                            ` : ''}
+                            ${currentLibraryCategory === 'libros' && item.pages ? `
+                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
+                                    <div style="color: #6b4c9a;">📄 ${item.pages} páginas</div>
+                                    <div style="color: #ff6b9d; font-weight: 600;">Tiempo estimado: ${Math.floor((item.pages * 1.5) / 60)}h ${Math.round((item.pages * 1.5) % 60)}m</div>
+                                </div>
+                            ` : ''}
                             ${currentLibraryCategory === 'flashcards' && item.folder ? `<p style="color: #ff6b9d; font-size: 0.85em; margin-bottom: 10px;">📁 ${item.folder}</p>` : ''}
                             <div style="display: flex; gap: 10px;">${currentLibraryCategory === 'flashcards' ? `
                                     <button onclick="reviewSingleFlashcard(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">🧠 Repasar</button>
@@ -4876,7 +4935,10 @@
                         ${currentLibraryCategory === 'peliculas' || currentLibraryCategory === 'series' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'series' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'series' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'libros' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'libros' ? `<input type="number" id="bookPages" placeholder="Número de páginas" value="${isEditing ? item.pages || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
@@ -4920,6 +4982,7 @@
             const flashcardImage = document.getElementById('flashcardImage')?.value.trim() || '';
             const duration = document.getElementById('movieDuration')?.value || 0;
             const timesWatched = document.getElementById('movieTimesWatched')?.value || 1;
+            const pages = document.getElementById('bookPages')?.value || 0;
             const rating = window.currentItemRating || 0;
             
             console.log('💾 Guardando item en categoría:', currentLibraryCategory);
@@ -4957,6 +5020,7 @@
                 folder,
                 duration: parseInt(duration) || 0,
                 timesWatched: parseInt(timesWatched) || 1,
+                pages: parseInt(pages) || 0,
                 rating,
                 dateAdded: editIndex !== null ? library[currentLibraryCategory][editIndex].dateAdded : new Date().toISOString(),
                 // Sistema de repetición espaciada para flashcards

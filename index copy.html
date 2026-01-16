@@ -1,4 +1,4 @@
-                                                                                                                                                            <!DOCTYPE html>
+﻿                                                                                                                                                            <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1415,42 +1415,78 @@
 
         <!-- Tab: Calendario -->
         <div class="tab-content" id="tab-calendario">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h2 style="color: #ff6b9d; margin-bottom: 10px;">📅 Actividades del Día</h2>
-                <p style="color: #a78bfa; font-size: 0.95em;">Calendario general - Todas tus actividades</p>
-            </div>
             
             <!-- Vista de Actividades -->
             <div id="calendar-actividades" class="calendar-view" style="display: block;">
                 <!-- Lista de actividades pendientes (Arriba) -->
                 <div style="margin-bottom: 20px;">
-                    <h3 style="color: #ff6b9d; margin-bottom: 12px;">🕒 Pendientes (Este mes)</h3>
+                    <h3 id="activitiesTitle" style="color: #ff6b9d; margin-bottom: 12px;">📅 Actividades de Hoy</h3>
                     <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
                 </div>
                 
                 <!-- Agregar nueva actividad -->
-                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
-                    <h3 style="color: #6b4c9a; margin-bottom: 15px;">✨ Nueva Actividad</h3>
-                    <input type="text" id="newActivityInput" placeholder="¿Qué vas a hacer?" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                        <input type="date" id="activityDate" style="flex: 1; min-width: 140px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
-                        <input type="time" id="activityTime" style="flex: 1; min-width: 120px; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                <div style="background: linear-gradient(135deg, #f0f4ff 0%, #e8f3ff 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 6px 20px rgba(124, 58, 237, 0.12); border: 2px solid #ddd6fe;">
+                    <h3 style="color: #7c3aed; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">✨ Nueva Actividad</h3>
+                    <input type="text" id="newActivityInput" placeholder="📝 ¿Qué vas a hacer?" style="width: 100%; padding: 14px; border: 2px solid #c7d2fe; border-radius: 15px; font-size: 1em; margin-bottom: 12px; background: white;">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                        <div>
+                            <label style="font-size: 0.75em; color: #7c3aed; font-weight: 600; margin-bottom: 3px; display: block;">📅 Desde</label>
+                            <input type="date" id="activityDateFrom" style="width: 100%; padding: 8px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.85em; background: white;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75em; color: #7c3aed; font-weight: 600; margin-bottom: 3px; display: block;">📅 Hasta</label>
+                            <input type="date" id="activityDateTo" style="width: 100%; padding: 8px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.85em; background: white;">
+                        </div>
                     </div>
-                    <select id="activityCategory" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                        <option value="personal">🌸 Personal</option>
-                        <option value="escuela">📚 Escuela</option>
-                        <option value="trabajo">💼 Trabajo</option>
-                        <option value="ejercicio">💪 Ejercicio</option>
-                        <option value="salud">❤️ Salud</option>
-                        <option value="social">👥 Social</option>
-                    </select>
-                    <select id="activityRecurrence" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                        <option value="none">No se repite</option>
-                        <option value="daily">Diariamente</option>
-                        <option value="weekly">Semanalmente</option>
-                        <option value="monthly">Mensualmente</option>
-                        <option value="yearly">Anualmente</option>
-                    </select>
+                    <p style="font-size: 0.7em; color: #7c3aed; margin: -8px 0 12px 0; opacity: 0.8;">💡 Dejar "Hasta" vacío = se repite siempre</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                        <div>
+                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⏰ Hora</label>
+                            <input type="time" id="activityTime" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">🎯 Categoría</label>
+                            <select id="activityCategory" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                                <option value="personal">🌸 Personal</option>
+                                <option value="escuela">📚 Escuela</option>
+                                <option value="trabajo">💼 Trabajo</option>
+                                <option value="ejercicio">💪 Ejercicio</option>
+                                <option value="salud">❤️ Salud</option>
+                                <option value="social">👥 Social</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Nivel de importancia -->
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; color: #6b4c9a; font-weight: 600;">⭐ Nivel de importancia:</label>
+                        <select id="activityImportance" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
+                            <option value="3">⭐⭐⭐ Importante</option>
+                            <option value="2" selected>⭐⭐ Normal</option>
+                            <option value="1">⭐ Opcional</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Impacto en estadísticas -->
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; color: #6b4c9a; font-weight: 600;">📊 Afecta a:</label>
+                        <select id="activityStatEffect" onchange="toggleStatPercentage(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 8px;">
+                            <option value="none">Ninguna estadística</option>
+                            <option value="ejercicio">🏋️ Salud Física</option>
+                            <option value="autoestima">💖 Autoestima</option>
+                            <option value="vidaSocial">💬 Vida Social</option>
+                            <option value="idiomas">🌍 Idiomas</option>
+                            <option value="aprendizaje">📚 Aprendizaje</option>
+                            <option value="contenido">🎬 Contenido</option>
+                        </select>
+                        <div id="statPercentageContainer" style="display: none;">
+                            <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600; font-size: 0.9em;">Porcentaje de aumento:</label>
+                            <input type="number" id="activityStatPercentage" value="15" min="1" max="100" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 10px; font-size: 0.95em; text-align: center;">
+                        </div>
+                    </div>
+                    
                     <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
                 </div>
                 
@@ -1492,6 +1528,59 @@
         </div>
 
         <p class="info-text">💡 Las estadísticas disminuyen 4.2% por hora y se guardan automáticamente</p>
+        
+        <!-- Modal para editar actividad -->
+        <div id="editActivityModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+            <div style="background: white; padding: 25px; border-radius: 20px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                <h3 style="color: #7c3aed; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">✏️ Editar Actividad</h3>
+                
+                <label style="font-size: 0.9em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📝 Nombre</label>
+                <input type="text" id="editActivityText" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 1em; margin-bottom: 12px;">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Desde</label>
+                        <input type="date" id="editActivityDateFrom" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">📅 Hasta</label>
+                        <input type="date" id="editActivityDateTo" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⏰ Hora</label>
+                        <input type="time" id="editActivityTime" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">🎯 Categoría</label>
+                        <select id="editActivityCategory" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                            <option value="personal">🌸 Personal</option>
+                            <option value="escuela">📚 Escuela</option>
+                            <option value="trabajo">💼 Trabajo</option>
+                            <option value="ejercicio">💪 Ejercicio</option>
+                            <option value="salud">❤️ Salud</option>
+                            <option value="social">👥 Social</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⭐ Importancia</label>
+                    <select id="editActivityImportance" style="width: 100%; padding: 10px; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 0.9em;">
+                        <option value="3">⭐⭐⭐ Importante</option>
+                        <option value="2">⭐⭐ Normal</option>
+                        <option value="1">⭐ Opcional</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="saveActivityEdit()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">✅ Guardar</button>
+                    <button onclick="closeEditModal()" style="flex: 1; padding: 12px; background: #9ca3af; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">❌ Cancelar</button>
+                </div>
+            </div>
+        </div>
         
         <!-- Botón de backup accesible -->
         <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
@@ -2475,6 +2564,10 @@
                 grabadas: [],
                 editadas: [],
                 publicadas: []
+            },
+            wrongActivities: {
+                list: [],
+                lastReset: new Date().toDateString()
             }
         };
 
@@ -2519,6 +2612,14 @@
                 
                 if (!gameState.favorites) {
                     gameState.favorites = [];
+                }
+                
+                // Migrar estructura de wrongActivities
+                if (!gameState.wrongActivities) {
+                    gameState.wrongActivities = {
+                        list: [],
+                        lastReset: new Date().toDateString()
+                    };
                 }
                 
                 // Asegurar que todas las estadísticas existen (incluyendo nuevas)
@@ -4321,6 +4422,19 @@
             loadIdeas();
             renderIdeas();
             
+            // Renderizar actividades del calendario
+            renderActivities();
+            renderMonthlyCalendar();
+            renderWrongActivities();
+            
+            // Pre-llenar fecha de hoy en el input de actividad
+            const activityDateInput = document.getElementById('activityDate');
+            if (activityDateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                activityDateInput.value = today;
+                console.log('📅 Fecha de hoy pre-llenada:', today);
+            }
+            
             // Inicializar y actualizar reloj cada segundo
             updateClock();
             setInterval(updateClock, 1000);
@@ -4522,6 +4636,24 @@
             const container = document.getElementById('libraryContent');
             const items = library[currentLibraryCategory] || [];
             
+            // Calcular totales y horas
+            const totalMovies = library.peliculas?.length || 0;
+            const totalSeries = library.series?.length || 0;
+            const totalBooks = library.libros?.length || 0;
+            const totalFlashcards = library.flashcards?.length || 0;
+            
+            const totalMovieHours = library.peliculas?.reduce((sum, movie) => {
+                const duration = movie.duration || 0;
+                const times = movie.timesWatched || 1;
+                return sum + (duration * times / 60);
+            }, 0) || 0;
+            
+            const totalSeriesHours = library.series?.reduce((sum, series) => {
+                const duration = series.duration || 0;
+                const times = series.timesWatched || 1;
+                return sum + (duration * times / 60);
+            }, 0) || 0;
+            
             // Filtrar items
             let filteredItems = items.filter(item => {
                 let matchSearch = true;
@@ -4561,6 +4693,28 @@
             };
             
             let html = `
+                <!-- Contador de totales - Versión mini -->
+                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px 12px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1); display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 0.9em;">🎬</span>
+                        <span style="font-weight: bold; color: #667eea; font-size: 0.85em;">${totalMovies}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 0.9em;">📺</span>
+                        <span style="font-weight: bold; color: #667eea; font-size: 0.85em;">${totalSeries}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 0.9em;">📚</span>
+                        <span style="font-weight: bold; color: #667eea; font-size: 0.85em;">${totalBooks}</span>
+                    </div>
+                    ${(totalMovieHours + totalSeriesHours) > 0 ? `
+                        <div style="border-left: 2px solid rgba(102, 126, 234, 0.3); padding-left: 12px; display: flex; align-items: center; gap: 4px;">
+                            <span style="font-size: 0.8em;">⏱️</span>
+                            <span style="color: #667eea; font-weight: 600; font-size: 0.75em;">${(totalMovieHours + totalSeriesHours).toFixed(1)}h</span>
+                        </div>
+                    ` : ''}
+                </div>
+                
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; color: white;">
                     <h3 style="margin-bottom: 15px;">📚 ${categoryNames[currentLibraryCategory]}</h3>
                     
@@ -4597,13 +4751,14 @@
                             `<button onclick="filterByRating(${rating})" style="padding: 10px 15px; background: ${libraryFilters.rating === rating ? 'white' : 'rgba(255,255,255,0.3)'}; color: ${libraryFilters.rating === rating ? '#667eea' : 'white'}; border: none; border-radius: 8px; cursor: pointer; min-width: 80px;">${'⭐'.repeat(rating)}</button>`
                         ).join('')}
                     </div>` : ''}
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="openAddItemModal()" style="flex: 1; padding: 15px; background: white; color: #667eea; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
-                            ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard'}
-                        </button>
-                        ${currentLibraryCategory === 'flashcards' ? `<button onclick="startFlashcardReview()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">🧠 Repasar</button>` : ''}
-                    </div>
+                </div>
+                
+                <!-- Botón de agregar abajo -->
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button onclick="openAddItemModal()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                        ➕ Agregar ${currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard'}
+                    </button>
+                    ${currentLibraryCategory === 'flashcards' ? `<button onclick="startFlashcardReview()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);">🧠 Repasar</button>` : ''}
                 </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
@@ -4683,9 +4838,10 @@
                             </select>
                         ` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `<input type="url" id="flashcardImage" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'peliculas' || currentLibraryCategory === 'series' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory !== 'flashcards' && currentLibraryCategory !== 'peliculas' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'libros' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
@@ -6180,69 +6336,361 @@
             const dateInput = document.getElementById('activityDate');
             const timeInput = document.getElementById('activityTime');
             const categoryInput = document.getElementById('activityCategory');
-            const recurrenceInput = document.getElementById('activityRecurrence');
+            const dateFromInput = document.getElementById('activityDateFrom');
+            const dateToInput = document.getElementById('activityDateTo');
+            const importanceInput = document.getElementById('activityImportance');
+            const statEffectInput = document.getElementById('activityStatEffect');
+            const statPercentageInput = document.getElementById('activityStatPercentage');
             const activity = input.value.trim();
-            const date = dateInput.value;
             const time = timeInput.value;
             const category = categoryInput.value;
-            const recurrence = recurrenceInput.value;
+            const dateFrom = dateFromInput.value;
+            const dateTo = dateToInput.value;
+            const importance = parseInt(importanceInput.value);
+            const statEffect = statEffectInput.value;
+            const statPercentage = statEffect !== 'none' ? parseInt(statPercentageInput.value) : 0;
             
             if (activity === '') {
                 alert('⚠️ Por favor escribe una actividad');
                 return;
             }
             
-            if (date === '') {
-                alert('⚠️ Por favor selecciona una fecha');
-                return;
+            // Usar dateFrom o hoy si no se especificó
+            let finalDateFrom = dateFrom;
+            if (finalDateFrom === '') {
+                const today = new Date();
+                finalDateFrom = today.toISOString().split('T')[0];
             }
+            
+            // dateTo puede ser vacío (indefinido)
+            const finalDateTo = dateTo || 'indefinido';
             
             const newActivity = {
                 id: Date.now(),
                 text: activity,
-                date: date,
-                time: time || '00:00',
+                dateFrom: finalDateFrom,
+                dateTo: finalDateTo,
+                time: time || '20:00',
                 category: category || 'personal',
-                recurrence: recurrence,
+                importance: importance,
+                statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
                 completed: false
             };
             
             gameState.activities.pending.push(newActivity);
             saveState();
             
+            console.log('✅ Actividad agregada:', newActivity);
+            console.log('📊 Total actividades ahora:', gameState.activities.pending.length);
+            
             input.value = '';
-            dateInput.value = '';
+            dateFromInput.value = '';
+            dateToInput.value = '';
             timeInput.value = '';
             categoryInput.value = 'personal';
-            recurrenceInput.value = 'none';
+            importanceInput.value = '2';
+            statEffectInput.value = 'none';
+            statPercentageInput.value = '15';
+            document.getElementById('statPercentageContainer').style.display = 'none';
             
+            console.log('🔄 Llamando a renderActivities()...');
             renderActivities();
             renderMonthlyCalendar();
+            renderWrongActivities();
+            
+            // CAMBIAR A LA PESTAÑA DE CALENDARIO para que el usuario VEA la actividad
+            switchTab('calendario');
+            
+            // Confirmación visual
+            alert(`✅ Actividad "${activity}" agregada exitosamente!\n📅 Fecha: ${finalDate}\n⏰ Hora: ${time || '20:00'}`);
+            
+            // Scroll al contenedor de actividades para que el usuario vea la actividad
+            setTimeout(() => {
+                const container = document.getElementById('activitiesPending');
+                if (container) {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
         
         function toggleActivity(id) {
             const activity = gameState.activities.pending.find(a => a.id === id);
             if (activity) {
-                gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
-                activity.completed = true;
-                gameState.activities.completed.push(activity);
+                // Inicializar completedDates si no existe
+                if (!activity.completedDates) {
+                    activity.completedDates = [];
+                }
+                
+                // Obtener fecha actual seleccionada
+                const currentDateStr = selectedDate.getFullYear() + '-' + 
+                                      String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                                      String(selectedDate.getDate()).padStart(2, '0');
+                
+                // Verificar si ya está completada en esta fecha
+                const index = activity.completedDates.indexOf(currentDateStr);
+                
+                if (index > -1) {
+                    // Ya está completada, desmarcar
+                    activity.completedDates.splice(index, 1);
+                } else {
+                    // No está completada, marcar
+                    activity.completedDates.push(currentDateStr);
+                    
+                    // Aplicar efecto de estadística
+                    if (activity.statEffect && activity.statEffect !== 'none') {
+                        const [statName, statValue] = activity.statEffect.split(',');
+                        const boost = parseInt(statValue);
+                        
+                        if (gameState.stats[statName]) {
+                            gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + boost);
+                            renderStats();
+                            console.log(`✅ Actividad completada! +${boost}% a ${statName}`);
+                        }
+                    }
+                }
+                
                 saveState();
                 renderActivities();
+                renderMonthlyCalendar();
             }
         }
         
-        function deleteActivity(id, completed = false) {
-            if (completed) {
-                gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
-            } else {
+        function markActivityNotDone(id) {
+            const activity = gameState.activities.pending.find(a => a.id === id);
+            if (activity) {
+                // Confirmar acción
+                if (!confirm('¿Confirmas que NO hiciste esta actividad?')) {
+                    return;
+                }
+                
                 gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+                activity.completed = false;
+                gameState.activities.completed.push(activity);
+                
+                // Agregar a wrongActivities para poder corregir
+                gameState.wrongActivities.list.push({...activity});
+                
+                // Solo aplicar penalización si es IMPORTANTE (3 estrellas)
+                if ((activity.importance || 2) === 3 && activity.statEffect && activity.statEffect !== 'none') {
+                    const [statName, statValue] = activity.statEffect.split(',');
+                    const penalty = parseInt(statValue);
+                    
+                    // Restar el porcentaje que hubiera sumado
+                    if (gameState.stats[statName]) {
+                        gameState.stats[statName].value = Math.max(0, gameState.stats[statName].value - penalty);
+                        renderStats();
+                        
+                        // Mostrar notificación
+                        alert(`❌ Actividad importante no realizada: -${penalty}% a ${statName}`);
+                        console.log(`❌ Actividad no realizada: -${penalty}% a ${statName}`);
+                    }
+                }
+                
+                saveState();
+                renderActivities();
+                renderWrongActivities();
             }
+        }
+        
+        function renderWrongActivities() {
+            const container = document.getElementById('wrongActivitiesList');
+            if (!container) return;
+            
+            // Verificar si necesitamos resetear (cambio de día)
+            const today = new Date().toDateString();
+            if (gameState.wrongActivities.lastReset !== today) {
+                gameState.wrongActivities.list = [];
+                gameState.wrongActivities.lastReset = today;
+                saveState();
+            }
+            
+            // Obtener solo la ÚLTIMA actividad marcada hoy
+            const todayActivities = gameState.wrongActivities.list;
+            
+            if (todayActivities.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; font-size: 0.9em; margin: 10px 0;">No hay actividades marcadas hoy</p>';
+                return;
+            }
+            
+            // Mostrar solo la última actividad
+            const lastActivity = todayActivities[todayActivities.length - 1];
+            const activitiesToShow = [lastActivity];
+            
+            const categories = {
+                work: { icon: '💼', name: 'Trabajo', bg: '#fef3c7', text: '#92400e', border: '#fbbf24' },
+                personal: { icon: '🏠', name: 'Personal', bg: '#dbeafe', text: '#1e40af', border: '#3b82f6' },
+                health: { icon: '❤️', name: 'Salud', bg: '#fecaca', text: '#991b1b', border: '#ef4444' },
+                social: { icon: '👥', name: 'Social', bg: '#d1fae5', text: '#065f46', border: '#10b981' },
+                learning: { icon: '📚', name: 'Aprendizaje', bg: '#e9d5ff', text: '#6b21a8', border: '#a855f7' }
+            };
+            
+            container.innerHTML = activitiesToShow.map(activity => {
+                const cat = categories[activity.category || 'personal'];
+                const activityDate = new Date(activity.date);
+                const formattedDate = activityDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                const formattedTime = activity.time || '00:00';
+                
+                const stars = '⭐'.repeat(activity.importance || 2);
+                
+                let statInfo = '';
+                if (activity.statEffect && activity.statEffect !== 'none') {
+                    const [statName, statValue] = activity.statEffect.split(',');
+                    const statIcons = {
+                        ejercicio: '💪',
+                        autoestima: '✨',
+                        vidaSocial: '👥',
+                        idiomas: '🗣️',
+                        aprendizaje: '📚',
+                        contenido: '🎬'
+                    };
+                    statInfo = `<p style="margin: 5px 0 0 0; font-size: 0.85em; color: #666;">${statIcons[statName]} ${activity.completed ? '+' : '-'}${statValue}%</p>`;
+                }
+                
+                const statusBadge = activity.completed 
+                    ? '<span style="background: #10b981; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8em; font-weight: 600;">✅ Hecha</span>'
+                    : '<span style="background: #ef4444; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.8em; font-weight: 600;">❌ No hecha</span>';
+                
+                return `
+                    <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                    <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                    ${statusBadge}
+                                </div>
+                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''} ${stars}</p>
+                                ${statInfo}
+                            </div>
+                            <button onclick="restoreActivity(${activity.id})" style="padding: 8px 16px; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; margin-left: 10px;">↩️ Restaurar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function restoreActivity(id) {
+            // Buscar la actividad en la lista de actividades mal clasificadas
+            const activityIndex = gameState.wrongActivities.list.findIndex(a => a.id === id);
+            if (activityIndex === -1) return;
+            
+            const activity = gameState.wrongActivities.list[activityIndex];
+            
+            // Revertir el efecto de estadística si existe
+            if (activity.statEffect && activity.statEffect !== 'none') {
+                const [statName, statValue] = activity.statEffect.split(',');
+                const value = parseInt(statValue);
+                
+                if (gameState.stats[statName]) {
+                    if (activity.completed) {
+                        // Si estaba marcada como hecha, restar el boost
+                        gameState.stats[statName].value = Math.max(0, gameState.stats[statName].value - value);
+                    } else {
+                        // Si estaba marcada como no hecha (y era importante), devolver la penalización
+                        if ((activity.importance || 2) === 3) {
+                            gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + value);
+                        }
+                    }
+                    renderStats();
+                }
+            }
+            
+            // Remover de completed y wrongActivities
+            gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
+            gameState.wrongActivities.list.splice(activityIndex, 1);
+            
+            // Restaurar a pending
+            activity.completed = false;
+            gameState.activities.pending.push(activity);
+            
             saveState();
             renderActivities();
+            renderWrongActivities();
+        }
+        
+        function deleteActivity(id, completed = false) {
+            if (confirm('¿Estás seguro de eliminar esta actividad?')) {
+                if (completed) {
+                    gameState.activities.completed = gameState.activities.completed.filter(a => a.id !== id);
+                } else {
+                    gameState.activities.pending = gameState.activities.pending.filter(a => a.id !== id);
+                }
+                saveState();
+                renderActivities();
+                renderMonthlyCalendar();
+            }
+        }
+        
+        let editingActivityId = null;
+        
+        function editActivity(id) {
+            const activity = gameState.activities.pending.find(a => a.id === id);
+            if (!activity) return;
+            
+            editingActivityId = id;
+            
+            // Llenar el formulario con los datos actuales
+            document.getElementById('editActivityText').value = activity.text;
+            document.getElementById('editActivityDateFrom').value = activity.dateFrom || '';
+            document.getElementById('editActivityDateTo').value = activity.dateTo === 'indefinido' ? '' : activity.dateTo;
+            document.getElementById('editActivityTime').value = activity.time || '20:00';
+            document.getElementById('editActivityCategory').value = activity.category || 'personal';
+            document.getElementById('editActivityImportance').value = activity.importance || 2;
+            
+            // Mostrar modal
+            const modal = document.getElementById('editActivityModal');
+            modal.style.display = 'flex';
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editActivityModal').style.display = 'none';
+            editingActivityId = null;
+        }
+        
+        function saveActivityEdit() {
+            if (!editingActivityId) return;
+            
+            const activity = gameState.activities.pending.find(a => a.id === editingActivityId);
+            if (!activity) return;
+            
+            // Actualizar los datos
+            activity.text = document.getElementById('editActivityText').value.trim();
+            activity.dateFrom = document.getElementById('editActivityDateFrom').value || new Date().toISOString().split('T')[0];
+            activity.dateTo = document.getElementById('editActivityDateTo').value || 'indefinido';
+            activity.time = document.getElementById('editActivityTime').value || '20:00';
+            activity.category = document.getElementById('editActivityCategory').value;
+            activity.importance = parseInt(document.getElementById('editActivityImportance').value);
+            
+            saveState();
+            renderActivities();
+            renderMonthlyCalendar();
+            closeEditModal();
+            
+            alert('✅ Actividad actualizada correctamente');
         }
         
         // Variable para el mes actual del calendario
         let currentCalendarMonth = new Date();
+        
+        // Variable para la fecha seleccionada en el calendario
+        let selectedDate = new Date();
+        
+        // Función para seleccionar un día en el calendario
+        function selectCalendarDay(year, month, day) {
+            selectedDate = new Date(year, month, day);
+            console.log('🗓️ Día seleccionado:', selectedDate.toLocaleDateString('es-ES'));
+            renderActivities();
+            renderMonthlyCalendar();
+        }
+        
+        // Mostrar/ocultar campo de porcentaje según la estadística seleccionada
+        function toggleStatPercentage(statValue) {
+            const container = document.getElementById('statPercentageContainer');
+            if (statValue && statValue !== 'none') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
         
         function changeMonth(delta) {
             currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
@@ -6310,7 +6758,7 @@
                 const dayColor = categoriesInDay.length === 1 ? categoryColors[categoriesInDay[0]] : null;
                 
                 html += `
-                    <div style="
+                    <div onclick="selectCalendarDay(${year}, ${month}, ${day})" style="
                         min-height: 50px;
                         padding: 4px;
                         background: ${isToday ? 'linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%)' : (dayColor ? dayColor.bg : '#fff')};
@@ -6342,47 +6790,125 @@
         
         function renderActivities() {
             const pendingContainer = document.getElementById('activitiesPending');
+            const titleElement = document.getElementById('activitiesTitle');
             
-            if (!pendingContainer) return;
+            if (!pendingContainer) {
+                console.error('❌ No se encontró el contenedor activitiesPending');
+                return;
+            }
             
-            // Filtrar solo actividades del mes actual
-            const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
+            // Usar la fecha seleccionada (por defecto es hoy)
+            const selectedStr = selectedDate.getFullYear() + '-' + 
+                              String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                              String(selectedDate.getDate()).padStart(2, '0');
             
-            const thisMonthActivities = gameState.activities.pending.filter(activity => {
-                const activityDate = new Date(activity.date);
-                return activityDate.getMonth() === currentMonth && activityDate.getFullYear() === currentYear;
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + 
+                           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(today.getDate()).padStart(2, '0');
+            
+            // Actualizar título según si es hoy u otro día
+            const isToday = selectedStr === todayStr;
+            const formattedDate = selectedDate.toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long' 
             });
             
-            // Renderizar pendientes del mes (ordenar por fecha y hora)
-            const sortedPending = [...thisMonthActivities].sort((a, b) => {
-                const dateA = new Date(`${a.date}T${a.time}`);
-                const dateB = new Date(`${b.date}T${b.time}`);
-                return dateA - dateB;
+            if (titleElement) {
+                titleElement.innerHTML = isToday ? '📅 Actividades de Hoy' : `📅 Actividades del ${formattedDate}`;
+            }
+            
+            console.log('📅 Mostrando actividades de:', selectedStr);
+            console.log('📋 Total actividades pendientes:', gameState.activities.pending.length);
+            
+            // MOSTRAR TODAS LAS ACTIVIDADES CON SU RECURRENCIA
+            gameState.activities.pending.forEach(act => {
+                console.log('🔍 Actividad:', act.text, '| Fecha:', act.date, '| Recurrencia:', act.recurrence);
+            });
+            
+            // Filtrar actividades que estén en el rango de fechas
+            const selectedActivities = gameState.activities.pending.filter(activity => {
+                // Compatibilidad con actividades viejas (con date y recurrence)
+                if (activity.date && activity.recurrence) {
+                    if (activity.date === selectedStr) return true;
+                    if (activity.recurrence === 'daily') return true;
+                    return false;
+                }
+                
+                // Actividades nuevas con dateFrom/dateTo
+                if (!activity.dateFrom) return false;
+                
+                const activityFrom = new Date(activity.dateFrom + 'T00:00:00');
+                const selectedDateObj = new Date(selectedStr + 'T00:00:00');
+                
+                // Verificar si la fecha seleccionada es >= fecha de inicio
+                if (selectedDateObj < activityFrom) return false;
+                
+                // Si dateTo es indefinido, mostrar siempre después de dateFrom
+                if (activity.dateTo === 'indefinido') {
+                    console.log('🔁 Actividad indefinida:', activity.text);
+                    return true;
+                }
+                
+                // Si hay dateTo, verificar que esté en el rango
+                const activityTo = new Date(activity.dateTo + 'T00:00:00');
+                if (selectedDateObj <= activityTo) {
+                    console.log('✅ Actividad en rango:', activity.text, 'De', activity.dateFrom, 'a', activity.dateTo);
+                    return true;
+                }
+                
+                return false;
+            });
+            
+            console.log('✅ Actividades encontradas:', selectedActivities.length);
+            
+            // Ordenar por completadas (al final) y luego por importancia y hora
+            const sortedPending = [...selectedActivities].sort((a, b) => {
+                // Verificar si están completadas en la fecha seleccionada
+                const aCompleted = a.completedDates && a.completedDates.includes(selectedStr);
+                const bCompleted = b.completedDates && b.completedDates.includes(selectedStr);
+                
+                // Primero las no completadas
+                if (aCompleted !== bCompleted) {
+                    return aCompleted ? 1 : -1;
+                }
+                // Luego por importancia (descendente)
+                const importanceDiff = (b.importance || 2) - (a.importance || 2);
+                if (importanceDiff !== 0) return importanceDiff;
+                // Finalmente por hora
+                return (a.time || '00:00').localeCompare(b.time || '00:00');
             });
             
             if (sortedPending.length === 0) {
-                pendingContainer.innerHTML = '<p style="text-align: center; color: #a78bfa; padding: 20px;">No hay actividades pendientes este mes 🌸</p>';
+                pendingContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <p style="color: #a78bfa; margin-bottom: 10px; font-size: 1.1em;">🌸 No hay actividades para este día</p>
+                        <p style="color: #999; font-size: 0.85em;">${isToday ? 'Hoy' : formattedDate}</p>
+                        <p style="color: #999; font-size: 0.85em;">Total en sistema: ${gameState.activities.pending.length} actividades</p>
+                    </div>
+                `;
             } else {
                 pendingContainer.innerHTML = sortedPending.map(activity => {
-                    const activityDate = new Date(`${activity.date}T${activity.time}`);
-                    const formattedDate = activityDate.toLocaleDateString('es-ES', { 
-                        weekday: 'short', 
-                        day: 'numeric', 
-                        month: 'short' 
-                    });
-                    const formattedTime = activity.time;
                     const cat = categoryColors[activity.category || 'personal'];
+                    const importance = activity.importance || 2;
+                    const stars = '⭐'.repeat(importance);
+                    // Verificar si está completada en la fecha seleccionada
+                    const isCompleted = activity.completedDates && activity.completedDates.includes(selectedStr);
                     
                     return `
-                        <div style="background: ${cat.bg}; padding: 15px; border-radius: 12px; border-left: 4px solid ${cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 10px; align-items: center;">
-                            <button onclick="toggleActivity(${activity.id})" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid ${cat.border}; background: white; cursor: pointer; flex-shrink: 0; transition: all 0.2s;"></button>
-                            <div style="flex: 1;">
-                                <p style="margin: 0; font-weight: 600; color: #333;"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
-                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${cat.text};">📅 ${formattedDate} ${formattedTime !== '00:00' ? `⏰ ${formattedTime}` : ''}</p>
+                        <div style="background: ${isCompleted ? '#f3f4f6' : cat.bg}; padding: 15px; border-radius: 15px; border-left: 4px solid ${isCompleted ? '#9ca3af' : cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,${isCompleted ? '0.05' : '0.1'}); display: flex; gap: 12px; align-items: center; transition: all 0.3s;">
+                            <div onclick="toggleActivity(${activity.id})" style="width: 28px; height: 28px; border: 3px solid ${isCompleted ? '#9ca3af' : cat.border}; border-radius: 50%; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ${isCompleted ? '#9ca3af' : 'white'}; transition: all 0.2s;">
+                                ${isCompleted ? '<span style="color: white; font-size: 16px; font-weight: bold;">✓</span>' : ''}
                             </div>
-                            <button onclick="deleteActivity(${activity.id})" style="background: #ff4d4f; color: white; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; flex-shrink: 0;">🗑️</button>
+                            <div style="flex: 1;">
+                                <p style="margin: 0; font-weight: 600; color: ${isCompleted ? '#6b7280' : '#333'}; text-decoration: ${isCompleted ? 'line-through' : 'none'};"><span style="margin-right: 5px;">${cat.icon}</span>${activity.text}</p>
+                                <p style="margin: 5px 0 0 0; font-size: 0.85em; color: ${isCompleted ? '#9ca3af' : cat.text};">⏰ ${activity.time || '20:00'} ${stars}</p>
+                            </div>
+                            <div style="display: flex; gap: 5px;">
+                                ${!isCompleted ? `<button onclick="event.stopPropagation(); editActivity(${activity.id})" style="padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.85em;">✏️</button>` : ''}
+                                ${!isCompleted ? `<button onclick="event.stopPropagation(); deleteActivity(${activity.id})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 0.85em;">🗑️</button>` : ''}
+                            </div>
                         </div>
                     `;
                 }).join('');
