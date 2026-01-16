@@ -1358,8 +1358,20 @@
                     <button onclick="selectEmotion('enferma')" style="padding: 15px 10px; background: linear-gradient(135deg, #ffcccc 0%, #ffe6e6 100%); border: 3px solid #ef9a9a; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(239, 154, 154, 0.3);">
                         🤒 Enferma
                     </button>
+                    <button onclick="selectEmotion('normal')" style="padding: 15px 10px; background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%); border: 3px solid #bdbdbd; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(189, 189, 189, 0.3);">
+                        😐 Normal
+                    </button>
                 </div>
                 <p id="selectedEmotionText" style="text-align: center; color: #ff6b9d; font-weight: 600; min-height: 24px;">Selecciona una emoción para marcar días</p>
+            </div>
+            
+            <!-- Resumen mensual de emociones -->
+            <div id="monthlyEmotionSummary" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.1); border: 2px solid #ffb74d;">
+                <h3 style="color: #e65100; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <span style="font-size: 1.5em;">📊</span>
+                    <span>Resumen del Mes</span>
+                </h3>
+                <div id="emotionStatsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;"></div>
             </div>
             
             <!-- Calendario emocional 2026 -->
@@ -7486,13 +7498,14 @@
         
         // Colores pastel para cada emoción
         const EMOTION_COLORS = {
-            'feliz': { bg: '#ffeb99', border: '#ffd700', emoji: '😊' },
-            'motivada': { bg: '#c8e6c9', border: '#81c784', emoji: '💪' },
-            'triste': { bg: '#b3d9ff', border: '#64b5f6', emoji: '😢' },
-            'cansada': { bg: '#d1c4e9', border: '#9575cd', emoji: '😴' },
-            'enojada': { bg: '#ffccbc', border: '#ff8a65', emoji: '😠' },
-            'estresada': { bg: '#f8bbd0', border: '#f48fb1', emoji: '😰' },
-            'enferma': { bg: '#ffcccc', border: '#ef9a9a', emoji: '🤒' }
+            'feliz': { bg: '#ffeb99', border: '#ffd700', emoji: '😊', name: 'Feliz' },
+            'motivada': { bg: '#c8e6c9', border: '#81c784', emoji: '💪', name: 'Motivada' },
+            'triste': { bg: '#b3d9ff', border: '#64b5f6', emoji: '😢', name: 'Triste' },
+            'cansada': { bg: '#d1c4e9', border: '#9575cd', emoji: '😴', name: 'Cansada' },
+            'enojada': { bg: '#ffccbc', border: '#ff8a65', emoji: '😠', name: 'Enojada' },
+            'estresada': { bg: '#f8bbd0', border: '#f48fb1', emoji: '😰', name: 'Estresada' },
+            'enferma': { bg: '#ffcccc', border: '#ef9a9a', emoji: '🤒', name: 'Enferma' },
+            'normal': { bg: '#e0e0e0', border: '#bdbdbd', emoji: '😐', name: 'Normal' }
         };
         
         // Días de cada mes en 2026
@@ -7625,19 +7638,44 @@
                             const color = EMOTION_COLORS[emotion];
                             cellStyle += `background: ${color.bg}; border: 2px solid ${color.border};`;
                             cellContent = `<div style="font-size: 1.2em;">${color.emoji}</div>`;
+                        } else if (emotions.length === 2) {
+                            // Dos emociones - dividir horizontalmente
+                            cellStyle += 'padding: 0;';
+                            cellContent = '<div style="display: flex; height: 40px;">';
+                            
+                            for (let i = 0; i < 2; i++) {
+                                const emotion = emotions[i];
+                                const color = EMOTION_COLORS[emotion];
+                                cellContent += `<div style="background: ${color.bg}; border: 1px solid ${color.border}; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 0.95em;">${color.emoji}</div>`;
+                            }
+                            
+                            cellContent += '</div>';
+                        } else if (emotions.length === 3) {
+                            // Tres emociones - layout especial (2 arriba, 1 abajo)
+                            cellStyle += 'padding: 0;';
+                            cellContent = '<div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 40px;">';
+                            
+                            // Primera emoción (mitad superior)
+                            const color0 = EMOTION_COLORS[emotions[0]];
+                            cellContent += `<div style="background: ${color0.bg}; border: 1px solid ${color0.border}; grid-column: 1 / 3; display: flex; align-items: center; justify-content: center; font-size: 0.9em;">${color0.emoji}</div>`;
+                            
+                            // Segunda y tercera emoción (mitad inferior dividida)
+                            const color1 = EMOTION_COLORS[emotions[1]];
+                            cellContent += `<div style="background: ${color1.bg}; border: 1px solid ${color1.border}; display: flex; align-items: center; justify-content: center; font-size: 0.85em;">${color1.emoji}</div>`;
+                            
+                            const color2 = EMOTION_COLORS[emotions[2]];
+                            cellContent += `<div style="background: ${color2.bg}; border: 1px solid ${color2.border}; display: flex; align-items: center; justify-content: center; font-size: 0.85em;">${color2.emoji}</div>`;
+                            
+                            cellContent += '</div>';
                         } else {
-                            // Múltiples emociones - dividir en cuadrantes
+                            // Cuatro emociones - grid 2x2
                             cellStyle += 'padding: 0;';
                             cellContent = '<div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 40px;">';
                             
                             for (let i = 0; i < 4; i++) {
-                                if (emotions[i]) {
-                                    const emotion = emotions[i];
-                                    const color = EMOTION_COLORS[emotion];
-                                    cellContent += `<div style="background: ${color.bg}; border: 1px solid ${color.border}; display: flex; align-items: center; justify-content: center; font-size: 0.85em;">${color.emoji}</div>`;
-                                } else {
-                                    cellContent += `<div style="background: white; border: 1px solid #e0e0e0;"></div>`;
-                                }
+                                const emotion = emotions[i];
+                                const color = EMOTION_COLORS[emotion];
+                                cellContent += `<div style="background: ${color.bg}; border: 1px solid ${color.border}; display: flex; align-items: center; justify-content: center; font-size: 0.85em;">${color.emoji}</div>`;
                             }
                             
                             cellContent += '</div>';
@@ -7653,6 +7691,69 @@
             }
             
             html += '</table>';
+            container.innerHTML = html;
+            
+            // Actualizar el resumen mensual
+            updateMonthlyEmotionSummary();
+        }
+        
+        // Actualizar resumen mensual de emociones
+        function updateMonthlyEmotionSummary() {
+            const container = document.getElementById('emotionStatsContainer');
+            if (!container) return;
+            
+            // Obtener el mes actual
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1; // 1-12
+            const currentYear = 2026;
+            
+            // Contar emociones del mes actual
+            const emotionCounts = {};
+            
+            // Inicializar contadores
+            Object.keys(EMOTION_COLORS).forEach(emotion => {
+                emotionCounts[emotion] = 0;
+            });
+            
+            // Contar emociones en el mes actual
+            Object.keys(emotionalData).forEach(dateKey => {
+                const [year, month, day] = dateKey.split('-').map(Number);
+                
+                if (year === currentYear && month === currentMonth) {
+                    const emotions = emotionalData[dateKey];
+                    emotions.forEach(emotion => {
+                        if (emotionCounts[emotion] !== undefined) {
+                            emotionCounts[emotion]++;
+                        }
+                    });
+                }
+            });
+            
+            // Crear tarjetas de estadísticas
+            let html = '';
+            
+            Object.keys(EMOTION_COLORS).forEach(emotion => {
+                const color = EMOTION_COLORS[emotion];
+                const count = emotionCounts[emotion];
+                
+                html += `
+                    <div style="background: linear-gradient(135deg, ${color.bg} 0%, white 100%); 
+                         padding: 12px; 
+                         border-radius: 12px; 
+                         border: 2px solid ${color.border}; 
+                         text-align: center;
+                         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                         transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
+                        <div style="font-size: 2em; margin-bottom: 5px;">${color.emoji}</div>
+                        <div style="font-weight: 600; color: #6b4c9a; font-size: 0.9em; margin-bottom: 3px;">${color.name}</div>
+                        <div style="font-size: 1.5em; font-weight: 700; color: ${color.border};">${count}</div>
+                        <div style="font-size: 0.75em; color: #888; margin-top: 2px;">veces</div>
+                    </div>
+                `;
+            });
+            
             container.innerHTML = html;
         }
         
