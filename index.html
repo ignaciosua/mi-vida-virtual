@@ -1193,6 +1193,16 @@
                 font-size: 1.3em;
             }
         }
+        
+        /* Animación pulse para badge duplicada */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1422,13 +1432,17 @@
             <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
                 <h3 style="color: #6b4c9a; margin-bottom: 15px;">✨ Nueva Idea</h3>
                 <input type="text" id="newIdeaInput" placeholder="Escribe tu idea aquí..." style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
                     <select id="ideaPercentage" style="padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
                         <option value="2">Idea básica (+2%)</option>
                         <option value="3">Idea desarrollada (+3%)</option>
                         <option value="5">Idea completa (+5%)</option>
                     </select>
                     <button onclick="addNewIdea()" style="flex: 1; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Idea</button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="openGenerateIdeasModal()" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 0.95em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">🤖 Generar Ideas (IA)</button>
+                    <button onclick="openExportMenu()" style="flex: 1; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 0.95em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">📊 Exportar</button>
                 </div>
             </div>
             
@@ -2639,6 +2653,7 @@
             favorites: [],
             ideas: {
                 pendientes: [],
+                guionada: [],
                 grabadas: [],
                 editadas: [],
                 publicadas: []
@@ -4541,6 +4556,7 @@
             
             // Cargar y renderizar ideas
             loadIdeas();
+            migrateIdeasToNewStructure();
             renderIdeas();
             
             // Renderizar actividades del calendario
@@ -5723,8 +5739,23 @@
             const idea = {
                 id: Date.now(),
                 text: text,
+                texto_bruto: text,
+                titulo: '',
+                categoria: '',
+                subcategoria: '',
+                sujeto: '',
+                faceta: '',
+                mecanismo: '',
+                rareza: 1,
+                tags: [],
+                clasificacion_status: 'sin_clasificar',
+                fingerprint: '',
+                duplicada: false,
+                urls_investigacion: [],
+                urls_imagenes: [],
                 percentage: percentage,
                 createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
                 status: 'pendiente'
             };
             
@@ -5819,7 +5850,7 @@
             content.style.cssText = 'flex: 1; min-width: 0;';
             
             const text = document.createElement('div');
-            text.textContent = idea.text;
+            text.textContent = idea.titulo || idea.texto_bruto || idea.text;
             text.style.cssText = 'color: #6b4c9a; font-weight: 600; margin-bottom: 5px; word-wrap: break-word;';
             
             const meta = document.createElement('div');
@@ -5836,6 +5867,30 @@
             meta.appendChild(percentage);
             meta.appendChild(date);
             
+            // Badge de clasificación
+            const clasificacionStatus = idea.clasificacion_status || 'sin_clasificar';
+            const badgeClasificacion = document.createElement('span');
+            
+            if (clasificacionStatus === 'sin_clasificar') {
+                badgeClasificacion.textContent = 'SIN CLASIFICAR';
+                badgeClasificacion.style.cssText = 'background: #f3f4f6; color: #6b7280; padding: 3px 8px; border-radius: 8px; font-weight: 600; font-size: 0.75em;';
+            } else if (clasificacionStatus === 'sugerida') {
+                badgeClasificacion.textContent = 'SUGERIDA';
+                badgeClasificacion.style.cssText = 'background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; padding: 3px 8px; border-radius: 8px; font-weight: 600; font-size: 0.75em;';
+            } else if (clasificacionStatus === 'confirmada') {
+                badgeClasificacion.textContent = 'CONFIRMADA';
+                badgeClasificacion.style.cssText = 'background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 3px 8px; border-radius: 8px; font-weight: 600; font-size: 0.75em;';
+            }
+            meta.appendChild(badgeClasificacion);
+            
+            // Badge de duplicada
+            if (idea.duplicada) {
+                const badgeDuplicada = document.createElement('span');
+                badgeDuplicada.textContent = 'DUPLICADA';
+                badgeDuplicada.style.cssText = 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 3px 8px; border-radius: 8px; font-weight: 600; font-size: 0.75em; animation: pulse 2s infinite;';
+                meta.appendChild(badgeDuplicada);
+            }
+            
             // Si está editada, mostrar fecha de publicación
             if (section === 'editadas' && idea.publishDate) {
                 const publishInfo = document.createElement('span');
@@ -5850,11 +5905,16 @@
             
             // Botones de acción
             const actions = document.createElement('div');
-            actions.style.cssText = 'display: flex; gap: 8px; flex-shrink: 0;';
+            actions.style.cssText = 'display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap;';
+            
+            // Botón de clasificar (siempre disponible)
+            const classifyBtn = createActionButton('🎯', () => openClassificationModal(section, index));
+            classifyBtn.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+            actions.appendChild(classifyBtn);
             
             // Botón de acción principal según estado
             if (section === 'pendientes') {
-                const guionBtn = createActionButton('📝', () => openGuionModal(section, index));
+                const guionBtn = createActionButton('📝', () => openClassificationModal(section, index));
                 actions.appendChild(guionBtn);
             } else if (section === 'guionada') {
                 // Botón para VER el guion
@@ -5863,7 +5923,7 @@
                 actions.appendChild(viewGuionBtn);
                 
                 // Botón para EDITAR el guion
-                const editGuionBtn = createActionButton('✏️', () => openGuionModal(section, index));
+                const editGuionBtn = createActionButton('✏️', () => openClassificationModal(section, index));
                 actions.appendChild(editGuionBtn);
                 
                 // Botón para mover a grabadas
@@ -6244,6 +6304,798 @@
             // No llamar renderStats aquí para evitar sobrescribir contenido
             
             alert(`🗑️ Idea eliminada. -${percentage}% de Contenido`);
+        }
+
+        // ===== SISTEMA DE CLASIFICACIÓN Y IA =====
+        
+        // Normalizar texto para fingerprint
+        function normalizeForFingerprint(str) {
+            if (!str) return '';
+            return str.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
+                .trim()
+                .replace(/\s+/g, '_');
+        }
+        
+        // Generar fingerprint único
+        function generateFingerprint(sujeto, faceta, mecanismo) {
+            return `${normalizeForFingerprint(sujeto)}|${normalizeForFingerprint(faceta)}|${normalizeForFingerprint(mecanismo)}`;
+        }
+        
+        // Verificar duplicados
+        function checkDuplicate(fingerprint, currentId) {
+            const allIdeas = [
+                ...(gameState.ideas.pendientes || []),
+                ...(gameState.ideas.guionada || []),
+                ...(gameState.ideas.grabadas || []),
+                ...(gameState.ideas.editadas || []),
+                ...(gameState.ideas.publicadas || [])
+            ];
+            
+            return allIdeas.find(idea => 
+                idea.fingerprint === fingerprint && 
+                idea.id !== currentId
+            );
+        }
+        
+        // Migrar ideas antiguas a nueva estructura
+        function migrateIdeasToNewStructure() {
+            let migrated = false;
+            const allSections = ['pendientes', 'guionada', 'grabadas', 'editadas', 'publicadas'];
+            
+            allSections.forEach(section => {
+                if (!gameState.ideas[section]) gameState.ideas[section] = [];
+                
+                gameState.ideas[section].forEach(idea => {
+                    if (!idea.clasificacion_status) {
+                        idea.clasificacion_status = 'sin_clasificar';
+                        idea.categoria = '';
+                        idea.subcategoria = '';
+                        idea.sujeto = '';
+                        idea.faceta = '';
+                        idea.mecanismo = '';
+                        idea.rareza = 1;
+                        idea.tags = [];
+                        idea.titulo = '';
+                        idea.fingerprint = '';
+                        idea.duplicada = false;
+                        idea.texto_bruto = idea.text || '';
+                        idea.urls_investigacion = idea.guion?.urls || [];
+                        idea.urls_imagenes = idea.guion?.images || [];
+                        idea.updatedAt = idea.createdAt;
+                        migrated = true;
+                    }
+                });
+            });
+            
+            if (migrated) {
+                saveIdeas();
+                console.log('✅ Ideas migradas a nueva estructura');
+            }
+        }
+        
+        // Abrir modal de clasificación (modificado del modal de guion)
+        function openClassificationModal(section, index) {
+            const idea = gameState.ideas[section][index];
+            
+            const facetasOpciones = [
+                'historia_origen', 'funcionamiento_interno', 'casos_uso', 'comparacion',
+                'tutorial_basico', 'tutorial_avanzado', 'errores_comunes', 'optimizacion',
+                'curiosidades', 'impacto_social', 'evolucion_temporal', 'futuro',
+                'detras_escenas', 'controversia', 'mitos_realidades', 'best_practices',
+                'herramientas', 'recursos', 'comunidad', 'entrevista', 'otro'
+            ];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'classificationModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>🎯 Clasificar Idea</h3>
+                        <p style="margin-top: 8px; opacity: 0.8; font-size: 0.9em;">${idea.texto_bruto}</p>
+                    </div>
+                    <div class="modal-body">
+                        ${idea.clasificacion_status === 'confirmada' && idea.fingerprint ? `
+                            <div style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+                                <div style="color: #1e40af; font-weight: 600; margin-bottom: 5px;">🔑 Fingerprint</div>
+                                <code style="background: white; padding: 8px; border-radius: 5px; display: block; color: #374151; font-size: 0.85em;">${idea.fingerprint}</code>
+                                ${idea.duplicada ? '<div style="color: #dc2626; font-weight: 600; margin-top: 8px;">⚠️ DUPLICADA - Ya existe una idea similar</div>' : ''}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                            <h4 style="color: #6b4c9a; margin-bottom: 15px; font-size: 1.1em;">📋 Clasificación</h4>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Categoría *</label>
+                                    <input type="text" id="ideaCategoria" value="${idea.categoria || ''}" placeholder="Ej: Educación, Entretenimiento" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Subcategoría</label>
+                                    <input type="text" id="ideaSubcategoria" value="${idea.subcategoria || ''}" placeholder="Opcional" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Título</label>
+                                <input type="text" id="ideaTitulo" value="${idea.titulo || ''}" placeholder="Título descriptivo de la idea" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Sujeto / Tema Principal *</label>
+                                <input type="text" id="ideaSujeto" value="${idea.sujeto || ''}" placeholder="Ej: JavaScript, Historia de Roma, Gatos" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Faceta / Aspecto *</label>
+                                    <select id="ideaFaceta" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                        <option value="">Selecciona una faceta</option>
+                                        ${facetasOpciones.map(f => `<option value="${f}" ${idea.faceta === f ? 'selected' : ''}>${f.replace(/_/g, ' ')}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Rareza *</label>
+                                    <select id="ideaRareza" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                        <option value="1" ${idea.rareza === 1 ? 'selected' : ''}>1 - Común</option>
+                                        <option value="2" ${idea.rareza === 2 ? 'selected' : ''}>2 - Poco común</option>
+                                        <option value="3" ${idea.rareza === 3 ? 'selected' : ''}>3 - Interesante</option>
+                                        <option value="4" ${idea.rareza === 4 ? 'selected' : ''}>4 - Raro</option>
+                                        <option value="5" ${idea.rareza === 5 ? 'selected' : ''}>5 - Único</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Mecanismo / Formato *</label>
+                                <input type="text" id="ideaMecanismo" value="${idea.mecanismo || ''}" placeholder="Ej: tutorial_interactivo, storytelling, documental" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Tags (separados por coma)</label>
+                                <input type="text" id="ideaTags" value="${(idea.tags || []).join(', ')}" placeholder="Ej: programación, web, principiantes" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button onclick="suggestClassification('${section}', ${index})" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 10px; padding: 12px; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">🤖 Sugerir Clasificación (IA)</button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">📝 Guion / Notas:</label>
+                            <textarea id="guionText" rows="8" placeholder="Escribe tu guion aquí..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: inherit;">${idea.guion?.text || ''}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">🔗 URLs de Investigación (una por línea):</label>
+                            <textarea id="guionUrls" rows="4" placeholder="https://ejemplo.com&#10;https://otro-sitio.com" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: monospace;">${(idea.urls_investigacion || idea.guion?.urls || []).join('\n')}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">🖼️ URLs de Imágenes (una por línea):</label>
+                            <textarea id="guionImages" rows="3" placeholder="https://imagen1.jpg&#10;https://imagen2.png" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: monospace;">${(idea.urls_imagenes || idea.guion?.images || []).join('\n')}</textarea>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveClassification('${section}', ${index}, false)" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; border-radius: 15px; font-size: 1em; font-weight: bold; cursor: pointer;">💾 Guardar</button>
+                        <button onclick="saveClassification('${section}', ${index}, true)" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 15px; font-size: 1em; font-weight: bold; cursor: pointer;">✅ Confirmar Clasificación</button>
+                        <button onclick="closeClassificationModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Guardar clasificación
+        function saveClassification(section, index, confirm) {
+            const idea = gameState.ideas[section][index];
+            
+            // Obtener valores del formulario
+            const categoria = document.getElementById('ideaCategoria').value.trim();
+            const subcategoria = document.getElementById('ideaSubcategoria').value.trim();
+            const titulo = document.getElementById('ideaTitulo').value.trim();
+            const sujeto = document.getElementById('ideaSujeto').value.trim();
+            const faceta = document.getElementById('ideaFaceta').value;
+            const mecanismo = document.getElementById('ideaMecanismo').value.trim();
+            const rareza = parseInt(document.getElementById('ideaRareza').value);
+            const tagsText = document.getElementById('ideaTags').value.trim();
+            const tags = tagsText ? tagsText.split(',').map(t => t.trim()).filter(t => t) : [];
+            const guionText = document.getElementById('guionText').value.trim();
+            const guionUrls = document.getElementById('guionUrls').value.trim();
+            const guionImages = document.getElementById('guionImages').value.trim();
+            
+            // Validar campos requeridos solo si se confirma
+            if (confirm) {
+                if (!categoria || !sujeto || !faceta || !mecanismo) {
+                    alert('⚠️ Por favor completa todos los campos marcados con * antes de confirmar');
+                    return;
+                }
+                
+                // Generar fingerprint
+                const fingerprint = generateFingerprint(sujeto, faceta, mecanismo);
+                
+                // Verificar duplicados
+                const duplicate = checkDuplicate(fingerprint, idea.id);
+                if (duplicate) {
+                    const continuar = confirm(`⚠️ YA EXISTE UNA IDEA SIMILAR:\n\nTítulo: ${duplicate.titulo || duplicate.texto_bruto}\nSujeto: ${duplicate.sujeto}\nFaceta: ${duplicate.faceta}\nMecanismo: ${duplicate.mecanismo}\n\n¿Deseas marcar esta idea como duplicada y continuar?`);
+                    
+                    if (!continuar) return;
+                    idea.duplicada = true;
+                } else {
+                    idea.duplicada = false;
+                }
+                
+                idea.fingerprint = fingerprint;
+                idea.clasificacion_status = 'confirmada';
+            } else {
+                idea.clasificacion_status = sujeto && faceta && mecanismo ? 'sugerida' : 'sin_clasificar';
+            }
+            
+            // Actualizar idea
+            idea.categoria = categoria;
+            idea.subcategoria = subcategoria;
+            idea.titulo = titulo;
+            idea.sujeto = sujeto;
+            idea.faceta = faceta;
+            idea.mecanismo = mecanismo;
+            idea.rareza = rareza;
+            idea.tags = tags;
+            idea.updatedAt = new Date().toISOString();
+            idea.urls_investigacion = guionUrls ? guionUrls.split('\n').filter(url => url.trim()) : [];
+            idea.urls_imagenes = guionImages ? guionImages.split('\n').filter(img => img.trim()) : [];
+            
+            // Actualizar guion
+            if (guionText) {
+                idea.guion = {
+                    text: guionText,
+                    urls: idea.urls_investigacion,
+                    images: idea.urls_imagenes,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // Si está en pendientes y tiene guion, moverla a guionada
+                if (section === 'pendientes') {
+                    gameState.ideas[section].splice(index, 1);
+                    gameState.ideas.guionada.push(idea);
+                }
+            }
+            
+            saveIdeas();
+            closeClassificationModal();
+            renderCurrentIdeaState();
+            
+            if (confirm) {
+                alert('✅ Clasificación confirmada' + (idea.duplicada ? ' (marcada como duplicada)' : ''));
+            }
+        }
+        
+        // Cerrar modal de clasificación
+        function closeClassificationModal() {
+            const modal = document.getElementById('classificationModal');
+            if (modal) modal.remove();
+        }
+        
+        // Sugerir clasificación con IA (stub simulado)
+        async function suggestClassification(section, index) {
+            const idea = gameState.ideas[section][index];
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '🤖 Analizando...';
+            
+            try {
+                // Simular llamada a API (stub)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Respuesta simulada
+                const suggestion = {
+                    categoria: idea.texto_bruto.toLowerCase().includes('javascript') || idea.texto_bruto.toLowerCase().includes('código') ? 'Educación' : 'Entretenimiento',
+                    subcategoria: 'Tutorial',
+                    sujeto: idea.texto_bruto.split(' ').slice(0, 3).join(' '),
+                    faceta: 'tutorial_basico',
+                    mecanismo: 'video_explicativo',
+                    rareza: 3,
+                    tags: ['video', 'tutorial', 'educación'],
+                    titulo: 'Cómo ' + idea.texto_bruto.toLowerCase().substring(0, 50)
+                };
+                
+                // Llenar formulario
+                document.getElementById('ideaCategoria').value = suggestion.categoria;
+                document.getElementById('ideaSubcategoria').value = suggestion.subcategoria;
+                document.getElementById('ideaTitulo').value = suggestion.titulo;
+                document.getElementById('ideaSujeto').value = suggestion.sujeto;
+                document.getElementById('ideaFaceta').value = suggestion.faceta;
+                document.getElementById('ideaMecanismo').value = suggestion.mecanismo;
+                document.getElementById('ideaRareza').value = suggestion.rareza;
+                document.getElementById('ideaTags').value = suggestion.tags.join(', ');
+                
+                alert('✨ Clasificación sugerida por IA. Revisa y ajusta si es necesario.');
+            } catch (error) {
+                alert('❌ Error al obtener sugerencia: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🤖 Sugerir Clasificación (IA)';
+            }
+        }
+        
+        // Abrir modal de generación de ideas
+        function openGenerateIdeasModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'generateIdeasModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>🤖 Generar Ideas con IA</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Categoría Objetivo *</label>
+                            <input type="text" id="genCategoria" placeholder="Ej: Educación, Entretenimiento" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Sujeto Específico (opcional)</label>
+                            <input type="text" id="genSujeto" placeholder="Deja vacío para ideas variadas" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Cantidad</label>
+                                <select id="genCantidad" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                    <option value="5">5 ideas</option>
+                                    <option value="10" selected>10 ideas</option>
+                                    <option value="20">20 ideas</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Rareza Mínima</label>
+                                <select id="genRareza" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                    <option value="1">1 - Cualquiera</option>
+                                    <option value="2">2 - Poco común</option>
+                                    <option value="3" selected>3 - Interesante</option>
+                                    <option value="4">4 - Raro</option>
+                                    <option value="5">5 - Único</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="genEvitarRepeticion" checked style="width: 20px; height: 20px; cursor: pointer;">
+                                <span style="color: #667eea; font-weight: 600;">No repetir facetas/mecanismos ya usados</span>
+                            </label>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 15px; border-radius: 10px;">
+                            <p style="color: #6b4c9a; font-size: 0.9em; margin: 0;">💡 <strong>Tip:</strong> La IA analizará tu base de ideas existentes para evitar duplicados y sugerir contenido original.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="generateIdeasAI()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">✨ Generar Ideas</button>
+                        <button onclick="closeGenerateIdeasModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Cerrar modal de generación
+        function closeGenerateIdeasModal() {
+            const modal = document.getElementById('generateIdeasModal');
+            if (modal) modal.remove();
+        }
+        
+        // Generar ideas con IA (stub simulado)
+        async function generateIdeasAI() {
+            const categoria = document.getElementById('genCategoria').value.trim();
+            const sujeto = document.getElementById('genSujeto').value.trim();
+            const cantidad = parseInt(document.getElementById('genCantidad').value);
+            const rarezaMinima = parseInt(document.getElementById('genRareza').value);
+            const evitarRepeticion = document.getElementById('genEvitarRepeticion').checked;
+            
+            if (!categoria) {
+                alert('⚠️ Por favor ingresa una categoría');
+                return;
+            }
+            
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '🤖 Generando...';
+            
+            try {
+                // Construir contexto anti-repetición
+                const contexto = buildAntiRepetitionContext(categoria, sujeto, evitarRepeticion);
+                
+                // Simular llamada a API
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Generar ideas simuladas
+                const ideasGeneradas = [];
+                for (let i = 0; i < cantidad; i++) {
+                    const ideaSample = {
+                        sujeto: sujeto || `Tema ${i + 1} de ${categoria}`,
+                        faceta: ['tutorial_basico', 'historia_origen', 'casos_uso', 'curiosidades'][i % 4],
+                        mecanismo: ['video_explicativo', 'storytelling', 'infografia', 'documental'][i % 4],
+                        idea_resumen: `Idea interesante sobre ${sujeto || categoria} - aspecto ${i + 1}`,
+                        categoria: categoria,
+                        subcategoria: '',
+                        rareza: Math.max(rarezaMinima, Math.floor(Math.random() * 3) + 2),
+                        tags: [categoria.toLowerCase(), 'ia', 'generado'],
+                        titulo: `${sujeto || categoria}: Aspecto ${i + 1}`
+                    };
+                    ideasGeneradas.push(ideaSample);
+                }
+                
+                // Guardar ideas generadas
+                let ideasGuardadas = 0;
+                ideasGeneradas.forEach(ideaData => {
+                    const fingerprint = generateFingerprint(ideaData.sujeto, ideaData.faceta, ideaData.mecanismo);
+                    const isDuplicate = checkDuplicate(fingerprint, null);
+                    
+                    const nuevaIdea = {
+                        id: Date.now() + Math.random(),
+                        texto_bruto: ideaData.idea_resumen,
+                        titulo: ideaData.titulo,
+                        categoria: ideaData.categoria,
+                        subcategoria: ideaData.subcategoria,
+                        sujeto: ideaData.sujeto,
+                        faceta: ideaData.faceta,
+                        mecanismo: ideaData.mecanismo,
+                        rareza: ideaData.rareza,
+                        tags: ideaData.tags,
+                        clasificacion_status: 'sugerida',
+                        fingerprint: fingerprint,
+                        duplicada: isDuplicate ? true : false,
+                        percentage: 2,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        urls_investigacion: [],
+                        urls_imagenes: [],
+                        status: 'pendiente'
+                    };
+                    
+                    gameState.ideas.pendientes.push(nuevaIdea);
+                    ideasGuardadas++;
+                });
+                
+                saveIdeas();
+                closeGenerateIdeasModal();
+                renderCurrentIdeaState();
+                
+                alert(`✨ ${ideasGuardadas} ideas generadas exitosamente!\n${ideasGeneradas.filter((_, i) => gameState.ideas.pendientes[gameState.ideas.pendientes.length - cantidad + i].duplicada).length} ideas marcadas como posibles duplicadas.`);
+                
+            } catch (error) {
+                alert('❌ Error al generar ideas: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = '✨ Generar Ideas';
+            }
+        }
+        
+        // Construir contexto anti-repetición
+        function buildAntiRepetitionContext(categoria, sujeto, evitarRepeticion) {
+            if (!evitarRepeticion) return null;
+            
+            const allIdeas = [
+                ...(gameState.ideas.pendientes || []),
+                ...(gameState.ideas.guionada || []),
+                ...(gameState.ideas.grabadas || []),
+                ...(gameState.ideas.editadas || []),
+                ...(gameState.ideas.publicadas || [])
+            ].filter(idea => idea.clasificacion_status === 'confirmada');
+            
+            const contexto = {
+                por_sujeto: {},
+                por_categoria: {}
+            };
+            
+            // Si hay sujeto específico, recopilar sus facetas y mecanismos
+            if (sujeto) {
+                const ideasDelSujeto = allIdeas.filter(idea => 
+                    normalizeForFingerprint(idea.sujeto) === normalizeForFingerprint(sujeto)
+                );
+                
+                contexto.por_sujeto[sujeto] = {
+                    facetas_usadas: [...new Set(ideasDelSujeto.map(i => i.faceta).filter(Boolean))],
+                    mecanismos_usados: [...new Set(ideasDelSujeto.map(i => i.mecanismo).filter(Boolean))]
+                };
+            } else {
+                // Resumir por categoría
+                const ideasDeCategoria = allIdeas.filter(idea => 
+                    normalizeForFingerprint(idea.categoria) === normalizeForFingerprint(categoria)
+                );
+                
+                contexto.por_categoria[categoria] = {
+                    sujetos_comunes: [...new Set(ideasDeCategoria.map(i => i.sujeto).filter(Boolean))].slice(0, 20),
+                    facetas_comunes: [...new Set(ideasDeCategoria.map(i => i.faceta).filter(Boolean))].slice(0, 15)
+                };
+            }
+            
+            return contexto;
+        }
+        
+        // ===== SISTEMA DE EXPORTACIÓN =====
+        
+        // Abrir menú de exportación
+        function openExportMenu() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'exportModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>📊 Exportar Ideas</h3>
+                    </div>
+                    <div class="modal-body">
+                        <button onclick="exportCSV()" style="width: 100%; margin-bottom: 10px; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">📄</span>
+                            <div>
+                                <div style="font-size: 1.1em;">CSV Completo</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Todas las ideas con todos los campos</div>
+                            </div>
+                        </button>
+                        
+                        <button onclick="exportResumenAntiRepeticion()" style="width: 100%; margin-bottom: 10px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">📋</span>
+                            <div>
+                                <div style="font-size: 1.1em;">Resumen Anti-Repetición</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Por categoría/sujeto → faceta+mecanismo</div>
+                            </div>
+                        </button>
+                        
+                        <button onclick="openBanlistSelector()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">🚫</span>
+                            <div>
+                                <div style="font-size: 1.1em;">Banlist por Sujeto</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Combinaciones ya usadas de un tema</div>
+                            </div>
+                        </button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <button onclick="closeExportMenu()" style="width: 100%; padding: 12px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Cerrar menú de exportación
+        function closeExportMenu() {
+            const modal = document.getElementById('exportModal');
+            if (modal) modal.remove();
+        }
+        
+        // Exportar CSV completo
+        function exportCSV() {
+            const allIdeas = [
+                ...gameState.ideas.pendientes.map(i => ({ ...i, estado: 'pendiente' })),
+                ...gameState.ideas.guionada.map(i => ({ ...i, estado: 'guionada' })),
+                ...gameState.ideas.grabadas.map(i => ({ ...i, estado: 'grabada' })),
+                ...gameState.ideas.editadas.map(i => ({ ...i, estado: 'editada' })),
+                ...gameState.ideas.publicadas.map(i => ({ ...i, estado: 'publicada' }))
+            ];
+            
+            if (allIdeas.length === 0) {
+                alert('⚠️ No hay ideas para exportar');
+                return;
+            }
+            
+            // Crear CSV
+            const headers = ['id', 'titulo', 'texto_bruto', 'categoria', 'subcategoria', 'sujeto', 'faceta', 'mecanismo', 'rareza', 'tags', 'estado', 'clasificacion_status', 'duplicada', 'fingerprint', 'percentage', 'created_at', 'updated_at'];
+            let csv = headers.join(',') + '\n';
+            
+            allIdeas.forEach(idea => {
+                const row = [
+                    idea.id,
+                    `"${(idea.titulo || '').replace(/"/g, '""')}"`,
+                    `"${(idea.texto_bruto || idea.text || '').replace(/"/g, '""')}"`,
+                    idea.categoria || '',
+                    idea.subcategoria || '',
+                    idea.sujeto || '',
+                    idea.faceta || '',
+                    idea.mecanismo || '',
+                    idea.rareza || 1,
+                    `"${(idea.tags || []).join('; ')}"`,
+                    idea.estado,
+                    idea.clasificacion_status || 'sin_clasificar',
+                    idea.duplicada || false,
+                    idea.fingerprint || '',
+                    idea.percentage || 0,
+                    idea.createdAt || '',
+                    idea.updatedAt || ''
+                ];
+                csv += row.join(',') + '\n';
+            });
+            
+            // Descargar
+            downloadFile(csv, `ideas-completo-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+            alert(`✅ ${allIdeas.length} ideas exportadas a CSV`);
+        }
+        
+        // Exportar resumen anti-repetición
+        function exportResumenAntiRepeticion() {
+            const allIdeas = [
+                ...gameState.ideas.pendientes,
+                ...gameState.ideas.guionada,
+                ...gameState.ideas.grabadas,
+                ...gameState.ideas.editadas,
+                ...gameState.ideas.publicadas
+            ].filter(idea => idea.clasificacion_status === 'confirmada');
+            
+            if (allIdeas.length === 0) {
+                alert('⚠️ No hay ideas confirmadas para exportar');
+                return;
+            }
+            
+            // Agrupar por categoría y sujeto
+            const porCategoria = {};
+            
+            allIdeas.forEach(idea => {
+                const cat = idea.categoria || 'Sin Categoría';
+                const suj = idea.sujeto || 'Sin Sujeto';
+                
+                if (!porCategoria[cat]) porCategoria[cat] = {};
+                if (!porCategoria[cat][suj]) porCategoria[cat][suj] = {
+                    facetas: new Set(),
+                    mecanismos: new Set(),
+                    combinaciones: new Set()
+                };
+                
+                porCategoria[cat][suj].facetas.add(idea.faceta);
+                porCategoria[cat][suj].mecanismos.add(idea.mecanismo);
+                porCategoria[cat][suj].combinaciones.add(`${idea.faceta} + ${idea.mecanismo}`);
+            });
+            
+            // Generar texto
+            let texto = '═══════════════════════════════════════════════\n';
+            texto += '  RESUMEN ANTI-REPETICIÓN DE IDEAS\n';
+            texto += `  Generado: ${new Date().toLocaleString('es-ES')}\n`;
+            texto += '═══════════════════════════════════════════════\n\n';
+            
+            Object.keys(porCategoria).sort().forEach(categoria => {
+                texto += `\n📁 CATEGORÍA: ${categoria}\n`;
+                texto += '─────────────────────────────────────────────\n';
+                
+                Object.keys(porCategoria[categoria]).sort().forEach(sujeto => {
+                    const data = porCategoria[categoria][sujeto];
+                    texto += `\n  🎯 SUJETO: ${sujeto}\n`;
+                    texto += `     Facetas (${data.facetas.size}): ${[...data.facetas].join(', ')}\n`;
+                    texto += `     Mecanismos (${data.mecanismos.size}): ${[...data.mecanismos].join(', ')}\n`;
+                    texto += `     Combinaciones usadas (${data.combinaciones.size}):\n`;
+                    [...data.combinaciones].forEach(comb => {
+                        texto += `       • ${comb}\n`;
+                    });
+                });
+            });
+            
+            texto += '\n═══════════════════════════════════════════════\n';
+            texto += `Total de ideas confirmadas: ${allIdeas.length}\n`;
+            texto += '═══════════════════════════════════════════════\n';
+            
+            downloadFile(texto, `resumen-anti-repeticion-${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
+            alert('✅ Resumen anti-repetición exportado');
+        }
+        
+        // Abrir selector de sujeto para banlist
+        function openBanlistSelector() {
+            const allIdeas = [
+                ...gameState.ideas.pendientes,
+                ...gameState.ideas.guionada,
+                ...gameState.ideas.grabadas,
+                ...gameState.ideas.editadas,
+                ...gameState.ideas.publicadas
+            ].filter(idea => idea.clasificacion_status === 'confirmada' && idea.sujeto);
+            
+            if (allIdeas.length === 0) {
+                alert('⚠️ No hay ideas confirmadas con sujeto');
+                return;
+            }
+            
+            const sujetos = [...new Set(allIdeas.map(i => i.sujeto))].sort();
+            
+            closeExportMenu();
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'banlistSelectorModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>🚫 Seleccionar Sujeto para Banlist</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; margin-bottom: 10px; color: #667eea; font-weight: 600;">Sujeto:</label>
+                        <select id="banlistSujeto" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 10px; font-size: 1em; margin-bottom: 20px;">
+                            ${sujetos.map(s => `<option value="${s}">${s}</option>`).join('')}
+                        </select>
+                        
+                        <p style="color: #6b7280; font-size: 0.9em;">Se exportarán todas las combinaciones de faceta + mecanismo usadas para este sujeto.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="exportBanlistPorSujeto()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">📥 Exportar</button>
+                        <button onclick="closeBanlistSelector()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Cerrar selector de banlist
+        function closeBanlistSelector() {
+            const modal = document.getElementById('banlistSelectorModal');
+            if (modal) modal.remove();
+        }
+        
+        // Exportar banlist por sujeto
+        function exportBanlistPorSujeto() {
+            const sujetoSeleccionado = document.getElementById('banlistSujeto').value;
+            
+            const ideasDelSujeto = [
+                ...gameState.ideas.pendientes,
+                ...gameState.ideas.guionada,
+                ...gameState.ideas.grabadas,
+                ...gameState.ideas.editadas,
+                ...gameState.ideas.publicadas
+            ].filter(idea => 
+                idea.clasificacion_status === 'confirmada' && 
+                idea.sujeto === sujetoSeleccionado
+            );
+            
+            if (ideasDelSujeto.length === 0) {
+                alert('⚠️ No hay ideas para este sujeto');
+                return;
+            }
+            
+            let texto = '═══════════════════════════════════════════════\n';
+            texto += `  BANLIST: ${sujetoSeleccionado}\n`;
+            texto += `  Generado: ${new Date().toLocaleString('es-ES')}\n`;
+            texto += '═══════════════════════════════════════════════\n\n';
+            texto += 'COMBINACIONES YA USADAS (EVITAR):\n';
+            texto += '─────────────────────────────────────────────\n\n';
+            
+            const combinaciones = new Set();
+            ideasDelSujeto.forEach(idea => {
+                combinaciones.add(`${idea.faceta} + ${idea.mecanismo}`);
+            });
+            
+            [...combinaciones].sort().forEach((comb, index) => {
+                texto += `${index + 1}. ${comb}\n`;
+            });
+            
+            texto += '\n═══════════════════════════════════════════════\n';
+            texto += `Total de combinaciones: ${combinaciones.size}\n`;
+            texto += `Total de ideas del sujeto: ${ideasDelSujeto.length}\n`;
+            
+            // Sugerir facetas y mecanismos no usados
+            const todasFacetas = ['historia_origen', 'funcionamiento_interno', 'casos_uso', 'comparacion', 'tutorial_basico', 'tutorial_avanzado', 'errores_comunes', 'optimizacion', 'curiosidades', 'impacto_social', 'evolucion_temporal', 'futuro', 'detras_escenas', 'controversia', 'mitos_realidades', 'best_practices', 'herramientas', 'recursos', 'comunidad', 'entrevista'];
+            const facetasUsadas = new Set(ideasDelSujeto.map(i => i.faceta));
+            const facetasNoUsadas = todasFacetas.filter(f => !facetasUsadas.has(f));
+            
+            if (facetasNoUsadas.length > 0) {
+                texto += `\n💡 FACETAS AÚN NO EXPLORADAS (${facetasNoUsadas.length}):\n`;
+                facetasNoUsadas.forEach(f => {
+                    texto += `   • ${f.replace(/_/g, ' ')}\n`;
+                });
+            }
+            
+            texto += '═══════════════════════════════════════════════\n';
+            
+            downloadFile(texto, `banlist-${sujetoSeleccionado.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
+            closeBanlistSelector();
+            alert(`✅ Banlist exportada para "${sujetoSeleccionado}"`);
+        }
+        
+        // Función auxiliar para descargar archivos
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
         }
 
         // ===== SISTEMA DE BACKUP Y PERSISTENCIA =====
