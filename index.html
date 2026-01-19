@@ -9583,18 +9583,24 @@
             
             const timestamp = new Date().toISOString();
             
+            // Recopilar TODOS los datos de TODAS las fuentes
             const todosLosDatos = {
                 user_id: supabaseUser.id,
                 data: {
-                    stats: window.stats,
-                    library: window.library,
+                    stats: window.stats || {},
+                    library: window.library || {},
                     ideas: JSON.parse(localStorage.getItem('ideas') || '[]'),
                     emotionalData: JSON.parse(localStorage.getItem('emotionalData') || '{}'),
                     notes: window.notes || [],
-                    profile: JSON.parse(localStorage.getItem('userProfile') || '{}')
+                    profile: JSON.parse(localStorage.getItem('userProfile') || '{}'),
+                    dailyActivities: JSON.parse(localStorage.getItem('dailyActivities') || '[]'),
+                    favoritesOrder: JSON.parse(localStorage.getItem('favoritesOrder') || '[]'),
+                    selfcareCooldowns: JSON.parse(localStorage.getItem('selfcareCooldowns') || '{}')
                 },
                 updated_at: timestamp
             };
+            
+            console.log('📤 Subiendo datos:', todosLosDatos);
             
             await supabaseClient
                 .from('user_data')
@@ -9604,8 +9610,6 @@
             localStorage.setItem('lastSyncTimestamp', timestamp);
             
             console.log('✅ Todos los datos subidos a la nube');
-            
-            console.log('✅ Todos los datos subidos a la nube');
         }
         
         // Descargar todos los datos de la nube
@@ -9613,40 +9617,51 @@
             if (!supabaseClient || !supabaseUser) return;
             
             try {
+                console.log('📥 Descargando datos de la nube...');
+                
                 const { data, error } = await supabaseClient
                     .from('user_data')
                     .select('*')
                     .eq('user_id', supabaseUser.id)
                     .single();
                 
-                if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+                if (error && error.code !== 'PGRST116') {
                     console.error('Error al descargar:', error);
+                    alert('❌ Error al descargar: ' + error.message);
                     return;
                 }
                 
                 if (data && data.data) {
-                    // Actualizar variables globales
+                    console.log('📥 Datos recibidos de la nube:', data.data);
+                    
+                    // ACTUALIZAR TODAS LAS VARIABLES GLOBALES
                     window.stats = data.data.stats || {};
                     window.library = data.data.library || {};
                     window.notes = data.data.notes || [];
                     
-                    // Guardar en localStorage
+                    // GUARDAR TODO EN LOCALSTORAGE
                     localStorage.setItem('stats', JSON.stringify(data.data.stats || {}));
                     localStorage.setItem('library', JSON.stringify(data.data.library || {}));
                     localStorage.setItem('ideas', JSON.stringify(data.data.ideas || []));
                     localStorage.setItem('emotionalData', JSON.stringify(data.data.emotionalData || {}));
                     localStorage.setItem('userProfile', JSON.stringify(data.data.profile || {}));
-                    
-                    // Actualizar timestamp de última sincronización
+                    localStorage.setItem('dailyActivities', JSON.stringify(data.data.dailyActivities || []));
+                    localStorage.setItem('favoritesOrder', JSON.stringify(data.data.favoritesOrder || []));
+                    localStorage.setItem('selfcareCooldowns', JSON.stringify(data.data.selfcareCooldowns || {}));
                     localStorage.setItem('lastSyncTimestamp', data.updated_at || new Date().toISOString());
                     
-                    // Recargar TODA la interfaz
-                    actualizarInterfazCompleta();
-                    
-                    console.log('✅ Todos los datos descargados de la nube');
+                    // RECARGAR LA PÁGINA COMPLETA para aplicar todos los cambios
+                    console.log('✅ Datos descargados - Recargando página...');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    console.log('⚠️ No hay datos en la nube');
+                    alert('⚠️ No hay datos en la nube para este usuario');
                 }
             } catch (error) {
                 console.error('Error en descargarTodoDeNube:', error);
+                alert('❌ Error: ' + error.message);
             }
         }
         
@@ -9933,9 +9948,10 @@
             
             try {
                 await subirTodoALaNube();
-                alert('✅ Datos subidos correctamente a la nube');
+                alert('✅ Datos subidos correctamente a la nube.\n\nAhora ve al otro dispositivo y dale "📥 Descargar Todo".');
             } catch (error) {
                 alert('❌ Error al subir datos: ' + error.message);
+                console.error(error);
             }
         }
         
@@ -9946,15 +9962,15 @@
                 return;
             }
             
-            const confirmacion = confirm('📥 ¿Descargar TODOS los datos de la nube?\n\nEsto sobrescribirá los datos de este dispositivo.');
+            const confirmacion = confirm('📥 ¿Descargar TODOS los datos de la nube?\n\nEsto sobrescribirá los datos de este dispositivo.\n\nLa página se recargará automáticamente.');
             if (!confirmacion) return;
             
             try {
                 await descargarTodoDeNube();
-                alert('✅ Datos descargados correctamente de la nube');
-                window.location.reload(); // Recargar la página para ver los cambios
+                // La función descargarTodoDeNube ya recarga la página automáticamente
             } catch (error) {
                 alert('❌ Error al descargar datos: ' + error.message);
+                console.error(error);
             }
         }
     </script>
