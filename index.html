@@ -1606,13 +1606,18 @@
         <!-- Tab: Resumen -->
         <div class="tab-content" id="tab-resumen">
             <!-- Sincronización con Supabase -->
-            <div style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(150, 230, 161, 0.3); text-align: center;">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(150, 230, 161, 0.3);">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px;">
                     <div style="flex: 1; text-align: left;">
                         <h4 style="color: #2d5016; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;"><span>🔄</span> Sincronización</h4>
                         <p id="syncStatus" style="color: #4a7c59; font-size: 0.85em; margin: 0;">localStorage activo</p>
                     </div>
                     <button onclick="toggleSupabaseSync()" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); border: none; border-radius: 12px; padding: 10px 20px; color: white; font-size: 0.9em; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);">⚙️ Configurar</button>
+                </div>
+                <div id="syncButtons" style="display: none; gap: 8px;">
+                    <button onclick="elegirDatos()" style="flex: 1; padding: 8px 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 0.85em; font-weight: 600; cursor: pointer;">🔄 Elegir Datos</button>
+                    <button onclick="forzarSubida()" style="flex: 1; padding: 8px 15px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 10px; font-size: 0.85em; font-weight: 600; cursor: pointer;">☁️ Subir Todo</button>
+                    <button onclick="forzarDescarga()" style="flex: 1; padding: 8px 15px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 10px; font-size: 0.85em; font-weight: 600; cursor: pointer;">📥 Descargar Todo</button>
                 </div>
             </div>
             
@@ -9387,6 +9392,9 @@
                             document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + supabaseUser.email;
                             document.getElementById('syncStatus').style.color = '#2d5016';
                         }
+                        if (document.getElementById('syncButtons')) {
+                            document.getElementById('syncButtons').style.display = 'flex';
+                        }
                     }
                 });
                 
@@ -9399,6 +9407,9 @@
                             document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + supabaseUser.email;
                             document.getElementById('syncStatus').style.color = '#2d5016';
                         }
+                        if (document.getElementById('syncButtons')) {
+                            document.getElementById('syncButtons').style.display = 'flex';
+                        }
                         
                         // Sincronizar datos al iniciar sesión
                         await resolverConflictosDatos();
@@ -9407,6 +9418,9 @@
                         if (document.getElementById('syncStatus')) {
                             document.getElementById('syncStatus').textContent = 'localStorage activo';
                             document.getElementById('syncStatus').style.color = '#4a7c59';
+                        }
+                        if (document.getElementById('syncButtons')) {
+                            document.getElementById('syncButtons').style.display = 'none';
                         }
                     }
                 });
@@ -9469,7 +9483,7 @@
         }
         
         // Resolver conflictos entre localStorage y Supabase
-        async function resolverConflictosDatos() {
+        async function resolverConflictosDatos(forzarPregunta = false) {
             if (!supabaseClient || !supabaseUser) return;
             
             try {
@@ -9495,19 +9509,21 @@
                 
                 const hayDatosNube = datosNube && datosNube.data;
                 
-                if (hayDatosLocales && hayDatosNube) {
-                    // HAY CONFLICTO - Preguntar al usuario
+                if ((hayDatosLocales && hayDatosNube) || forzarPregunta) {
+                    // HAY CONFLICTO O SE FORZÓ LA PREGUNTA
                     const respuesta = confirm(
-                        '🔄 CONFLICTO DE DATOS DETECTADO\n\n' +
-                        'Se encontraron datos diferentes:\n\n' +
+                        '🔄 SINCRONIZACIÓN DE DATOS\n\n' +
+                        'Elige qué datos quieres mantener:\n\n' +
                         '📱 ESTE DISPOSITIVO:\n' +
                         `- ${datosLocales.library.apuntes?.length || 0} apuntes\n` +
                         `- ${datosLocales.ideas.length || 0} ideas\n` +
-                        `- ${datosLocales.library.libros?.length || 0} libros\n\n` +
+                        `- ${datosLocales.library.libros?.length || 0} libros\n` +
+                        `- ${datosLocales.library.peliculas?.length || 0} películas\n\n` +
                         '☁️ EN LA NUBE:\n' +
-                        `- ${datosNube.data?.library?.apuntes?.length || 0} apuntes\n` +
-                        `- ${datosNube.data?.ideas?.length || 0} ideas\n` +
-                        `- ${datosNube.data?.library?.libros?.length || 0} libros\n\n` +
+                        `- ${datosNube?.data?.library?.apuntes?.length || 0} apuntes\n` +
+                        `- ${datosNube?.data?.ideas?.length || 0} ideas\n` +
+                        `- ${datosNube?.data?.library?.libros?.length || 0} libros\n` +
+                        `- ${datosNube?.data?.library?.peliculas?.length || 0} películas\n\n` +
                         '¿Qué datos quieres mantener?\n\n' +
                         '✅ OK = Usar datos de ESTE DISPOSITIVO (sobreescribir nube)\n' +
                         '❌ CANCELAR = Usar datos de LA NUBE (sobreescribir este dispositivo)'
@@ -9742,13 +9758,61 @@
                 
                 loginSupabase(email, password).then(success => {
                     if (success) {
-                        document.getElementById('syncStatus').textContent = '✅ Sincronizado con Supabase';
+                        document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + email;
                         document.getElementById('syncStatus').style.color = '#2d5016';
+                        document.getElementById('syncButtons').style.display = 'flex';
                         alert('✅ Sincronización activada. Tus datos se guardarán en la nube.');
                     } else {
                         alert('❌ Error al iniciar sesión.\n\n💡 Primero crea una cuenta:\n1. Ve a tu proyecto Supabase\n2. Authentication > Users\n3. Add user > Create new user');
                     }
                 });
+            }
+        }
+        
+        // Función para elegir manualmente qué datos usar
+        async function elegirDatos() {
+            if (!supabaseClient || !supabaseUser) {
+                alert('⚠️ Debes iniciar sesión primero');
+                return;
+            }
+            
+            await resolverConflictosDatos(true); // true = forzar pregunta
+        }
+        
+        // Forzar subida de datos locales a la nube
+        async function forzarSubida() {
+            if (!supabaseClient || !supabaseUser) {
+                alert('⚠️ Debes iniciar sesión primero');
+                return;
+            }
+            
+            const confirmacion = confirm('☁️ ¿Subir TODOS los datos de este dispositivo a la nube?\n\nEsto sobrescribirá los datos en la nube.');
+            if (!confirmacion) return;
+            
+            try {
+                await subirTodoALaNube();
+                alert('✅ Datos subidos correctamente a la nube');
+            } catch (error) {
+                alert('❌ Error al subir datos: ' + error.message);
+            }
+        }
+        
+        // Forzar descarga de datos de la nube
+        async function forzarDescarga() {
+            if (!supabaseClient || !supabaseUser) {
+                alert('⚠️ Debes iniciar sesión primero');
+                return;
+            }
+            
+            const confirmacion = confirm('📥 ¿Descargar TODOS los datos de la nube?\n\nEsto sobrescribirá los datos de este dispositivo.');
+            if (!confirmacion) return;
+            
+            try {
+                await descargarTodoDeNube();
+                alert('✅ Datos descargados correctamente de la nube');
+                window.location.reload(); // Recargar la página para ver los cambios
+            } catch (error) {
+                alert('❌ Error al descargar datos: ' + error.message);
             }
         }
     </script>
