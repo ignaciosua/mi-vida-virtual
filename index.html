@@ -9377,6 +9377,36 @@
             try {
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 console.log('✅ Supabase conectado correctamente');
+                
+                // Verificar si hay una sesión activa
+                supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                    if (session) {
+                        supabaseUser = session.user;
+                        console.log('✅ Usuario autenticado:', supabaseUser.email);
+                        if (document.getElementById('syncStatus')) {
+                            document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + supabaseUser.email;
+                            document.getElementById('syncStatus').style.color = '#2d5016';
+                        }
+                    }
+                });
+                
+                // Escuchar cambios de autenticación
+                supabaseClient.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_IN' && session) {
+                        supabaseUser = session.user;
+                        console.log('✅ Sesión iniciada:', supabaseUser.email);
+                        if (document.getElementById('syncStatus')) {
+                            document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + supabaseUser.email;
+                            document.getElementById('syncStatus').style.color = '#2d5016';
+                        }
+                    } else if (event === 'SIGNED_OUT') {
+                        supabaseUser = null;
+                        if (document.getElementById('syncStatus')) {
+                            document.getElementById('syncStatus').textContent = 'localStorage activo';
+                            document.getElementById('syncStatus').style.color = '#4a7c59';
+                        }
+                    }
+                });
             } catch (error) {
                 console.error('❌ Error al conectar Supabase:', error);
                 console.log('💡 Usando localStorage como fallback.');
@@ -9531,27 +9561,52 @@
         });
         
         // Función para activar/desactivar sincronización
-        function toggleSupabaseSync() {
+        async function toggleSupabaseSync() {
             if (!supabaseClient) {
                 alert('⚠️ Supabase no está disponible. Verifica tu conexión a internet.');
                 return;
             }
             
-            const email = prompt('📧 Email de Supabase:');
-            if (!email) return;
+            // Mostrar opciones de autenticación
+            const opcion = confirm('🔐 Autenticación\n\n✅ OK = Iniciar sesión con Google\n❌ Cancelar = Iniciar sesión con Email');
             
-            const password = prompt('🔑 Contraseña:');
-            if (!password) return;
-            
-            loginSupabase(email, password).then(success => {
-                if (success) {
-                    document.getElementById('syncStatus').textContent = '✅ Sincronizado con Supabase';
-                    document.getElementById('syncStatus').style.color = '#2d5016';
-                    alert('✅ Sincronización activada. Tus datos se guardarán en la nube.');
-                } else {
-                    alert('❌ Error al iniciar sesión. Verifica tus credenciales.');
+            if (opcion) {
+                // Login con Google
+                try {
+                    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: {
+                            redirectTo: window.location.href
+                        }
+                    });
+                    
+                    if (error) {
+                        alert('❌ Error: ' + error.message + '\n\n💡 Configura Google OAuth en Supabase:\n1. Authentication > Providers > Google\n2. Activa Google\n3. Agrega tus credenciales de Google Cloud');
+                    } else {
+                        alert('✅ Redirigiendo a Google...');
+                    }
+                } catch (error) {
+                    alert('❌ Error al conectar con Google. Verifica la configuración en Supabase.');
+                    console.error(error);
                 }
-            });
+            } else {
+                // Login con Email y contraseña
+                const email = prompt('📧 Email:');
+                if (!email) return;
+                
+                const password = prompt('🔑 Contraseña:');
+                if (!password) return;
+                
+                loginSupabase(email, password).then(success => {
+                    if (success) {
+                        document.getElementById('syncStatus').textContent = '✅ Sincronizado con Supabase';
+                        document.getElementById('syncStatus').style.color = '#2d5016';
+                        alert('✅ Sincronización activada. Tus datos se guardarán en la nube.');
+                    } else {
+                        alert('❌ Error al iniciar sesión.\n\n💡 Primero crea una cuenta:\n1. Ve a tu proyecto Supabase\n2. Authentication > Users\n3. Add user > Create new user');
+                    }
+                });
+            }
         }
     </script>
 </body>
