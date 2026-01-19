@@ -400,6 +400,12 @@
             0% { left: -100%; }
             50%, 100% { left: 100%; }
         }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 80%; }
+            100% { width: 100%; }
+        }
 
         /* Colores degradados para cada barra según nivel */
         .stat-bar-high {
@@ -1193,7 +1199,18 @@
                 font-size: 1.3em;
             }
         }
+        
+        /* Animación pulse para badge duplicada */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- Pantalla de Inicio -->
@@ -1228,10 +1245,6 @@
                 <span class="tab-icon">❤️</span>
                 <span class="tab-label">Existir</span>
             </button>
-            <button class="tab" onclick="switchTab('cuidarme')">
-                <span class="tab-icon">🌱</span>
-                <span class="tab-label">Cuidarme</span>
-            </button>
             <button class="tab" onclick="switchTab('ejercicio')">
                 <span class="tab-icon">🏃</span>
                 <span class="tab-label">Ejercicio</span>
@@ -1239,6 +1252,10 @@
             <button class="tab" onclick="switchTab('crecer')">
                 <span class="tab-icon">🧠</span>
                 <span class="tab-label">Crecer</span>
+            </button>
+            <button class="tab" onclick="switchTab('emocional')">
+                <span class="tab-icon">🌸</span>
+                <span class="tab-label">Emocional</span>
             </button>
             <button class="tab" onclick="switchTab('biblioteca')">
                 <span class="tab-icon">📚</span>
@@ -1258,7 +1275,7 @@
             </button>
         </div>
 
-        <!-- Tab: Existir -->
+        <!-- Tab: Existir (unificado con Cuidarme) -->
         <div class="tab-content active" id="tab-existir">
             <div class="stats-container" id="statsExistir"></div>
             <div class="buttons-container">
@@ -1274,13 +1291,6 @@
                     <span class="button-icon">😴</span>
                     <span class="button-text">Dormir</span>
                 </button>
-            </div>
-        </div>
-
-        <!-- Tab: Cuidarme -->
-        <div class="tab-content" id="tab-cuidarme">
-            <div class="stats-container" id="statsCuidarme"></div>
-            <div class="buttons-container">
                 <button class="action-button btn-selfcare" id="btnSelfcare">
                     <span class="button-icon">💖</span>
                     <span class="button-text">Autoestima</span>
@@ -1333,6 +1343,62 @@
             </div>
         </div>
 
+        <!-- Tab: Estilo Emocional (NUEVO) -->
+        <div class="tab-content" id="tab-emocional">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #ff6b9d; margin-bottom: 10px;">🌸 Mi Estado Emocional 2026</h2>
+                <p style="color: #a78bfa; font-size: 0.95em;">Registra cómo te sientes cada día</p>
+            </div>
+            
+            <!-- Selector de emoción actual -->
+            <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
+                <h3 style="color: #6b4c9a; margin-bottom: 15px; text-align: center;">✨ ¿Cómo te sientes hoy?</h3>
+                <div id="emotionSelector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                    <button onclick="selectEmotion('feliz')" style="padding: 15px 10px; background: linear-gradient(135deg, #ffeb99 0%, #fffacd 100%); border: 3px solid #ffd700; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);">
+                        😊 Feliz
+                    </button>
+                    <button onclick="selectEmotion('motivada')" style="padding: 15px 10px; background: linear-gradient(135deg, #c8e6c9 0%, #e8f5e9 100%); border: 3px solid #81c784; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(129, 199, 132, 0.3);">
+                        💪 Motivada
+                    </button>
+                    <button onclick="selectEmotion('triste')" style="padding: 15px 10px; background: linear-gradient(135deg, #b3d9ff 0%, #e6f2ff 100%); border: 3px solid #64b5f6; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);">
+                        😢 Triste
+                    </button>
+                    <button onclick="selectEmotion('cansada')" style="padding: 15px 10px; background: linear-gradient(135deg, #d1c4e9 0%, #ede7f6 100%); border: 3px solid #9575cd; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(149, 117, 205, 0.3);">
+                        😴 Cansada
+                    </button>
+                    <button onclick="selectEmotion('enojada')" style="padding: 15px 10px; background: linear-gradient(135deg, #ffccbc 0%, #ffe0d1 100%); border: 3px solid #ff8a65; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(255, 138, 101, 0.3);">
+                        😠 Enojada
+                    </button>
+                    <button onclick="selectEmotion('estresada')" style="padding: 15px 10px; background: linear-gradient(135deg, #f8bbd0 0%, #fce4ec 100%); border: 3px solid #f48fb1; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(244, 143, 177, 0.3);">
+                        😰 Estresada
+                    </button>
+                    <button onclick="selectEmotion('enferma')" style="padding: 15px 10px; background: linear-gradient(135deg, #ffcccc 0%, #ffe6e6 100%); border: 3px solid #ef9a9a; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(239, 154, 154, 0.3);">
+                        🤒 Enferma
+                    </button>
+                    <button onclick="selectEmotion('normal')" style="padding: 15px 10px; background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%); border: 3px solid #bdbdbd; border-radius: 15px; font-size: 0.95em; font-weight: 600; color: #6b4c9a; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(189, 189, 189, 0.3);">
+                        😐 Normal
+                    </button>
+                </div>
+                <p id="selectedEmotionText" style="text-align: center; color: #ff6b9d; font-weight: 600; min-height: 24px;">Selecciona una emoción para marcar días</p>
+            </div>
+            
+            <!-- Resumen mensual de emociones -->
+            <div id="monthlyEmotionSummary" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.1); border: 2px solid #ffb74d;">
+                <h3 style="color: #e65100; margin-bottom: 15px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <span style="font-size: 1.5em;">📊</span>
+                    <span>Resumen del Mes</span>
+                </h3>
+                <div id="emotionStatsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;"></div>
+            </div>
+            
+            <!-- Calendario emocional 2026 -->
+            <div style="background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1); overflow-x: auto;">
+                <h3 style="color: #6b4c9a; margin-bottom: 15px; text-align: center;">📅 Calendario Emocional 2026</h3>
+                <p style="text-align: center; color: #a78bfa; font-size: 0.85em; margin-bottom: 15px;">Haz clic en los días para marcar tus emociones. Puedes añadir varias por día.</p>
+                <div id="emotionalCalendar2026" style="overflow-x: auto;"></div>
+            </div>
+        </div>
+
         <!-- Tab: Biblioteca -->
         <div class="tab-content" id="tab-biblioteca">
             <div style="text-align: center; margin-bottom: 20px;">
@@ -1342,6 +1408,7 @@
                     <button onclick="openLibraryCategory('peliculas')" style="padding: 10px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">🎬 Películas</button>
                     <button onclick="openLibraryCategory('series')" style="padding: 10px 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer;">📺 Series</button>
                     <button onclick="openLibraryCategory('flashcards')" style="padding: 10px 20px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer; font-weight: 600;">🧠 Flashcards</button>
+                    <button onclick="openLibraryCategory('apuntes')" style="padding: 10px 20px; background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); color: white; border: none; border-radius: 15px; font-size: 1em; cursor: pointer; font-weight: 600;">📝 Apuntes</button>
                 </div>
             </div>
             <div id="libraryContent" style="padding: 15px;"></div>
@@ -1373,13 +1440,17 @@
             <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.1);">
                 <h3 style="color: #6b4c9a; margin-bottom: 15px;">✨ Nueva Idea</h3>
                 <input type="text" id="newIdeaInput" placeholder="Escribe tu idea aquí..." style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em; margin-bottom: 10px;">
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
                     <select id="ideaPercentage" style="padding: 12px; border: 2px solid #e0e7ff; border-radius: 12px; font-size: 1em;">
                         <option value="2">Idea básica (+2%)</option>
                         <option value="3">Idea desarrollada (+3%)</option>
                         <option value="5">Idea completa (+5%)</option>
                     </select>
                     <button onclick="addNewIdea()" style="flex: 1; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Idea</button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="openGenerateIdeasModal()" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 0.95em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">🤖 Generar Ideas (IA)</button>
+                    <button onclick="openExportMenu()" style="flex: 1; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 0.95em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);">📊 Exportar</button>
                 </div>
             </div>
             
@@ -1402,6 +1473,15 @@
                 </button>
             </div>
             
+            <!-- Menú de ordenamiento -->
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; background: linear-gradient(135deg, #e0e7ff 0%, #fef3ff 100%); padding: 12px; border-radius: 15px;">
+                <span style="font-weight: 600; color: #6b4c9a; font-size: 0.9em;">🔄 Ordenar:</span>
+                <select id="ideaSortOrder" onchange="renderIdeas()" style="flex: 1; padding: 8px 12px; border: 2px solid #a78bfa; border-radius: 10px; font-size: 0.9em; cursor: pointer; background: white; color: #6b4c9a; font-weight: 500;">
+                    <option value="newest">Más recientes primero</option>
+                    <option value="oldest">Más antiguas primero</option>
+                </select>
+            </div>
+            
             <!-- Contenedor de ideas (cambia según la pestaña seleccionada) -->
             <div id="ideasContainer" style="display: flex; flex-direction: column; gap: 10px; min-height: 200px;"></div>
             
@@ -1420,7 +1500,13 @@
             <div id="calendar-actividades" class="calendar-view" style="display: block;">
                 <!-- Lista de actividades pendientes (Arriba) -->
                 <div style="margin-bottom: 20px;">
-                    <h3 id="activitiesTitle" style="color: #ff6b9d; margin-bottom: 12px;">📅 Actividades de Hoy</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 id="activitiesTitle" style="color: #ff6b9d; margin: 0;">📅 Actividades de Hoy</h3>
+                        <select id="activitiesSortOrder" onchange="changeActivitiesSortOrder()" style="padding: 8px 12px; border: 2px solid #ffc4e1; border-radius: 10px; font-size: 0.85em; background: white; color: #ff6b9d; font-weight: 600; cursor: pointer;">
+                            <option value="time">⏰ Por horario</option>
+                            <option value="importance">⭐ Por importancia</option>
+                        </select>
+                    </div>
                     <div id="activitiesPending" style="display: flex; flex-direction: column; gap: 10px;"></div>
                 </div>
                 
@@ -1487,6 +1573,20 @@
                         </div>
                     </div>
                     
+                    <!-- Recurrencia (Opcional) -->
+                    <div style="margin-bottom: 10px; padding: 12px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); border-radius: 12px; border: 2px dashed #ffa8c5;">
+                        <label style="display: block; margin-bottom: 8px; color: #ff6b9d; font-weight: 600; display: flex; align-items: center; gap: 5px;">🔄 Repetir actividad (opcional)</label>
+                        <select id="activityRecurrence" onchange="toggleRecurrenceOptions(this.value)" style="width: 100%; padding: 12px; border: 2px solid #ffc4e1; border-radius: 12px; font-size: 1em; background: white; color: #6b4c9a; font-weight: 500;">
+                            <option value="none">⭕ No repetir</option>
+                            <option value="weekly">📅 Cada semana (mismo día)</option>
+                            <option value="biweekly">🗓️ Cada 2 semanas (quincenal)</option>
+                            <option value="monthly">📆 Cada mes (mismo día)</option>
+                        </select>
+                        <div id="recurrenceInfo" style="display: none; margin-top: 8px; padding: 10px; background: rgba(255, 255, 255, 0.8); border-radius: 8px; font-size: 0.85em; color: #6b4c9a;">
+                            <p style="margin: 0;">✨ <strong>Ejemplo:</strong> Si la programas para un domingo, se creará automáticamente para todos los siguientes según la frecuencia elegida.</p>
+                        </div>
+                    </div>
+                    
                     <button onclick="addActivity()" style="width: 100%; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); border: none; border-radius: 12px; padding: 12px 20px; font-size: 1em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);">➕ Agregar Actividad</button>
                 </div>
                 
@@ -1505,6 +1605,17 @@
 
         <!-- Tab: Resumen -->
         <div class="tab-content" id="tab-resumen">
+            <!-- Sincronización con Supabase -->
+            <div style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(150, 230, 161, 0.3); text-align: center;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="flex: 1; text-align: left;">
+                        <h4 style="color: #2d5016; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;"><span>🔄</span> Sincronización</h4>
+                        <p id="syncStatus" style="color: #4a7c59; font-size: 0.85em; margin: 0;">localStorage activo</p>
+                    </div>
+                    <button onclick="toggleSupabaseSync()" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); border: none; border-radius: 12px; padding: 10px 20px; color: white; font-size: 0.9em; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);">⚙️ Configurar</button>
+                </div>
+            </div>
+            
             <!-- Bloque 1: Rutina sugerida -->
             <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 18px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(66, 165, 245, 0.2);">
                 <h4 style="color: #1976d2; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><span>🧭</span> Rutina sugerida (Hoy)</h4>
@@ -2320,71 +2431,71 @@
                 name: 'Hambre',
                 icon: '🍽️',
                 decayRate: 4.2, // % por hora
-                value: 100,
+                value: 200,
                 maxDaily: 0 // Se calculará con BMR
             },
             sueño: {
                 name: 'Sueño',
                 icon: '😴',
                 decayRate: 4.2,
-                value: 100,
+                value: 200,
                 maxDaily: 8 // 8 horas recomendadas
             },
             hidratacion: {
                 name: 'Hidratación',
                 icon: '💧',
                 decayRate: 4.2,
-                value: 100,
+                value: 200,
                 maxDaily: 0 // Se calculará con peso
             },
             ejercicio: {
                 name: 'Salud Física',
                 icon: '🏃',
                 decayRate: 4.2,
-                value: 100,
-                maxDaily: 100
+                value: 200,
+                maxDaily: 200
             },
             autoestima: {
                 name: 'Autoestima',
                 icon: '💖',
                 decayRate: 4.2,
-                value: 100,
-                maxDaily: 100
+                value: 200,
+                maxDaily: 200
             },
             vidaSocial: {
                 name: 'Vida Social',
                 icon: '💬',
                 decayRate: 4.2,
-                value: 100,
-                maxDaily: 100
+                value: 200,
+                maxDaily: 200
             },
             idiomas: {
                 name: 'Idiomas',
                 icon: '🌍',
                 decayRate: 0, // No decae
                 value: 0,
-                maxDaily: 100
+                maxDaily: 200
             },
             aprendizaje: {
                 name: 'Aprendizaje',
                 icon: '📚',
                 decayRate: 0, // No decae
                 value: 0,
-                maxDaily: 100
+                maxDaily: 200
             },
             contenido: {
                 name: 'Contenido',
                 icon: '🎬',
                 decayRate: 0, // No decae
                 value: 0,
-                maxDaily: 100
+                maxDaily: 200
             },
             profesion: {
                 name: 'Profesión',
                 icon: '👩‍⚕️',
                 decayRate: 0, // No decae
                 value: 0,
-                maxDaily: 100
+                maxDaily: 200
             }
         };
 
@@ -2561,6 +2672,7 @@
             favorites: [],
             ideas: {
                 pendientes: [],
+                guionada: [],
                 grabadas: [],
                 editadas: [],
                 publicadas: []
@@ -2634,8 +2746,19 @@
                 const hoursElapsed = (now - gameState.lastUpdate) / (1000 * 60 * 60);
                 
                 Object.keys(gameState.stats).forEach(key => {
+                    // Excluir contenido del decaimiento (es progresivo, no decae)
+                    if (key === 'contenido') return;
+                    
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
-                    gameState.stats[key].value = Math.max(0, gameState.stats[key].value - decayAmount);
+                    let newValue = gameState.stats[key].value - decayAmount;
+                    
+                    // Ejercicio tiene un mínimo de -100%
+                    if (key === 'ejercicio') {
+                        gameState.stats[key].value = Math.max(-100, newValue);
+                    } else {
+                        // Otras estadísticas pueden ser negativas sin límite
+                        gameState.stats[key].value = newValue;
+                    }
                 });
                 
                 gameState.lastUpdate = now;
@@ -2669,21 +2792,12 @@
 
         // Renderizar estadísticas
         function renderStats() {
-            // Renderizar estadísticas de Existir (hambre, sueño, hidratación)
+            // Renderizar estadísticas de Existir (ahora incluye todas: hambre, sueño, hidratación, autoestima, vida social)
             const existirContainer = document.getElementById('statsExistir');
             existirContainer.innerHTML = '';
-            ['hambre', 'sueño', 'hidratacion'].forEach(key => {
+            ['hambre', 'sueño', 'hidratacion', 'autoestima', 'vidaSocial'].forEach(key => {
                 if (gameState.stats[key]) {
                     existirContainer.appendChild(createStatElement(key, gameState.stats[key]));
-                }
-            });
-
-            // Renderizar estadísticas de Cuidarme (autoestima, vida social)
-            const cuidarmeContainer = document.getElementById('statsCuidarme');
-            cuidarmeContainer.innerHTML = '';
-            ['autoestima', 'vidaSocial'].forEach(key => {
-                if (gameState.stats[key]) {
-                    cuidarmeContainer.appendChild(createStatElement(key, gameState.stats[key]));
                 }
             });
 
@@ -2738,6 +2852,11 @@
             if (key === 'hambre' && percentage > 100) {
                 barClass = 'stat-bar-low';
             }
+            
+            // Para valores negativos, usar color rojo de advertencia
+            if (percentage < 0) {
+                barClass = 'stat-bar-low';
+            }
 
             // Información personalizada para hambre e hidratación
             let personalInfo = '';
@@ -2745,6 +2864,9 @@
                 if (percentage > 100) {
                     const exceso = Math.round(percentage - 100);
                     personalInfo = `<div style="font-size: 0.85em; color: #ef4444; margin-top: 5px; font-weight: bold;">⚠️ ¡Exceso de ${exceso}%! Estás superando la cantidad máxima necesaria</div>`;
+                } else if (percentage < 0) {
+                    const deficit = Math.abs(Math.round(percentage));
+                    personalInfo = `<div style="font-size: 0.85em; color: #ef4444; margin-top: 5px; font-weight: bold;">⚠️ ¡Déficit de ${deficit}%! Necesitas comer urgentemente</div>`;
                 } else {
                     personalInfo = `<div style="font-size: 0.85em; color: #a78bfa; margin-top: 5px;">Meta diaria: ${userProfile.bmr} kcal</div>`;
                 }
@@ -2772,10 +2894,20 @@
             }
 
             const statDiv = document.createElement('div');
-            statDiv.className = `stat-item ${(!isGrowthStat && percentage < 20) || (key === 'hambre' && percentage > 100) ? 'warning' : ''}`;
+            statDiv.className = `stat-item ${(!isGrowthStat && (percentage < 20 || percentage < 0)) || (key === 'hambre' && percentage > 100) ? 'warning' : ''}`;
             
-            // Para stats de crecimiento y hambre que pueden pasar del 100%, ajustar el ancho de la barra
-            const barWidth = (isGrowthStat || key === 'hambre') ? Math.min(percentage, 100) : percentage;
+            // Calcular ancho de barra según el tipo de estadística
+            let barWidth;
+            if (percentage < 0) {
+                // Para valores negativos, mostrar barra en 0%
+                barWidth = 0;
+            } else if (isGrowthStat) {
+                // Crecimiento sin límite, pero barra máxima al 100%
+                barWidth = Math.min(percentage, 100);
+            } else {
+                // Para el resto, limitar entre 0 y 100 visualmente
+                barWidth = Math.min(Math.max(percentage, 0), 100);
+            }
             
             // Crear barra especial para hidratación con desglose por colores
             let barHTML = '';
@@ -2789,16 +2921,23 @@
                     const refrescoPct = (breakdown.refresco / userProfile.dailyWater) * 100;
                     const cafePct = (breakdown.cafe / userProfile.dailyWater) * 100;
                     
+                    // Calcular anchos reales respetando el límite visual de 100%
+                    const aguaWidth = Math.min(aguaPct, 100);
+                    const azucaradaWidth = Math.min(azucaradaPct, Math.max(0, 100 - aguaWidth));
+                    const refrescoWidth = Math.min(refrescoPct, Math.max(0, 100 - aguaWidth - azucaradaWidth));
+                    const cafeWidth = Math.min(cafePct, Math.max(0, 100 - aguaWidth - azucaradaWidth - refrescoWidth));
+                    
                     barHTML = `
                         <div class="stat-bar-container">
-                            <div style="width: ${Math.min(aguaPct, 100)}%; height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); position: absolute; left: 0; border-radius: 10px 0 0 10px;"></div>
-                            <div style="width: ${Math.min(azucaradaPct, 100 - aguaPct)}%; height: 100%; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); position: absolute; left: ${Math.min(aguaPct, 100)}%; border-radius: ${aguaPct >= 100 ? '10px' : '0'};"></div>
-                            <div style="width: ${Math.min(refrescoPct, 100 - aguaPct - azucaradaPct)}%; height: 100%; background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); position: absolute; left: ${Math.min(aguaPct + azucaradaPct, 100)}%; border-radius: ${(aguaPct + azucaradaPct) >= 100 ? '10px' : '0'};"></div>
-                            <div style="width: ${Math.min(cafePct, 100 - aguaPct - azucaradaPct - refrescoPct)}%; height: 100%; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); position: absolute; left: ${Math.min(aguaPct + azucaradaPct + refrescoPct, 100)}%; border-radius: ${(aguaPct + azucaradaPct + refrescoPct) >= 100 ? '10px' : '0 10px 10px 0'};"></div>
+                            ${aguaWidth > 0 ? `<div style="width: ${aguaWidth}%; height: 100%; background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); position: absolute; left: 0; border-radius: ${aguaWidth >= 100 ? '10px' : '10px 0 0 10px'};"></div>` : ''}
+                            ${azucaradaWidth > 0 ? `<div style="width: ${azucaradaWidth}%; height: 100%; background: linear-gradient(135deg, #f97316 0%, #fb923c 100%); position: absolute; left: ${aguaWidth}%; border-radius: ${aguaWidth <= 0 ? '10px 0 0 10px' : '0'};"></div>` : ''}
+                            ${refrescoWidth > 0 ? `<div style="width: ${refrescoWidth}%; height: 100%; background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); position: absolute; left: ${aguaWidth + azucaradaWidth}%; border-radius: ${aguaWidth <= 0 && azucaradaWidth <= 0 ? '10px 0 0 10px' : '0'};"></div>` : ''}
+                            ${cafeWidth > 0 ? `<div style="width: ${cafeWidth}%; height: 100%; background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); position: absolute; left: ${aguaWidth + azucaradaWidth + refrescoWidth}%; border-radius: ${(aguaWidth + azucaradaWidth + refrescoWidth + cafeWidth) >= 100 ? '0 10px 10px 0' : '0'};"></div>` : ''}
                         </div>
                     `;
                 } else {
-                    barHTML = `<div class="stat-bar-container"><div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div></div>`;
+                    // Si no hay líquidos consumidos, mostrar barra vacía
+                    barHTML = `<div class="stat-bar-container"><div class="stat-bar-fill ${barClass}" style="width: 0%"></div></div>`;
                 }
             } else {
                 barHTML = `<div class="stat-bar-container"><div class="stat-bar-fill ${barClass}" style="width: ${barWidth}%"></div></div>`;
@@ -2914,7 +3053,7 @@
             
             if (!wasChecked) {
                 // Completado: aumentar autoestima
-                gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + check.boost);
+                gameState.stats.autoestima.value = Math.min(200, gameState.stats.autoestima.value + check.boost);
                 console.log(`✓ Check completado: ${check.name} (+${check.boost}% autoestima)`);
             } else {
                 // Desmarcado: quitar autoestima
@@ -3209,7 +3348,7 @@
             
             // Agregar clase active al tab clickeado
             const tabs = document.querySelectorAll('.tab');
-            const tabNames = ['existir', 'cuidarme', 'ejercicio', 'crecer', 'biblioteca', 'ideas', 'calendario', 'resumen'];
+            const tabNames = ['existir', 'ejercicio', 'crecer', 'emocional', 'biblioteca', 'ideas', 'calendario', 'resumen'];
             const index = tabNames.indexOf(tabName);
             if (index !== -1) {
                 tabs[index].classList.add('active');
@@ -3240,6 +3379,11 @@
                 renderMonthlyCalendar();
                 renderActivities();
             }
+            
+            // Si es emocional, renderizar calendario emocional
+            if (tabName === 'emocional') {
+                renderEmotionalCalendar2026();
+            }
         }
 
         // Actualizar estadísticas continuamente
@@ -3249,8 +3393,19 @@
             
             if (hoursElapsed > 0) {
                 Object.keys(gameState.stats).forEach(key => {
+                    // Excluir contenido del decaimiento (es progresivo, no decae)
+                    if (key === 'contenido') return;
+                    
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
-                    gameState.stats[key].value = Math.max(0, gameState.stats[key].value - decayAmount);
+                    let newValue = gameState.stats[key].value - decayAmount;
+                    
+                    // Ejercicio tiene un mínimo de -100%
+                    if (key === 'ejercicio') {
+                        gameState.stats[key].value = Math.max(-100, newValue);
+                    } else {
+                        // Otras estadísticas pueden ser negativas sin límite
+                        gameState.stats[key].value = newValue;
+                    }
                 });
                 
                 // Resetear desglose de hidratación si cambió el día
@@ -3437,7 +3592,7 @@
             const hungerPercent = caloriesToHungerPercent(calories);
             
             // Aplicar los cambios (limitar entre 0 y 100)
-            gameState.stats.hambre.value = Math.min(100, Math.max(0, gameState.stats.hambre.value + hungerPercent));
+            gameState.stats.hambre.value = Math.min(200, Math.max(0, gameState.stats.hambre.value + hungerPercent));
             
             // También se reduce un poco la hidratación (al comer necesitas agua)
             const hydrationDecrease = hungerPercent * 0.15; // 15% de las calorías afecta hidratación
@@ -3481,7 +3636,7 @@
             const percentage = mlToHydrationPercent(ml);
             
             // Aumentar hidratación total
-            gameState.stats.hidratacion.value = Math.min(100, gameState.stats.hidratacion.value + percentage);
+            gameState.stats.hidratacion.value = Math.min(200, gameState.stats.hidratacion.value + percentage);
             
             // Registrar en desglose por tipo
             gameState.hydrationBreakdown[type] = (gameState.hydrationBreakdown[type] || 0) + ml;
@@ -3540,7 +3695,7 @@
 
         function sleep(percentage) {
             // Aumentar sueño
-            gameState.stats.sueño.value = Math.min(100, gameState.stats.sueño.value + percentage);
+            gameState.stats.sueño.value = Math.min(200, gameState.stats.sueño.value + percentage);
             gameState.lastUpdate = Date.now();
             saveState();
             renderStats();
@@ -3693,8 +3848,8 @@
             // Aplicar los cambios a las estadísticas
             gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value + effect.hambre);
             gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value + effect.hidratacion);
-            gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + effect.ejercicio);
-            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + effect.autoestima);
+            gameState.stats.ejercicio.value = Math.min(200, gameState.stats.ejercicio.value + effect.ejercicio);
+            gameState.stats.autoestima.value = Math.min(200, gameState.stats.autoestima.value + effect.autoestima);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3796,8 +3951,8 @@
             
             gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value - hungerPercent);
             gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationPercent);
-            gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + 10);
-            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + 5);
+            gameState.stats.ejercicio.value = Math.min(200, gameState.stats.ejercicio.value + 10);
+            gameState.stats.autoestima.value = Math.min(200, gameState.stats.autoestima.value + 5);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3897,8 +4052,8 @@
             
             gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value - hungerPercent);
             gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationPercent);
-            gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + 40);
-            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + 20);
+            gameState.stats.ejercicio.value = Math.min(200, gameState.stats.ejercicio.value + 40);
+            gameState.stats.autoestima.value = Math.min(200, gameState.stats.autoestima.value + 20);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -3968,8 +4123,8 @@
             
             gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value - hungerPercent);
             gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationPercent);
-            gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + 35);
-            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + 15);
+            gameState.stats.ejercicio.value = Math.min(200, gameState.stats.ejercicio.value + 35);
+            gameState.stats.autoestima.value = Math.min(200, gameState.stats.autoestima.value + 15);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -4014,8 +4169,8 @@
             if (confirm(`🏋️ Pesas - ${muscleNames[muscleGroup]} - ${duration} minutos\n\nEfectos:\n- Hambre: -${hungerPercent.toFixed(1)}%\n- Hidratación: -${hydrationPercent.toFixed(1)}%\n- Salud Física: +45%\n- Autoestima: +25%\n\n¿Aplicar?`)) {
                 gameState.stats.hambre.value = Math.max(0, gameState.stats.hambre.value - hungerPercent);
                 gameState.stats.hidratacion.value = Math.max(0, gameState.stats.hidratacion.value - hydrationPercent);
-                gameState.stats.ejercicio.value = Math.min(100, gameState.stats.ejercicio.value + 45);
-                gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + 25);
+                gameState.stats.ejercicio.value = Math.min(200, gameState.stats.ejercicio.value + 45);
+                gameState.stats.autoestima.value = Math.min(200, gameState.stats.autoestima.value + 25);
                 
                 gameState.lastUpdate = Date.now();
                 saveState();
@@ -4136,7 +4291,7 @@
         }
         
         function applySelfcareAction(action) {
-            gameState.stats.autoestima.value = Math.min(100, gameState.stats.autoestima.value + action.boost);
+            gameState.stats.autoestima.value = Math.min(200, gameState.stats.autoestima.value + action.boost);
             markActionUsed(action.id, action.cooldown);
             saveState();
             renderStats();
@@ -4214,7 +4369,7 @@
         
         function applySocialAction(action) {
             // Aumentar vida social
-            gameState.stats.vidaSocial.value = Math.min(100, gameState.stats.vidaSocial.value + action.boost);
+            gameState.stats.vidaSocial.value = Math.min(200, gameState.stats.vidaSocial.value + action.boost);
             
             gameState.lastUpdate = Date.now();
             saveState();
@@ -4420,6 +4575,7 @@
             
             // Cargar y renderizar ideas
             loadIdeas();
+            migrateIdeasToNewStructure();
             renderIdeas();
             
             // Renderizar actividades del calendario
@@ -4592,14 +4748,18 @@
                     libros: [],
                     peliculas: [],
                     series: [],
-                    flashcards: []
+                    flashcards: [],
+                    apuntes: []
                 };
                 console.log('🆕 Biblioteca inicializada vacía');
             }
             
-            // Asegurar que flashcards exista en bibliotecas antiguas
+            // Asegurar que flashcards y apuntes existan en bibliotecas antiguas
             if (!library.flashcards) {
                 library.flashcards = [];
+            }
+            if (!library.apuntes) {
+                library.apuntes = [];
             }
         }
         
@@ -4628,7 +4788,123 @@
         function openLibraryCategory(category) {
             currentLibraryCategory = category;
             libraryFilters = { search: '', letter: '', rating: 0 };
+            
+            // Si es apuntes, renderizar con función simple
+            if (category === 'apuntes') {
+                renderApuntes();
+                return;
+            }
+            
             renderLibraryContent();
+        }
+        
+        // Renderizar apuntes (versión simple)
+        function renderApuntes() {
+            const c = document.getElementById('libraryContent');
+            
+            // Asegurar que library y library.apuntes existan
+            if (!window.library) {
+                window.library = {};
+            }
+            if (!library.apuntes) {
+                library.apuntes = [];
+            }
+            
+            let html = `
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h2 style="color: #6b4c9a; margin-bottom: 15px;">📝 Apuntes</h2>
+                    <button onclick="agregarApunte()" style="padding: 12px 25px; background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 167, 81, 0.3);">
+                        ➕ Agregar Apunte
+                    </button>
+                </div>
+            `;
+            
+            if (library.apuntes.length === 0) {
+                html += `
+                    <div style="text-align: center; padding: 60px 20px; color: #9ca3af;">
+                        <div style="font-size: 4em; margin-bottom: 20px;">📝</div>
+                        <p style="font-size: 1.2em; font-weight: 600; margin-bottom: 10px; color: #6b7280;">No hay apuntes</p>
+                        <p style="font-size: 1em; color: #9ca3af;">Agrega uno para comenzar</p>
+                    </div>
+                `;
+            } else {
+                html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">';
+                
+                library.apuntes.forEach((apunte, index) => {
+                    const fecha = apunte.fecha ? new Date(apunte.fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+                    const preview = apunte.contenido ? apunte.contenido.substring(0, 100) + '...' : '';
+                    
+                    html += `
+                        <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s;">
+                            <h3 style="color: #ffa751; margin-bottom: 10px; font-size: 1.2em;">${apunte.titulo || 'Sin título'}</h3>
+                            <p style="color: #6b7280; font-size: 0.85em; margin-bottom: 10px;">📅 ${fecha}</p>
+                            ${preview ? `<p style="color: #9ca3af; font-size: 0.9em; margin-bottom: 15px; line-height: 1.5;">${preview}</p>` : ''}
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="editarApunte(${index})" style="flex: 1; padding: 8px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                    ✏️ Editar
+                                </button>
+                                <button onclick="borrarApunte(${index})" style="flex: 1; padding: 8px; background: #ff6b9d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                    🗑️ Borrar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            c.innerHTML = html;
+        }
+        
+        // Agregar nuevo apunte
+        function agregarApunte() {
+            const titulo = prompt('Título del apunte:');
+            if (!titulo) return;
+            
+            const contenido = prompt('Contenido del apunte:');
+            if (!contenido) return;
+            
+            const nuevoApunte = {
+                id: Date.now(),
+                titulo: titulo,
+                contenido: contenido,
+                fecha: Date.now()
+            };
+            
+            library.apuntes.push(nuevoApunte);
+            saveLibrary();
+            renderApuntes();
+            alert('✅ Apunte agregado correctamente');
+        }
+        
+        // Editar apunte existente
+        function editarApunte(index) {
+            const apunte = library.apuntes[index];
+            
+            const nuevoTitulo = prompt('Editar título:', apunte.titulo);
+            if (nuevoTitulo === null) return;
+            
+            const nuevoContenido = prompt('Editar contenido:', apunte.contenido);
+            if (nuevoContenido === null) return;
+            
+            library.apuntes[index].titulo = nuevoTitulo;
+            library.apuntes[index].contenido = nuevoContenido;
+            library.apuntes[index].fecha = Date.now();
+            
+            saveLibrary();
+            renderApuntes();
+            alert('✅ Apunte actualizado correctamente');
+        }
+        
+        // Borrar apunte
+        function borrarApunte(index) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este apunte?')) return;
+            
+            library.apuntes.splice(index, 1);
+            saveLibrary();
+            renderApuntes();
+            alert('✅ Apunte eliminado correctamente');
         }
         
         // Renderizar contenido de biblioteca
@@ -4652,6 +4928,12 @@
                 const duration = series.duration || 0;
                 const times = series.timesWatched || 1;
                 return sum + (duration * times / 60);
+            }, 0) || 0;
+            
+            const totalBookHours = library.libros?.reduce((sum, book) => {
+                const pages = book.pages || 0;
+                const timePerPage = 1.5; // minutos por página
+                return sum + (pages * timePerPage / 60);
             }, 0) || 0;
             
             // Filtrar items
@@ -4707,10 +4989,10 @@
                         <span style="font-size: 0.9em;">📚</span>
                         <span style="font-weight: bold; color: #667eea; font-size: 0.85em;">${totalBooks}</span>
                     </div>
-                    ${(totalMovieHours + totalSeriesHours) > 0 ? `
+                    ${(totalMovieHours + totalSeriesHours + totalBookHours) > 0 ? `
                         <div style="border-left: 2px solid rgba(102, 126, 234, 0.3); padding-left: 12px; display: flex; align-items: center; gap: 4px;">
                             <span style="font-size: 0.8em;">⏱️</span>
-                            <span style="color: #667eea; font-weight: 600; font-size: 0.75em;">${(totalMovieHours + totalSeriesHours).toFixed(1)}h</span>
+                            <span style="color: #667eea; font-weight: 600; font-size: 0.75em;">${(totalMovieHours + totalSeriesHours + totalBookHours).toFixed(1)}h</span>
                         </div>
                     ` : ''}
                 </div>
@@ -4781,6 +5063,18 @@
                                     <div style="color: #ff6b9d; font-weight: 600;">Total: ${((item.duration || 0) * (item.timesWatched || 1))} min (${Math.floor(((item.duration || 0) * (item.timesWatched || 1)) / 60)}h ${((item.duration || 0) * (item.timesWatched || 1)) % 60}m)</div>
                                 </div>
                             ` : ''}
+                            ${currentLibraryCategory === 'series' && item.duration ? `
+                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
+                                    <div style="color: #6b4c9a;">⏱️ ${item.duration} min | 👁️ ${item.timesWatched || 1}x</div>
+                                    <div style="color: #ff6b9d; font-weight: 600;">Total: ${((item.duration || 0) * (item.timesWatched || 1))} min (${Math.floor(((item.duration || 0) * (item.timesWatched || 1)) / 60)}h ${((item.duration || 0) * (item.timesWatched || 1)) % 60}m)</div>
+                                </div>
+                            ` : ''}
+                            ${currentLibraryCategory === 'libros' && item.pages ? `
+                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
+                                    <div style="color: #6b4c9a;">📄 ${item.pages} páginas</div>
+                                    <div style="color: #ff6b9d; font-weight: 600;">Tiempo estimado: ${Math.floor((item.pages * 1.5) / 60)}h ${Math.round((item.pages * 1.5) % 60)}m</div>
+                                </div>
+                            ` : ''}
                             ${currentLibraryCategory === 'flashcards' && item.folder ? `<p style="color: #ff6b9d; font-size: 0.85em; margin-bottom: 10px;">📁 ${item.folder}</p>` : ''}
                             <div style="display: flex; gap: 10px;">${currentLibraryCategory === 'flashcards' ? `
                                     <button onclick="reviewSingleFlashcard(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">🧠 Repasar</button>
@@ -4841,7 +5135,10 @@
                         ${currentLibraryCategory === 'peliculas' || currentLibraryCategory === 'series' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'series' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'series' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'libros' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'libros' ? `<input type="number" id="bookPages" placeholder="Número de páginas" value="${isEditing ? item.pages || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
@@ -4885,6 +5182,7 @@
             const flashcardImage = document.getElementById('flashcardImage')?.value.trim() || '';
             const duration = document.getElementById('movieDuration')?.value || 0;
             const timesWatched = document.getElementById('movieTimesWatched')?.value || 1;
+            const pages = document.getElementById('bookPages')?.value || 0;
             const rating = window.currentItemRating || 0;
             
             console.log('💾 Guardando item en categoría:', currentLibraryCategory);
@@ -4922,6 +5220,7 @@
                 folder,
                 duration: parseInt(duration) || 0,
                 timesWatched: parseInt(timesWatched) || 1,
+                pages: parseInt(pages) || 0,
                 rating,
                 dateAdded: editIndex !== null ? library[currentLibraryCategory][editIndex].dateAdded : new Date().toISOString(),
                 // Sistema de repetición espaciada para flashcards
@@ -5281,7 +5580,7 @@
                     </div>
                     <div style="display: flex; gap: 10px; padding: 20px;">
                         <button onclick="saveExercise(${dayIndex}, null)" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
-                        <button onclick="closeExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                        <button onclick="closeDynamicExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
                     </div>
                 </div>
             `;
@@ -5324,7 +5623,7 @@
                     </div>
                     <div style="display: flex; gap: 10px; padding: 20px;">
                         <button onclick="saveExercise(${dayIndex}, ${exerciseIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Guardar</button>
-                        <button onclick="closeExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                        <button onclick="closeDynamicExerciseModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
                     </div>
                 </div>
             `;
@@ -5357,7 +5656,7 @@
             saveExercisePlan();
             renderDayExercises(dayIndex);
             renderExerciseCalendar();
-            closeExerciseModal();
+            closeDynamicExerciseModal();
         }
         
         function deleteExercise(dayIndex, exerciseIndex) {
@@ -5369,7 +5668,7 @@
             }
         }
         
-        function closeExerciseModal() {
+        function closeDynamicExerciseModal() {
             const modals = document.querySelectorAll('.modal');
             modals.forEach(modal => {
                 if (modal.querySelector('#exerciseName')) {
@@ -5511,7 +5810,7 @@
             if (bar && value) {
                 const displayValue = Math.round(contenidoValue);
                 value.textContent = `${displayValue}%`;
-                bar.style.width = `${Math.max(0, Math.min(100, contenidoValue))}%`;
+                bar.style.width = `${Math.max(0, Math.min(200, contenidoValue))}%`;
                 
                 // Cambiar color según nivel
                 if (contenidoValue >= 70) {
@@ -5579,8 +5878,23 @@
             const idea = {
                 id: Date.now(),
                 text: text,
+                texto_bruto: text,
+                titulo: '',
+                categoria: '',
+                subcategoria: '',
+                sujeto: '',
+                faceta: '',
+                mecanismo: '',
+                rareza: 1,
+                tags: [],
+                clasificacion_status: 'sin_clasificar',
+                fingerprint: '',
+                duplicada: false,
+                urls_investigacion: [],
+                urls_imagenes: [],
                 percentage: percentage,
                 createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
                 status: 'pendiente'
             };
             
@@ -5592,7 +5906,7 @@
             }
             
             // Sumar porcentaje a la barra de contenido
-            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + percentage);
+            gameState.stats.contenido.value = Math.min(200, (gameState.stats.contenido.value || 0) + percentage);
             
             input.value = '';
             saveIdeas();
@@ -5617,7 +5931,7 @@
             if (!container) return;
             
             container.innerHTML = '';
-            const ideas = gameState.ideas[currentIdeaState] || [];
+            let ideas = gameState.ideas[currentIdeaState] || [];
             
             if (ideas.length === 0) {
                 const emptyMessages = {
@@ -5631,8 +5945,23 @@
                 return;
             }
             
-            ideas.forEach((idea, index) => {
-                const ideaCard = createIdeaCard(idea, currentIdeaState, index);
+            // Obtener orden seleccionado
+            const sortOrder = document.getElementById('ideaSortOrder')?.value || 'newest';
+            
+            // Crear copia y ordenar según selección
+            ideas = [...ideas];
+            if (sortOrder === 'oldest') {
+                // Más antiguas primero (orden original, las primeras son las más antiguas)
+                // No hacer nada, mantener orden original
+            } else {
+                // Más recientes primero (invertir)
+                ideas.reverse();
+            }
+            
+            ideas.forEach((idea, displayIndex) => {
+                // Calcular el índice original basado en el ordenamiento
+                const originalIndex = sortOrder === 'oldest' ? displayIndex : (gameState.ideas[currentIdeaState].length - 1 - displayIndex);
+                const ideaCard = createIdeaCard(idea, currentIdeaState, originalIndex);
                 container.appendChild(ideaCard);
             });
         }
@@ -5660,7 +5989,7 @@
             content.style.cssText = 'flex: 1; min-width: 0;';
             
             const text = document.createElement('div');
-            text.textContent = idea.text;
+            text.textContent = idea.titulo || idea.texto_bruto || idea.text;
             text.style.cssText = 'color: #6b4c9a; font-weight: 600; margin-bottom: 5px; word-wrap: break-word;';
             
             const meta = document.createElement('div');
@@ -5677,6 +6006,30 @@
             meta.appendChild(percentage);
             meta.appendChild(date);
             
+            // Badge de clasificación
+            const clasificacionStatus = idea.clasificacion_status || 'sin_clasificar';
+            const badgeClasificacion = document.createElement('span');
+            
+            if (clasificacionStatus === 'sin_clasificar') {
+                badgeClasificacion.textContent = 'SIN CLASIFICAR';
+                badgeClasificacion.style.cssText = 'background: #f3f4f6; color: #6b7280; padding: 3px 8px; border-radius: 8px; font-weight: 600; font-size: 0.75em;';
+            } else if (clasificacionStatus === 'sugerida') {
+                badgeClasificacion.textContent = 'SUGERIDA';
+                badgeClasificacion.style.cssText = 'background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; padding: 3px 8px; border-radius: 8px; font-weight: 600; font-size: 0.75em;';
+            } else if (clasificacionStatus === 'confirmada') {
+                badgeClasificacion.textContent = 'CONFIRMADA';
+                badgeClasificacion.style.cssText = 'background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 3px 8px; border-radius: 8px; font-weight: 600; font-size: 0.75em;';
+            }
+            meta.appendChild(badgeClasificacion);
+            
+            // Badge de duplicada
+            if (idea.duplicada) {
+                const badgeDuplicada = document.createElement('span');
+                badgeDuplicada.textContent = 'DUPLICADA';
+                badgeDuplicada.style.cssText = 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 3px 8px; border-radius: 8px; font-weight: 600; font-size: 0.75em; animation: pulse 2s infinite;';
+                meta.appendChild(badgeDuplicada);
+            }
+            
             // Si está editada, mostrar fecha de publicación
             if (section === 'editadas' && idea.publishDate) {
                 const publishInfo = document.createElement('span');
@@ -5691,11 +6044,16 @@
             
             // Botones de acción
             const actions = document.createElement('div');
-            actions.style.cssText = 'display: flex; gap: 8px; flex-shrink: 0;';
+            actions.style.cssText = 'display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap;';
+            
+            // Botón de clasificar (siempre disponible)
+            const classifyBtn = createActionButton('🎯', () => openClassificationModal(section, index));
+            classifyBtn.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+            actions.appendChild(classifyBtn);
             
             // Botón de acción principal según estado
             if (section === 'pendientes') {
-                const guionBtn = createActionButton('📝', () => openGuionModal(section, index));
+                const guionBtn = createActionButton('📝', () => openClassificationModal(section, index));
                 actions.appendChild(guionBtn);
             } else if (section === 'guionada') {
                 // Botón para VER el guion
@@ -5704,7 +6062,7 @@
                 actions.appendChild(viewGuionBtn);
                 
                 // Botón para EDITAR el guion
-                const editGuionBtn = createActionButton('✏️', () => openGuionModal(section, index));
+                const editGuionBtn = createActionButton('✏️', () => openClassificationModal(section, index));
                 actions.appendChild(editGuionBtn);
                 
                 // Botón para mover a grabadas
@@ -5951,7 +6309,7 @@
             }
             
             // Sumar porcentaje adicional a la barra
-            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + percentage);
+            gameState.stats.contenido.value = Math.min(200, (gameState.stats.contenido.value || 0) + percentage);
             
             saveIdeas();
             saveState();
@@ -6039,7 +6397,7 @@
             }
             
             // Sumar porcentaje
-            gameState.stats.contenido.value = Math.min(100, (gameState.stats.contenido.value || 0) + idea.percentage);
+            gameState.stats.contenido.value = Math.min(200, (gameState.stats.contenido.value || 0) + idea.percentage);
             
             saveIdeas();
             saveState();
@@ -6085,6 +6443,798 @@
             // No llamar renderStats aquí para evitar sobrescribir contenido
             
             alert(`🗑️ Idea eliminada. -${percentage}% de Contenido`);
+        }
+
+        // ===== SISTEMA DE CLASIFICACIÓN Y IA =====
+        
+        // Normalizar texto para fingerprint
+        function normalizeForFingerprint(str) {
+            if (!str) return '';
+            return str.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
+                .trim()
+                .replace(/\s+/g, '_');
+        }
+        
+        // Generar fingerprint único
+        function generateFingerprint(sujeto, faceta, mecanismo) {
+            return `${normalizeForFingerprint(sujeto)}|${normalizeForFingerprint(faceta)}|${normalizeForFingerprint(mecanismo)}`;
+        }
+        
+        // Verificar duplicados
+        function checkDuplicate(fingerprint, currentId) {
+            const allIdeas = [
+                ...(gameState.ideas.pendientes || []),
+                ...(gameState.ideas.guionada || []),
+                ...(gameState.ideas.grabadas || []),
+                ...(gameState.ideas.editadas || []),
+                ...(gameState.ideas.publicadas || [])
+            ];
+            
+            return allIdeas.find(idea => 
+                idea.fingerprint === fingerprint && 
+                idea.id !== currentId
+            );
+        }
+        
+        // Migrar ideas antiguas a nueva estructura
+        function migrateIdeasToNewStructure() {
+            let migrated = false;
+            const allSections = ['pendientes', 'guionada', 'grabadas', 'editadas', 'publicadas'];
+            
+            allSections.forEach(section => {
+                if (!gameState.ideas[section]) gameState.ideas[section] = [];
+                
+                gameState.ideas[section].forEach(idea => {
+                    if (!idea.clasificacion_status) {
+                        idea.clasificacion_status = 'sin_clasificar';
+                        idea.categoria = '';
+                        idea.subcategoria = '';
+                        idea.sujeto = '';
+                        idea.faceta = '';
+                        idea.mecanismo = '';
+                        idea.rareza = 1;
+                        idea.tags = [];
+                        idea.titulo = '';
+                        idea.fingerprint = '';
+                        idea.duplicada = false;
+                        idea.texto_bruto = idea.text || '';
+                        idea.urls_investigacion = idea.guion?.urls || [];
+                        idea.urls_imagenes = idea.guion?.images || [];
+                        idea.updatedAt = idea.createdAt;
+                        migrated = true;
+                    }
+                });
+            });
+            
+            if (migrated) {
+                saveIdeas();
+                console.log('✅ Ideas migradas a nueva estructura');
+            }
+        }
+        
+        // Abrir modal de clasificación (modificado del modal de guion)
+        function openClassificationModal(section, index) {
+            const idea = gameState.ideas[section][index];
+            
+            const facetasOpciones = [
+                'historia_origen', 'funcionamiento_interno', 'casos_uso', 'comparacion',
+                'tutorial_basico', 'tutorial_avanzado', 'errores_comunes', 'optimizacion',
+                'curiosidades', 'impacto_social', 'evolucion_temporal', 'futuro',
+                'detras_escenas', 'controversia', 'mitos_realidades', 'best_practices',
+                'herramientas', 'recursos', 'comunidad', 'entrevista', 'otro'
+            ];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'classificationModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>🎯 Clasificar Idea</h3>
+                        <p style="margin-top: 8px; opacity: 0.8; font-size: 0.9em;">${idea.texto_bruto}</p>
+                    </div>
+                    <div class="modal-body">
+                        ${idea.clasificacion_status === 'confirmada' && idea.fingerprint ? `
+                            <div style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+                                <div style="color: #1e40af; font-weight: 600; margin-bottom: 5px;">🔑 Fingerprint</div>
+                                <code style="background: white; padding: 8px; border-radius: 5px; display: block; color: #374151; font-size: 0.85em;">${idea.fingerprint}</code>
+                                ${idea.duplicada ? '<div style="color: #dc2626; font-weight: 600; margin-top: 8px;">⚠️ DUPLICADA - Ya existe una idea similar</div>' : ''}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                            <h4 style="color: #6b4c9a; margin-bottom: 15px; font-size: 1.1em;">📋 Clasificación</h4>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Categoría *</label>
+                                    <input type="text" id="ideaCategoria" value="${idea.categoria || ''}" placeholder="Ej: Educación, Entretenimiento" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Subcategoría</label>
+                                    <input type="text" id="ideaSubcategoria" value="${idea.subcategoria || ''}" placeholder="Opcional" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Título</label>
+                                <input type="text" id="ideaTitulo" value="${idea.titulo || ''}" placeholder="Título descriptivo de la idea" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Sujeto / Tema Principal *</label>
+                                <input type="text" id="ideaSujeto" value="${idea.sujeto || ''}" placeholder="Ej: JavaScript, Historia de Roma, Gatos" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Faceta / Aspecto *</label>
+                                    <select id="ideaFaceta" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                        <option value="">Selecciona una faceta</option>
+                                        ${facetasOpciones.map(f => `<option value="${f}" ${idea.faceta === f ? 'selected' : ''}>${f.replace(/_/g, ' ')}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Rareza *</label>
+                                    <select id="ideaRareza" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                        <option value="1" ${idea.rareza === 1 ? 'selected' : ''}>1 - Común</option>
+                                        <option value="2" ${idea.rareza === 2 ? 'selected' : ''}>2 - Poco común</option>
+                                        <option value="3" ${idea.rareza === 3 ? 'selected' : ''}>3 - Interesante</option>
+                                        <option value="4" ${idea.rareza === 4 ? 'selected' : ''}>4 - Raro</option>
+                                        <option value="5" ${idea.rareza === 5 ? 'selected' : ''}>5 - Único</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Mecanismo / Formato *</label>
+                                <input type="text" id="ideaMecanismo" value="${idea.mecanismo || ''}" placeholder="Ej: tutorial_interactivo, storytelling, documental" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Tags (separados por coma)</label>
+                                <input type="text" id="ideaTags" value="${(idea.tags || []).join(', ')}" placeholder="Ej: programación, web, principiantes" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button onclick="suggestClassification('${section}', ${index})" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 10px; padding: 12px; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">🤖 Sugerir Clasificación (IA)</button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">📝 Guion / Notas:</label>
+                            <textarea id="guionText" rows="8" placeholder="Escribe tu guion aquí..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: inherit;">${idea.guion?.text || ''}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">🔗 URLs de Investigación (una por línea):</label>
+                            <textarea id="guionUrls" rows="4" placeholder="https://ejemplo.com&#10;https://otro-sitio.com" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: monospace;">${(idea.urls_investigacion || idea.guion?.urls || []).join('\n')}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">🖼️ URLs de Imágenes (una por línea):</label>
+                            <textarea id="guionImages" rows="3" placeholder="https://imagen1.jpg&#10;https://imagen2.png" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; resize: vertical; font-family: monospace;">${(idea.urls_imagenes || idea.guion?.images || []).join('\n')}</textarea>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="saveClassification('${section}', ${index}, false)" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; border: none; border-radius: 15px; font-size: 1em; font-weight: bold; cursor: pointer;">💾 Guardar</button>
+                        <button onclick="saveClassification('${section}', ${index}, true)" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 15px; font-size: 1em; font-weight: bold; cursor: pointer;">✅ Confirmar Clasificación</button>
+                        <button onclick="closeClassificationModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Guardar clasificación
+        function saveClassification(section, index, confirm) {
+            const idea = gameState.ideas[section][index];
+            
+            // Obtener valores del formulario
+            const categoria = document.getElementById('ideaCategoria').value.trim();
+            const subcategoria = document.getElementById('ideaSubcategoria').value.trim();
+            const titulo = document.getElementById('ideaTitulo').value.trim();
+            const sujeto = document.getElementById('ideaSujeto').value.trim();
+            const faceta = document.getElementById('ideaFaceta').value;
+            const mecanismo = document.getElementById('ideaMecanismo').value.trim();
+            const rareza = parseInt(document.getElementById('ideaRareza').value);
+            const tagsText = document.getElementById('ideaTags').value.trim();
+            const tags = tagsText ? tagsText.split(',').map(t => t.trim()).filter(t => t) : [];
+            const guionText = document.getElementById('guionText').value.trim();
+            const guionUrls = document.getElementById('guionUrls').value.trim();
+            const guionImages = document.getElementById('guionImages').value.trim();
+            
+            // Validar campos requeridos solo si se confirma
+            if (confirm) {
+                if (!categoria || !sujeto || !faceta || !mecanismo) {
+                    alert('⚠️ Por favor completa todos los campos marcados con * antes de confirmar');
+                    return;
+                }
+                
+                // Generar fingerprint
+                const fingerprint = generateFingerprint(sujeto, faceta, mecanismo);
+                
+                // Verificar duplicados
+                const duplicate = checkDuplicate(fingerprint, idea.id);
+                if (duplicate) {
+                    const continuar = confirm(`⚠️ YA EXISTE UNA IDEA SIMILAR:\n\nTítulo: ${duplicate.titulo || duplicate.texto_bruto}\nSujeto: ${duplicate.sujeto}\nFaceta: ${duplicate.faceta}\nMecanismo: ${duplicate.mecanismo}\n\n¿Deseas marcar esta idea como duplicada y continuar?`);
+                    
+                    if (!continuar) return;
+                    idea.duplicada = true;
+                } else {
+                    idea.duplicada = false;
+                }
+                
+                idea.fingerprint = fingerprint;
+                idea.clasificacion_status = 'confirmada';
+            } else {
+                idea.clasificacion_status = sujeto && faceta && mecanismo ? 'sugerida' : 'sin_clasificar';
+            }
+            
+            // Actualizar idea
+            idea.categoria = categoria;
+            idea.subcategoria = subcategoria;
+            idea.titulo = titulo;
+            idea.sujeto = sujeto;
+            idea.faceta = faceta;
+            idea.mecanismo = mecanismo;
+            idea.rareza = rareza;
+            idea.tags = tags;
+            idea.updatedAt = new Date().toISOString();
+            idea.urls_investigacion = guionUrls ? guionUrls.split('\n').filter(url => url.trim()) : [];
+            idea.urls_imagenes = guionImages ? guionImages.split('\n').filter(img => img.trim()) : [];
+            
+            // Actualizar guion
+            if (guionText) {
+                idea.guion = {
+                    text: guionText,
+                    urls: idea.urls_investigacion,
+                    images: idea.urls_imagenes,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // Si está en pendientes y tiene guion, moverla a guionada
+                if (section === 'pendientes') {
+                    gameState.ideas[section].splice(index, 1);
+                    gameState.ideas.guionada.push(idea);
+                }
+            }
+            
+            saveIdeas();
+            closeClassificationModal();
+            renderCurrentIdeaState();
+            
+            if (confirm) {
+                alert('✅ Clasificación confirmada' + (idea.duplicada ? ' (marcada como duplicada)' : ''));
+            }
+        }
+        
+        // Cerrar modal de clasificación
+        function closeClassificationModal() {
+            const modal = document.getElementById('classificationModal');
+            if (modal) modal.remove();
+        }
+        
+        // Sugerir clasificación con IA (stub simulado)
+        async function suggestClassification(section, index) {
+            const idea = gameState.ideas[section][index];
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '🤖 Analizando...';
+            
+            try {
+                // Simular llamada a API (stub)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Respuesta simulada
+                const suggestion = {
+                    categoria: idea.texto_bruto.toLowerCase().includes('javascript') || idea.texto_bruto.toLowerCase().includes('código') ? 'Educación' : 'Entretenimiento',
+                    subcategoria: 'Tutorial',
+                    sujeto: idea.texto_bruto.split(' ').slice(0, 3).join(' '),
+                    faceta: 'tutorial_basico',
+                    mecanismo: 'video_explicativo',
+                    rareza: 3,
+                    tags: ['video', 'tutorial', 'educación'],
+                    titulo: 'Cómo ' + idea.texto_bruto.toLowerCase().substring(0, 50)
+                };
+                
+                // Llenar formulario
+                document.getElementById('ideaCategoria').value = suggestion.categoria;
+                document.getElementById('ideaSubcategoria').value = suggestion.subcategoria;
+                document.getElementById('ideaTitulo').value = suggestion.titulo;
+                document.getElementById('ideaSujeto').value = suggestion.sujeto;
+                document.getElementById('ideaFaceta').value = suggestion.faceta;
+                document.getElementById('ideaMecanismo').value = suggestion.mecanismo;
+                document.getElementById('ideaRareza').value = suggestion.rareza;
+                document.getElementById('ideaTags').value = suggestion.tags.join(', ');
+                
+                alert('✨ Clasificación sugerida por IA. Revisa y ajusta si es necesario.');
+            } catch (error) {
+                alert('❌ Error al obtener sugerencia: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🤖 Sugerir Clasificación (IA)';
+            }
+        }
+        
+        // Abrir modal de generación de ideas
+        function openGenerateIdeasModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'generateIdeasModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>🤖 Generar Ideas con IA</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Categoría Objetivo *</label>
+                            <input type="text" id="genCategoria" placeholder="Ej: Educación, Entretenimiento" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Sujeto Específico (opcional)</label>
+                            <input type="text" id="genSujeto" placeholder="Deja vacío para ideas variadas" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Cantidad</label>
+                                <select id="genCantidad" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                    <option value="5">5 ideas</option>
+                                    <option value="10" selected>10 ideas</option>
+                                    <option value="20">20 ideas</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; color: #667eea; font-weight: 600;">Rareza Mínima</label>
+                                <select id="genRareza" style="width: 100%; padding: 10px; border: 2px solid #e0e7ff; border-radius: 8px;">
+                                    <option value="1">1 - Cualquiera</option>
+                                    <option value="2">2 - Poco común</option>
+                                    <option value="3" selected>3 - Interesante</option>
+                                    <option value="4">4 - Raro</option>
+                                    <option value="5">5 - Único</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="genEvitarRepeticion" checked style="width: 20px; height: 20px; cursor: pointer;">
+                                <span style="color: #667eea; font-weight: 600;">No repetir facetas/mecanismos ya usados</span>
+                            </label>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 15px; border-radius: 10px;">
+                            <p style="color: #6b4c9a; font-size: 0.9em; margin: 0;">💡 <strong>Tip:</strong> La IA analizará tu base de ideas existentes para evitar duplicados y sugerir contenido original.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="generateIdeasAI()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">✨ Generar Ideas</button>
+                        <button onclick="closeGenerateIdeasModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Cerrar modal de generación
+        function closeGenerateIdeasModal() {
+            const modal = document.getElementById('generateIdeasModal');
+            if (modal) modal.remove();
+        }
+        
+        // Generar ideas con IA (stub simulado)
+        async function generateIdeasAI() {
+            const categoria = document.getElementById('genCategoria').value.trim();
+            const sujeto = document.getElementById('genSujeto').value.trim();
+            const cantidad = parseInt(document.getElementById('genCantidad').value);
+            const rarezaMinima = parseInt(document.getElementById('genRareza').value);
+            const evitarRepeticion = document.getElementById('genEvitarRepeticion').checked;
+            
+            if (!categoria) {
+                alert('⚠️ Por favor ingresa una categoría');
+                return;
+            }
+            
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '🤖 Generando...';
+            
+            try {
+                // Construir contexto anti-repetición
+                const contexto = buildAntiRepetitionContext(categoria, sujeto, evitarRepeticion);
+                
+                // Simular llamada a API
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Generar ideas simuladas
+                const ideasGeneradas = [];
+                for (let i = 0; i < cantidad; i++) {
+                    const ideaSample = {
+                        sujeto: sujeto || `Tema ${i + 1} de ${categoria}`,
+                        faceta: ['tutorial_basico', 'historia_origen', 'casos_uso', 'curiosidades'][i % 4],
+                        mecanismo: ['video_explicativo', 'storytelling', 'infografia', 'documental'][i % 4],
+                        idea_resumen: `Idea interesante sobre ${sujeto || categoria} - aspecto ${i + 1}`,
+                        categoria: categoria,
+                        subcategoria: '',
+                        rareza: Math.max(rarezaMinima, Math.floor(Math.random() * 3) + 2),
+                        tags: [categoria.toLowerCase(), 'ia', 'generado'],
+                        titulo: `${sujeto || categoria}: Aspecto ${i + 1}`
+                    };
+                    ideasGeneradas.push(ideaSample);
+                }
+                
+                // Guardar ideas generadas
+                let ideasGuardadas = 0;
+                ideasGeneradas.forEach(ideaData => {
+                    const fingerprint = generateFingerprint(ideaData.sujeto, ideaData.faceta, ideaData.mecanismo);
+                    const isDuplicate = checkDuplicate(fingerprint, null);
+                    
+                    const nuevaIdea = {
+                        id: Date.now() + Math.random(),
+                        texto_bruto: ideaData.idea_resumen,
+                        titulo: ideaData.titulo,
+                        categoria: ideaData.categoria,
+                        subcategoria: ideaData.subcategoria,
+                        sujeto: ideaData.sujeto,
+                        faceta: ideaData.faceta,
+                        mecanismo: ideaData.mecanismo,
+                        rareza: ideaData.rareza,
+                        tags: ideaData.tags,
+                        clasificacion_status: 'sugerida',
+                        fingerprint: fingerprint,
+                        duplicada: isDuplicate ? true : false,
+                        percentage: 2,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        urls_investigacion: [],
+                        urls_imagenes: [],
+                        status: 'pendiente'
+                    };
+                    
+                    gameState.ideas.pendientes.push(nuevaIdea);
+                    ideasGuardadas++;
+                });
+                
+                saveIdeas();
+                closeGenerateIdeasModal();
+                renderCurrentIdeaState();
+                
+                alert(`✨ ${ideasGuardadas} ideas generadas exitosamente!\n${ideasGeneradas.filter((_, i) => gameState.ideas.pendientes[gameState.ideas.pendientes.length - cantidad + i].duplicada).length} ideas marcadas como posibles duplicadas.`);
+                
+            } catch (error) {
+                alert('❌ Error al generar ideas: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = '✨ Generar Ideas';
+            }
+        }
+        
+        // Construir contexto anti-repetición
+        function buildAntiRepetitionContext(categoria, sujeto, evitarRepeticion) {
+            if (!evitarRepeticion) return null;
+            
+            const allIdeas = [
+                ...(gameState.ideas.pendientes || []),
+                ...(gameState.ideas.guionada || []),
+                ...(gameState.ideas.grabadas || []),
+                ...(gameState.ideas.editadas || []),
+                ...(gameState.ideas.publicadas || [])
+            ].filter(idea => idea.clasificacion_status === 'confirmada');
+            
+            const contexto = {
+                por_sujeto: {},
+                por_categoria: {}
+            };
+            
+            // Si hay sujeto específico, recopilar sus facetas y mecanismos
+            if (sujeto) {
+                const ideasDelSujeto = allIdeas.filter(idea => 
+                    normalizeForFingerprint(idea.sujeto) === normalizeForFingerprint(sujeto)
+                );
+                
+                contexto.por_sujeto[sujeto] = {
+                    facetas_usadas: [...new Set(ideasDelSujeto.map(i => i.faceta).filter(Boolean))],
+                    mecanismos_usados: [...new Set(ideasDelSujeto.map(i => i.mecanismo).filter(Boolean))]
+                };
+            } else {
+                // Resumir por categoría
+                const ideasDeCategoria = allIdeas.filter(idea => 
+                    normalizeForFingerprint(idea.categoria) === normalizeForFingerprint(categoria)
+                );
+                
+                contexto.por_categoria[categoria] = {
+                    sujetos_comunes: [...new Set(ideasDeCategoria.map(i => i.sujeto).filter(Boolean))].slice(0, 20),
+                    facetas_comunes: [...new Set(ideasDeCategoria.map(i => i.faceta).filter(Boolean))].slice(0, 15)
+                };
+            }
+            
+            return contexto;
+        }
+        
+        // ===== SISTEMA DE EXPORTACIÓN =====
+        
+        // Abrir menú de exportación
+        function openExportMenu() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'exportModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>📊 Exportar Ideas</h3>
+                    </div>
+                    <div class="modal-body">
+                        <button onclick="exportCSV()" style="width: 100%; margin-bottom: 10px; padding: 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">📄</span>
+                            <div>
+                                <div style="font-size: 1.1em;">CSV Completo</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Todas las ideas con todos los campos</div>
+                            </div>
+                        </button>
+                        
+                        <button onclick="exportResumenAntiRepeticion()" style="width: 100%; margin-bottom: 10px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">📋</span>
+                            <div>
+                                <div style="font-size: 1.1em;">Resumen Anti-Repetición</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Por categoría/sujeto → faceta+mecanismo</div>
+                            </div>
+                        </button>
+                        
+                        <button onclick="openBanlistSelector()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">🚫</span>
+                            <div>
+                                <div style="font-size: 1.1em;">Banlist por Sujeto</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Combinaciones ya usadas de un tema</div>
+                            </div>
+                        </button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <button onclick="closeExportMenu()" style="width: 100%; padding: 12px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Cerrar menú de exportación
+        function closeExportMenu() {
+            const modal = document.getElementById('exportModal');
+            if (modal) modal.remove();
+        }
+        
+        // Exportar CSV completo
+        function exportCSV() {
+            const allIdeas = [
+                ...gameState.ideas.pendientes.map(i => ({ ...i, estado: 'pendiente' })),
+                ...gameState.ideas.guionada.map(i => ({ ...i, estado: 'guionada' })),
+                ...gameState.ideas.grabadas.map(i => ({ ...i, estado: 'grabada' })),
+                ...gameState.ideas.editadas.map(i => ({ ...i, estado: 'editada' })),
+                ...gameState.ideas.publicadas.map(i => ({ ...i, estado: 'publicada' }))
+            ];
+            
+            if (allIdeas.length === 0) {
+                alert('⚠️ No hay ideas para exportar');
+                return;
+            }
+            
+            // Crear CSV
+            const headers = ['id', 'titulo', 'texto_bruto', 'categoria', 'subcategoria', 'sujeto', 'faceta', 'mecanismo', 'rareza', 'tags', 'estado', 'clasificacion_status', 'duplicada', 'fingerprint', 'percentage', 'created_at', 'updated_at'];
+            let csv = headers.join(',') + '\n';
+            
+            allIdeas.forEach(idea => {
+                const row = [
+                    idea.id,
+                    `"${(idea.titulo || '').replace(/"/g, '""')}"`,
+                    `"${(idea.texto_bruto || idea.text || '').replace(/"/g, '""')}"`,
+                    idea.categoria || '',
+                    idea.subcategoria || '',
+                    idea.sujeto || '',
+                    idea.faceta || '',
+                    idea.mecanismo || '',
+                    idea.rareza || 1,
+                    `"${(idea.tags || []).join('; ')}"`,
+                    idea.estado,
+                    idea.clasificacion_status || 'sin_clasificar',
+                    idea.duplicada || false,
+                    idea.fingerprint || '',
+                    idea.percentage || 0,
+                    idea.createdAt || '',
+                    idea.updatedAt || ''
+                ];
+                csv += row.join(',') + '\n';
+            });
+            
+            // Descargar
+            downloadFile(csv, `ideas-completo-${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+            alert(`✅ ${allIdeas.length} ideas exportadas a CSV`);
+        }
+        
+        // Exportar resumen anti-repetición
+        function exportResumenAntiRepeticion() {
+            const allIdeas = [
+                ...gameState.ideas.pendientes,
+                ...gameState.ideas.guionada,
+                ...gameState.ideas.grabadas,
+                ...gameState.ideas.editadas,
+                ...gameState.ideas.publicadas
+            ].filter(idea => idea.clasificacion_status === 'confirmada');
+            
+            if (allIdeas.length === 0) {
+                alert('⚠️ No hay ideas confirmadas para exportar');
+                return;
+            }
+            
+            // Agrupar por categoría y sujeto
+            const porCategoria = {};
+            
+            allIdeas.forEach(idea => {
+                const cat = idea.categoria || 'Sin Categoría';
+                const suj = idea.sujeto || 'Sin Sujeto';
+                
+                if (!porCategoria[cat]) porCategoria[cat] = {};
+                if (!porCategoria[cat][suj]) porCategoria[cat][suj] = {
+                    facetas: new Set(),
+                    mecanismos: new Set(),
+                    combinaciones: new Set()
+                };
+                
+                porCategoria[cat][suj].facetas.add(idea.faceta);
+                porCategoria[cat][suj].mecanismos.add(idea.mecanismo);
+                porCategoria[cat][suj].combinaciones.add(`${idea.faceta} + ${idea.mecanismo}`);
+            });
+            
+            // Generar texto
+            let texto = '═══════════════════════════════════════════════\n';
+            texto += '  RESUMEN ANTI-REPETICIÓN DE IDEAS\n';
+            texto += `  Generado: ${new Date().toLocaleString('es-ES')}\n`;
+            texto += '═══════════════════════════════════════════════\n\n';
+            
+            Object.keys(porCategoria).sort().forEach(categoria => {
+                texto += `\n📁 CATEGORÍA: ${categoria}\n`;
+                texto += '─────────────────────────────────────────────\n';
+                
+                Object.keys(porCategoria[categoria]).sort().forEach(sujeto => {
+                    const data = porCategoria[categoria][sujeto];
+                    texto += `\n  🎯 SUJETO: ${sujeto}\n`;
+                    texto += `     Facetas (${data.facetas.size}): ${[...data.facetas].join(', ')}\n`;
+                    texto += `     Mecanismos (${data.mecanismos.size}): ${[...data.mecanismos].join(', ')}\n`;
+                    texto += `     Combinaciones usadas (${data.combinaciones.size}):\n`;
+                    [...data.combinaciones].forEach(comb => {
+                        texto += `       • ${comb}\n`;
+                    });
+                });
+            });
+            
+            texto += '\n═══════════════════════════════════════════════\n';
+            texto += `Total de ideas confirmadas: ${allIdeas.length}\n`;
+            texto += '═══════════════════════════════════════════════\n';
+            
+            downloadFile(texto, `resumen-anti-repeticion-${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
+            alert('✅ Resumen anti-repetición exportado');
+        }
+        
+        // Abrir selector de sujeto para banlist
+        function openBanlistSelector() {
+            const allIdeas = [
+                ...gameState.ideas.pendientes,
+                ...gameState.ideas.guionada,
+                ...gameState.ideas.grabadas,
+                ...gameState.ideas.editadas,
+                ...gameState.ideas.publicadas
+            ].filter(idea => idea.clasificacion_status === 'confirmada' && idea.sujeto);
+            
+            if (allIdeas.length === 0) {
+                alert('⚠️ No hay ideas confirmadas con sujeto');
+                return;
+            }
+            
+            const sujetos = [...new Set(allIdeas.map(i => i.sujeto))].sort();
+            
+            closeExportMenu();
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'banlistSelectorModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>🚫 Seleccionar Sujeto para Banlist</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; margin-bottom: 10px; color: #667eea; font-weight: 600;">Sujeto:</label>
+                        <select id="banlistSujeto" style="width: 100%; padding: 12px; border: 2px solid #e0e7ff; border-radius: 10px; font-size: 1em; margin-bottom: 20px;">
+                            ${sujetos.map(s => `<option value="${s}">${s}</option>`).join('')}
+                        </select>
+                        
+                        <p style="color: #6b7280; font-size: 0.9em;">Se exportarán todas las combinaciones de faceta + mecanismo usadas para este sujeto.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="exportBanlistPorSujeto()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">📥 Exportar</button>
+                        <button onclick="closeBanlistSelector()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Cerrar selector de banlist
+        function closeBanlistSelector() {
+            const modal = document.getElementById('banlistSelectorModal');
+            if (modal) modal.remove();
+        }
+        
+        // Exportar banlist por sujeto
+        function exportBanlistPorSujeto() {
+            const sujetoSeleccionado = document.getElementById('banlistSujeto').value;
+            
+            const ideasDelSujeto = [
+                ...gameState.ideas.pendientes,
+                ...gameState.ideas.guionada,
+                ...gameState.ideas.grabadas,
+                ...gameState.ideas.editadas,
+                ...gameState.ideas.publicadas
+            ].filter(idea => 
+                idea.clasificacion_status === 'confirmada' && 
+                idea.sujeto === sujetoSeleccionado
+            );
+            
+            if (ideasDelSujeto.length === 0) {
+                alert('⚠️ No hay ideas para este sujeto');
+                return;
+            }
+            
+            let texto = '═══════════════════════════════════════════════\n';
+            texto += `  BANLIST: ${sujetoSeleccionado}\n`;
+            texto += `  Generado: ${new Date().toLocaleString('es-ES')}\n`;
+            texto += '═══════════════════════════════════════════════\n\n';
+            texto += 'COMBINACIONES YA USADAS (EVITAR):\n';
+            texto += '─────────────────────────────────────────────\n\n';
+            
+            const combinaciones = new Set();
+            ideasDelSujeto.forEach(idea => {
+                combinaciones.add(`${idea.faceta} + ${idea.mecanismo}`);
+            });
+            
+            [...combinaciones].sort().forEach((comb, index) => {
+                texto += `${index + 1}. ${comb}\n`;
+            });
+            
+            texto += '\n═══════════════════════════════════════════════\n';
+            texto += `Total de combinaciones: ${combinaciones.size}\n`;
+            texto += `Total de ideas del sujeto: ${ideasDelSujeto.length}\n`;
+            
+            // Sugerir facetas y mecanismos no usados
+            const todasFacetas = ['historia_origen', 'funcionamiento_interno', 'casos_uso', 'comparacion', 'tutorial_basico', 'tutorial_avanzado', 'errores_comunes', 'optimizacion', 'curiosidades', 'impacto_social', 'evolucion_temporal', 'futuro', 'detras_escenas', 'controversia', 'mitos_realidades', 'best_practices', 'herramientas', 'recursos', 'comunidad', 'entrevista'];
+            const facetasUsadas = new Set(ideasDelSujeto.map(i => i.faceta));
+            const facetasNoUsadas = todasFacetas.filter(f => !facetasUsadas.has(f));
+            
+            if (facetasNoUsadas.length > 0) {
+                texto += `\n💡 FACETAS AÚN NO EXPLORADAS (${facetasNoUsadas.length}):\n`;
+                facetasNoUsadas.forEach(f => {
+                    texto += `   • ${f.replace(/_/g, ' ')}\n`;
+                });
+            }
+            
+            texto += '═══════════════════════════════════════════════\n';
+            
+            downloadFile(texto, `banlist-${sujetoSeleccionado.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
+            closeBanlistSelector();
+            alert(`✅ Banlist exportada para "${sujetoSeleccionado}"`);
+        }
+        
+        // Función auxiliar para descargar archivos
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
         }
 
         // ===== SISTEMA DE BACKUP Y PERSISTENCIA =====
@@ -6333,7 +7483,6 @@
         
         function addActivity() {
             const input = document.getElementById('newActivityInput');
-            const dateInput = document.getElementById('activityDate');
             const timeInput = document.getElementById('activityTime');
             const categoryInput = document.getElementById('activityCategory');
             const dateFromInput = document.getElementById('activityDateFrom');
@@ -6341,6 +7490,7 @@
             const importanceInput = document.getElementById('activityImportance');
             const statEffectInput = document.getElementById('activityStatEffect');
             const statPercentageInput = document.getElementById('activityStatPercentage');
+            const recurrenceInput = document.getElementById('activityRecurrence');
             const activity = input.value.trim();
             const time = timeInput.value;
             const category = categoryInput.value;
@@ -6349,6 +7499,7 @@
             const importance = parseInt(importanceInput.value);
             const statEffect = statEffectInput.value;
             const statPercentage = statEffect !== 'none' ? parseInt(statPercentageInput.value) : 0;
+            const recurrence = recurrenceInput ? recurrenceInput.value : 'none';
             
             if (activity === '') {
                 alert('⚠️ Por favor escribe una actividad');
@@ -6365,22 +7516,38 @@
             // dateTo puede ser vacío (indefinido)
             const finalDateTo = dateTo || 'indefinido';
             
-            const newActivity = {
-                id: Date.now(),
-                text: activity,
-                dateFrom: finalDateFrom,
-                dateTo: finalDateTo,
-                time: time || '20:00',
-                category: category || 'personal',
-                importance: importance,
-                statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
-                completed: false
-            };
-            
-            gameState.activities.pending.push(newActivity);
+            // Si hay recurrencia, crear múltiples instancias de la actividad
+            if (recurrence && recurrence !== 'none') {
+                createRecurringActivities({
+                    text: activity,
+                    dateFrom: finalDateFrom,
+                    dateTo: finalDateTo,
+                    time: time || '20:00',
+                    category: category || 'personal',
+                    importance: importance,
+                    statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
+                    recurrence: recurrence
+                });
+                console.log('✅ Actividades recurrentes creadas');
+            } else {
+                // Actividad única (comportamiento original)
+                const newActivity = {
+                    id: Date.now(),
+                    text: activity,
+                    dateFrom: finalDateFrom,
+                    dateTo: finalDateTo,
+                    time: time || '20:00',
+                    category: category || 'personal',
+                    importance: importance,
+                    statEffect: statEffect !== 'none' ? `${statEffect},${statPercentage}` : 'none',
+                    completed: false
+                };
+                
+                gameState.activities.pending.push(newActivity);
+                console.log('✅ Actividad agregada:', newActivity);
+            }
             saveState();
             
-            console.log('✅ Actividad agregada:', newActivity);
             console.log('📊 Total actividades ahora:', gameState.activities.pending.length);
             
             input.value = '';
@@ -6391,7 +7558,13 @@
             importanceInput.value = '2';
             statEffectInput.value = 'none';
             statPercentageInput.value = '15';
-            document.getElementById('statPercentageContainer').style.display = 'none';
+            if (recurrenceInput) {
+                recurrenceInput.value = 'none';
+                const recurrenceInfo = document.getElementById('recurrenceInfo');
+                if (recurrenceInfo) recurrenceInfo.style.display = 'none';
+            }
+            const statPercentageContainer = document.getElementById('statPercentageContainer');
+            if (statPercentageContainer) statPercentageContainer.style.display = 'none';
             
             console.log('🔄 Llamando a renderActivities()...');
             renderActivities();
@@ -6402,7 +7575,8 @@
             switchTab('calendario');
             
             // Confirmación visual
-            alert(`✅ Actividad "${activity}" agregada exitosamente!\n📅 Fecha: ${finalDate}\n⏰ Hora: ${time || '20:00'}`);
+            const recurrenceText = recurrence !== 'none' ? `\n🔄 Recurrencia: ${recurrence === 'weekly' ? 'Semanal' : recurrence === 'biweekly' ? 'Quincenal' : 'Mensual'}` : '';
+            alert(`✅ Actividad "${activity}" agregada exitosamente!\n📅 Fecha inicio: ${finalDateFrom}\n⏰ Hora: ${time || '20:00'}${recurrenceText}`);
             
             // Scroll al contenedor de actividades para que el usuario vea la actividad
             setTimeout(() => {
@@ -6442,7 +7616,7 @@
                         const boost = parseInt(statValue);
                         
                         if (gameState.stats[statName]) {
-                            gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + boost);
+                            gameState.stats[statName].value = Math.min(200, gameState.stats[statName].value + boost);
                             renderStats();
                             console.log(`✅ Actividad completada! +${boost}% a ${statName}`);
                         }
@@ -6587,7 +7761,7 @@
                     } else {
                         // Si estaba marcada como no hecha (y era importante), devolver la penalización
                         if ((activity.importance || 2) === 3) {
-                            gameState.stats[statName].value = Math.min(100, gameState.stats[statName].value + value);
+                            gameState.stats[statName].value = Math.min(200, gameState.stats[statName].value + value);
                         }
                     }
                     renderStats();
@@ -6674,6 +7848,18 @@
         // Variable para la fecha seleccionada en el calendario
         let selectedDate = new Date();
         
+        // Variable para el orden de actividades (por defecto: por horario)
+        let activitiesSortOrder = 'time';
+        
+        // Función para cambiar el orden de las actividades
+        function changeActivitiesSortOrder() {
+            const selector = document.getElementById('activitiesSortOrder');
+            if (selector) {
+                activitiesSortOrder = selector.value;
+                renderActivities();
+            }
+        }
+        
         // Función para seleccionar un día en el calendario
         function selectCalendarDay(year, month, day) {
             selectedDate = new Date(year, month, day);
@@ -6692,10 +7878,75 @@
             }
         }
         
+        // Mostrar/ocultar información de recurrencia
+        function toggleRecurrenceOptions(recurrence) {
+            const info = document.getElementById('recurrenceInfo');
+            if (recurrence && recurrence !== 'none') {
+                info.style.display = 'block';
+            } else {
+                info.style.display = 'none';
+            }
+        }
+        
         function changeMonth(delta) {
             currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
             renderMonthlyCalendar();
             renderActivities();
+        }
+        
+        // Crear actividades recurrentes
+        function createRecurringActivities(activityTemplate) {
+            const startDate = new Date(activityTemplate.dateFrom);
+            const endDate = activityTemplate.dateTo !== 'indefinido' ? new Date(activityTemplate.dateTo) : null;
+            
+            // Definir el límite: si no hay fecha fin, crear para los próximos 6 meses
+            const maxDate = endDate || new Date(startDate.getTime() + (180 * 24 * 60 * 60 * 1000)); // 6 meses
+            
+            // Calcular el intervalo en días según la recurrencia
+            let intervalDays = 0;
+            switch(activityTemplate.recurrence) {
+                case 'weekly':
+                    intervalDays = 7;
+                    break;
+                case 'biweekly':
+                    intervalDays = 14;
+                    break;
+                case 'monthly':
+                    intervalDays = 30;
+                    break;
+            }
+            
+            let currentDate = new Date(startDate);
+            let instanceCount = 0;
+            const maxInstances = 52; // Máximo 52 instancias (1 año si es semanal)
+            
+            while (currentDate <= maxDate && instanceCount < maxInstances) {
+                const newActivity = {
+                    id: Date.now() + instanceCount, // ID único para cada instancia
+                    text: activityTemplate.text,
+                    dateFrom: currentDate.toISOString().split('T')[0],
+                    dateTo: currentDate.toISOString().split('T')[0],
+                    time: activityTemplate.time,
+                    category: activityTemplate.category,
+                    importance: activityTemplate.importance,
+                    statEffect: activityTemplate.statEffect,
+                    completed: false,
+                    recurrence: activityTemplate.recurrence // Marcar que es parte de una recurrencia
+                };
+                
+                gameState.activities.pending.push(newActivity);
+                instanceCount++;
+                
+                // Avanzar a la siguiente fecha
+                if (activityTemplate.recurrence === 'monthly') {
+                    // Para mensual, mantener el mismo día del mes
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                } else {
+                    currentDate.setDate(currentDate.getDate() + intervalDays);
+                }
+            }
+            
+            console.log(`✅ Se crearon ${instanceCount} instancias de la actividad recurrente`);
         }
         
         // Colores por categoría
@@ -6863,7 +8114,7 @@
             
             console.log('✅ Actividades encontradas:', selectedActivities.length);
             
-            // Ordenar por completadas (al final) y luego por importancia y hora
+            // Ordenar por completadas (al final) y luego según la opción seleccionada
             const sortedPending = [...selectedActivities].sort((a, b) => {
                 // Verificar si están completadas en la fecha seleccionada
                 const aCompleted = a.completedDates && a.completedDates.includes(selectedStr);
@@ -6873,11 +8124,17 @@
                 if (aCompleted !== bCompleted) {
                     return aCompleted ? 1 : -1;
                 }
-                // Luego por importancia (descendente)
-                const importanceDiff = (b.importance || 2) - (a.importance || 2);
-                if (importanceDiff !== 0) return importanceDiff;
-                // Finalmente por hora
-                return (a.time || '00:00').localeCompare(b.time || '00:00');
+                
+                // Ordenar según la opción seleccionada
+                if (activitiesSortOrder === 'importance') {
+                    // Por importancia (descendente) y luego por hora
+                    const importanceDiff = (b.importance || 2) - (a.importance || 2);
+                    if (importanceDiff !== 0) return importanceDiff;
+                    return (a.time || '00:00').localeCompare(b.time || '00:00');
+                } else {
+                    // Por hora (ordenar por horario) - OPCIÓN POR DEFECTO
+                    return (a.time || '00:00').localeCompare(b.time || '00:00');
+                }
             });
             
             if (sortedPending.length === 0) {
@@ -7222,6 +8479,275 @@
             document.body.appendChild(boton);
         }
         
+        // ========================================
+        // CALENDARIO EMOCIONAL 2026
+        // ========================================
+        
+        // Datos del calendario emocional
+        let emotionalData = {};
+        let selectedEmotion = null;
+        
+        // Colores pastel para cada emoción
+        const EMOTION_COLORS = {
+            'feliz': { bg: '#ffeb99', border: '#ffd700', emoji: '😊', name: 'Feliz' },
+            'motivada': { bg: '#c8e6c9', border: '#81c784', emoji: '💪', name: 'Motivada' },
+            'triste': { bg: '#b3d9ff', border: '#64b5f6', emoji: '😢', name: 'Triste' },
+            'cansada': { bg: '#d1c4e9', border: '#9575cd', emoji: '😴', name: 'Cansada' },
+            'enojada': { bg: '#ffccbc', border: '#ff8a65', emoji: '😠', name: 'Enojada' },
+            'estresada': { bg: '#f8bbd0', border: '#f48fb1', emoji: '😰', name: 'Estresada' },
+            'enferma': { bg: '#ffcccc', border: '#ef9a9a', emoji: '🤒', name: 'Enferma' },
+            'normal': { bg: '#e0e0e0', border: '#bdbdbd', emoji: '😐', name: 'Normal' }
+        };
+        
+        // Días de cada mes en 2026
+        const DAYS_IN_MONTH_2026 = {
+            1: 31,  // Enero
+            2: 28,  // Febrero (2026 no es bisiesto)
+            3: 31,  // Marzo
+            4: 30,  // Abril
+            5: 31,  // Mayo
+            6: 30,  // Junio
+            7: 31,  // Julio
+            8: 31,  // Agosto
+            9: 30,  // Septiembre
+            10: 31, // Octubre
+            11: 30, // Noviembre
+            12: 31  // Diciembre
+        };
+        
+        const MONTH_NAMES = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        
+        // Cargar datos emocionales
+        function loadEmotionalData() {
+            const saved = localStorage.getItem('emotionalData2026');
+            if (saved) {
+                emotionalData = JSON.parse(saved);
+            }
+        }
+        
+        // Guardar datos emocionales
+        function saveEmotionalData() {
+            localStorage.setItem('emotionalData2026', JSON.stringify(emotionalData));
+        }
+        
+        // Seleccionar emoción
+        function selectEmotion(emotion) {
+            selectedEmotion = emotion;
+            
+            // Actualizar botones
+            document.querySelectorAll('#emotionSelector button').forEach(btn => {
+                btn.style.transform = 'scale(1)';
+                const emotionName = btn.textContent.trim().split(' ')[1].toLowerCase();
+                if (EMOTION_COLORS[emotionName]) {
+                    btn.style.boxShadow = `0 4px 12px ${EMOTION_COLORS[emotionName].border}33`;
+                }
+            });
+            
+            // Destacar el botón seleccionado
+            event.target.style.transform = 'scale(1.05)';
+            event.target.style.boxShadow = `0 6px 20px ${EMOTION_COLORS[emotion].border}66`;
+            
+            // Actualizar texto
+            document.getElementById('selectedEmotionText').textContent = 
+                `${EMOTION_COLORS[emotion].emoji} Has seleccionado: ${emotion.charAt(0).toUpperCase() + emotion.slice(1)} - Haz clic en los días para marcarlos`;
+        }
+        
+        // Marcar día con emoción
+        function markDayEmotion(month, day) {
+            if (!selectedEmotion) {
+                alert('⚠️ Primero selecciona una emoción');
+                return;
+            }
+            
+            const dateKey = `2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            
+            // Inicializar si no existe
+            if (!emotionalData[dateKey]) {
+                emotionalData[dateKey] = [];
+            }
+            
+            // Si ya tiene esta emoción, quitarla (toggle)
+            const index = emotionalData[dateKey].indexOf(selectedEmotion);
+            if (index > -1) {
+                emotionalData[dateKey].splice(index, 1);
+                // Si no quedan emociones, eliminar el día
+                if (emotionalData[dateKey].length === 0) {
+                    delete emotionalData[dateKey];
+                }
+            } else {
+                // Añadir la emoción (máximo 4 emociones por día para los cuadrantes)
+                if (emotionalData[dateKey].length < 4) {
+                    emotionalData[dateKey].push(selectedEmotion);
+                } else {
+                    alert('⚠️ Ya tienes 4 emociones en este día (límite de cuadrantes)');
+                    return;
+                }
+            }
+            
+            saveEmotionalData();
+            renderEmotionalCalendar2026();
+        }
+        
+        // Renderizar calendario emocional 2026
+        function renderEmotionalCalendar2026() {
+            const container = document.getElementById('emotionalCalendar2026');
+            if (!container) return;
+            
+            let html = '<table style="width: 100%; border-collapse: separate; border-spacing: 2px; min-width: 800px;">';
+            
+            // Encabezado con números de días
+            html += '<tr><th style="padding: 8px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border-radius: 8px; font-weight: 600; min-width: 80px;">Mes</th>';
+            for (let day = 1; day <= 31; day++) {
+                html += `<th style="padding: 6px 4px; background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); color: #6b4c9a; border-radius: 6px; font-size: 0.85em; font-weight: 600; min-width: 28px;">${day}</th>`;
+            }
+            html += '</tr>';
+            
+            // Filas de meses
+            for (let month = 1; month <= 12; month++) {
+                const daysInMonth = DAYS_IN_MONTH_2026[month];
+                html += '<tr>';
+                html += `<td style="padding: 8px; background: linear-gradient(135deg, #a78bfa 0%, #c084fc 100%); color: white; font-weight: 600; border-radius: 8px; text-align: center; font-size: 0.9em;">${MONTH_NAMES[month - 1]}</td>`;
+                
+                for (let day = 1; day <= 31; day++) {
+                    if (day <= daysInMonth) {
+                        const dateKey = `2026-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                        const emotions = emotionalData[dateKey] || [];
+                        
+                        // Determinar el estilo según las emociones
+                        let cellContent = '';
+                        let cellStyle = 'padding: 4px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; min-height: 40px; position: relative; background: white; border: 2px solid #e0e0e0;';
+                        
+                        if (emotions.length === 0) {
+                            // Sin emociones
+                            cellStyle += 'background: white;';
+                        } else if (emotions.length === 1) {
+                            // Una emoción - todo el cuadro
+                            const emotion = emotions[0];
+                            const color = EMOTION_COLORS[emotion];
+                            cellStyle += `background: ${color.bg}; border: 2px solid ${color.border};`;
+                            cellContent = `<div style="font-size: 1.2em;">${color.emoji}</div>`;
+                        } else if (emotions.length === 2) {
+                            // Dos emociones - dividir horizontalmente
+                            cellStyle += 'padding: 0;';
+                            cellContent = '<div style="display: flex; height: 40px;">';
+                            
+                            for (let i = 0; i < 2; i++) {
+                                const emotion = emotions[i];
+                                const color = EMOTION_COLORS[emotion];
+                                cellContent += `<div style="background: ${color.bg}; border: 1px solid ${color.border}; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 0.95em;">${color.emoji}</div>`;
+                            }
+                            
+                            cellContent += '</div>';
+                        } else if (emotions.length === 3) {
+                            // Tres emociones - layout especial (2 arriba, 1 abajo)
+                            cellStyle += 'padding: 0;';
+                            cellContent = '<div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 40px;">';
+                            
+                            // Primera emoción (mitad superior)
+                            const color0 = EMOTION_COLORS[emotions[0]];
+                            cellContent += `<div style="background: ${color0.bg}; border: 1px solid ${color0.border}; grid-column: 1 / 3; display: flex; align-items: center; justify-content: center; font-size: 0.9em;">${color0.emoji}</div>`;
+                            
+                            // Segunda y tercera emoción (mitad inferior dividida)
+                            const color1 = EMOTION_COLORS[emotions[1]];
+                            cellContent += `<div style="background: ${color1.bg}; border: 1px solid ${color1.border}; display: flex; align-items: center; justify-content: center; font-size: 0.85em;">${color1.emoji}</div>`;
+                            
+                            const color2 = EMOTION_COLORS[emotions[2]];
+                            cellContent += `<div style="background: ${color2.bg}; border: 1px solid ${color2.border}; display: flex; align-items: center; justify-content: center; font-size: 0.85em;">${color2.emoji}</div>`;
+                            
+                            cellContent += '</div>';
+                        } else {
+                            // Cuatro emociones - grid 2x2
+                            cellStyle += 'padding: 0;';
+                            cellContent = '<div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; height: 40px;">';
+                            
+                            for (let i = 0; i < 4; i++) {
+                                const emotion = emotions[i];
+                                const color = EMOTION_COLORS[emotion];
+                                cellContent += `<div style="background: ${color.bg}; border: 1px solid ${color.border}; display: flex; align-items: center; justify-content: center; font-size: 0.85em;">${color.emoji}</div>`;
+                            }
+                            
+                            cellContent += '</div>';
+                        }
+                        
+                        html += `<td onclick="markDayEmotion(${month}, ${day})" style="${cellStyle}" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 12px rgba(167, 139, 250, 0.4)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">${cellContent}</td>`;
+                    } else {
+                        // Día no válido (mes con menos de 31 días)
+                        html += '<td style="background: #f5f5f5; border-radius: 8px;"></td>';
+                    }
+                }
+                html += '</tr>';
+            }
+            
+            html += '</table>';
+            container.innerHTML = html;
+            
+            // Actualizar el resumen mensual
+            updateMonthlyEmotionSummary();
+        }
+        
+        // Actualizar resumen mensual de emociones
+        function updateMonthlyEmotionSummary() {
+            const container = document.getElementById('emotionStatsContainer');
+            if (!container) return;
+            
+            // Obtener el mes actual
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1; // 1-12
+            const currentYear = 2026;
+            
+            // Contar emociones del mes actual
+            const emotionCounts = {};
+            
+            // Inicializar contadores
+            Object.keys(EMOTION_COLORS).forEach(emotion => {
+                emotionCounts[emotion] = 0;
+            });
+            
+            // Contar emociones en el mes actual
+            Object.keys(emotionalData).forEach(dateKey => {
+                const [year, month, day] = dateKey.split('-').map(Number);
+                
+                if (year === currentYear && month === currentMonth) {
+                    const emotions = emotionalData[dateKey];
+                    emotions.forEach(emotion => {
+                        if (emotionCounts[emotion] !== undefined) {
+                            emotionCounts[emotion]++;
+                        }
+                    });
+                }
+            });
+            
+            // Crear tarjetas de estadísticas
+            let html = '';
+            
+            Object.keys(EMOTION_COLORS).forEach(emotion => {
+                const color = EMOTION_COLORS[emotion];
+                const count = emotionCounts[emotion];
+                
+                html += `
+                    <div style="background: linear-gradient(135deg, ${color.bg} 0%, white 100%); 
+                         padding: 8px; 
+                         border-radius: 10px; 
+                         border: 2px solid ${color.border}; 
+                         text-align: center;
+                         box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+                         transition: all 0.3s ease;"
+                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.12)';"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.08)';">
+                        <div style="font-size: 1.5em; margin-bottom: 3px;">${color.emoji}</div>
+                        <div style="font-weight: 600; color: #6b4c9a; font-size: 0.75em; margin-bottom: 2px;">${color.name}</div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: ${color.border};">${count}</div>
+                        <div style="font-size: 0.65em; color: #888; margin-top: 1px;">veces</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
         // Mostrar indicador de auto-guardado
         function showAutoSaveIndicator() {
             const indicator = document.createElement('div');
@@ -7243,11 +8769,570 @@
             }, 2000);
         }
 
+        // ===================================
+        // 📝 SISTEMA DE APUNTES
+        // ===================================
+        
+        // Estado de apuntes
+        let notes = [];
+        let noteFolders = [];
+        let currentNoteCategory = 'all';
+        
+        // Cargar apuntes desde localStorage o Supabase
+        function loadNotes() {
+            if (supabaseClient && supabaseUser) {
+                // Cargar desde Supabase
+                loadNotesFromSupabase();
+            } else {
+                // Cargar desde localStorage
+                const saved = localStorage.getItem('notes');
+                if (saved) {
+                    try {
+                        notes = JSON.parse(saved);
+                    } catch (error) {
+                        console.error('Error al cargar apuntes:', error);
+                        notes = [];
+                    }
+                }
+                
+                const savedFolders = localStorage.getItem('noteFolders');
+                if (savedFolders) {
+                    try {
+                        noteFolders = JSON.parse(savedFolders);
+                    } catch (error) {
+                        console.error('Error al cargar carpetas de apuntes:', error);
+                        noteFolders = ['General'];
+                    }
+                } else {
+                    noteFolders = ['General'];
+                }
+            }
+        }
+        
+        // Guardar apuntes
+        function saveNotes() {
+            if (supabaseClient && supabaseUser) {
+                syncNotesToSupabase();
+            } else {
+                localStorage.setItem('notes', JSON.stringify(notes));
+                localStorage.setItem('noteFolders', JSON.stringify(noteFolders));
+                showSaveIndicator('Apuntes guardados ✓');
+            }
+        }
+        
+        // Renderizar contenido de apuntes
+        function renderNotesContent() {
+            const container = document.getElementById('notesContainer');
+            if (!container) return;
+            
+            // Filtrar apuntes
+            let filteredNotes = notes;
+            if (currentNoteCategory !== 'all') {
+                filteredNotes = notes.filter(note => note.folder === currentNoteCategory);
+            }
+            
+            let html = `
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                    <select id="notesFolderSelect" onchange="filterNotesByFolder(this.value)" style="flex: 1; min-width: 150px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1em; background: white;">
+                        <option value="all">📂 Todas las carpetas</option>
+                        ${noteFolders.map(folder => `<option value="${folder}" ${currentNoteCategory === folder ? 'selected' : ''}>${folder}</option>`).join('')}
+                    </select>
+                    <button onclick="openCreateNoteFolderModal()" style="padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
+                        ➕ Carpeta
+                    </button>
+                    <button onclick="openNoteModal()" style="flex: 1; min-width: 150px; padding: 12px 20px; background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1em;">
+                        ➕ Nuevo Apunte
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+            `;
+            
+            if (filteredNotes.length === 0) {
+                html += `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #9ca3af;">
+                        <div style="font-size: 3em; margin-bottom: 15px;">📝</div>
+                        <p style="font-size: 1.1em; font-weight: 600; margin-bottom: 10px;">No hay apuntes aún</p>
+                        <p style="font-size: 0.95em;">Crea tu primer apunte para comenzar</p>
+                    </div>
+                `;
+            } else {
+                filteredNotes.forEach((note, index) => {
+                    const actualIndex = notes.findIndex(n => n.id === note.id);
+                    const preview = note.content.substring(0, 100) + (note.content.length > 100 ? '...' : '');
+                    const date = new Date(note.updatedAt || note.createdAt).toLocaleDateString('es-ES', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric' 
+                    });
+                    
+                    html += `
+                        <div style="background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer;" 
+                             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';" 
+                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                <h3 style="color: #6b4c9a; font-size: 1.1em; margin: 0; flex: 1;">${note.title}</h3>
+                                <div style="display: flex; gap: 5px;">
+                                    <button onclick="editNote(${actualIndex}); event.stopPropagation();" style="background: #667eea; color: white; border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 0.85em;">✏️</button>
+                                    <button onclick="deleteNote(${actualIndex}); event.stopPropagation();" style="background: #ff6b9d; color: white; border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 0.85em;">🗑️</button>
+                                </div>
+                            </div>
+                            
+                            <div style="background: #f3f4f6; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px;">
+                                <span style="color: #6b7280; font-size: 0.85em;">📁 ${note.folder}</span>
+                            </div>
+                            
+                            <p style="color: #6b7280; font-size: 0.9em; line-height: 1.5; margin-bottom: 10px;">${preview}</p>
+                            
+                            ${note.tags && note.tags.length > 0 ? `
+                                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px;">
+                                    ${note.tags.map(tag => `<span style="background: #e5e7eb; color: #6b7280; padding: 3px 8px; border-radius: 6px; font-size: 0.8em;">#${tag}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                                <span style="color: #9ca3af; font-size: 0.8em;">📅 ${date}</span>
+                                <button onclick="generateFlashcardsFromNote(${actualIndex}); event.stopPropagation();" 
+                                        style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border: none; border-radius: 10px; padding: 8px 15px; cursor: pointer; font-weight: bold; font-size: 0.9em;">
+                                    🧠 Generar Flashcards
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Filtrar apuntes por carpeta
+        function filterNotesByFolder(folder) {
+            currentNoteCategory = folder;
+            renderNotesContent();
+        }
+        
+        // Abrir modal para crear/editar apunte
+        function openNoteModal(editIndex = null) {
+            const isEdit = editIndex !== null;
+            const note = isEdit ? notes[editIndex] : null;
+            
+            const modal = document.createElement('div');
+            modal.id = 'noteModal';
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3 style="color: #ffa751; margin-bottom: 10px;">${isEdit ? '✏️ Editar Apunte' : '📝 Nuevo Apunte'}</h3>
+                    </div>
+                    
+                    <div style="padding: 20px;">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #6b4c9a; font-weight: bold;">Título</label>
+                            <input type="text" id="noteTitle" value="${isEdit ? note.title : ''}" 
+                                   placeholder="Título del apunte" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #6b4c9a; font-weight: bold;">Carpeta</label>
+                            <select id="noteFolder" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em;">
+                                ${noteFolders.map(folder => `<option value="${folder}" ${isEdit && note.folder === folder ? 'selected' : ''}>${folder}</option>`).join('')}
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #6b4c9a; font-weight: bold;">Contenido</label>
+                            <textarea id="noteContent" rows="12" 
+                                      placeholder="Escribe aquí el contenido de tu apunte..." 
+                                      style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em; font-family: inherit; resize: vertical;">${isEdit ? note.content : ''}</textarea>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; color: #6b4c9a; font-weight: bold;">Tags (opcional, separados por coma)</label>
+                            <input type="text" id="noteTags" value="${isEdit && note.tags ? note.tags.join(', ') : ''}" 
+                                   placeholder="Ejemplo: matemáticas, álgebra, examen" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em;">
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="saveNote(${editIndex})" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); color: white; border: none; border-radius: 12px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
+                                💾 Guardar
+                            </button>
+                            ${isEdit ? `
+                                <button onclick="generateFlashcardsFromNote(${editIndex}); closeNoteModal();" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border: none; border-radius: 12px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
+                                    🧠 Generar Flashcards
+                                </button>
+                            ` : ''}
+                            <button onclick="closeNoteModal()" style="padding: 15px 25px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            setTimeout(() => document.getElementById('noteTitle').focus(), 100);
+        }
+        
+        // Guardar apunte
+        function saveNote(editIndex = null) {
+            const title = document.getElementById('noteTitle').value.trim();
+            const folder = document.getElementById('noteFolder').value;
+            const content = document.getElementById('noteContent').value.trim();
+            const tagsInput = document.getElementById('noteTags').value.trim();
+            
+            if (!title) {
+                alert('⚠️ Por favor ingresa un título para el apunte');
+                return;
+            }
+            
+            if (!content) {
+                alert('⚠️ Por favor escribe el contenido del apunte');
+                return;
+            }
+            
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+            
+            const noteData = {
+                id: editIndex !== null ? notes[editIndex].id : Date.now(),
+                title,
+                folder,
+                content,
+                tags,
+                createdAt: editIndex !== null ? notes[editIndex].createdAt : Date.now(),
+                updatedAt: Date.now()
+            };
+            
+            if (editIndex !== null) {
+                notes[editIndex] = noteData;
+            } else {
+                notes.push(noteData);
+            }
+            
+            saveNotes();
+            renderNotesContent();
+            closeNoteModal();
+            
+            alert(`✅ Apunte ${editIndex !== null ? 'actualizado' : 'creado'} correctamente`);
+        }
+        
+        // Editar apunte
+        function editNote(index) {
+            openNoteModal(index);
+        }
+        
+        // Eliminar apunte
+        function deleteNote(index) {
+            if (confirm('¿Estás seguro de que deseas eliminar este apunte?')) {
+                notes.splice(index, 1);
+                saveNotes();
+                renderNotesContent();
+                alert('✅ Apunte eliminado');
+            }
+        }
+        
+        // Cerrar modal de apunte
+        function closeNoteModal() {
+            const modal = document.getElementById('noteModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // Crear carpeta de apuntes
+        function openCreateNoteFolderModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>➕ Nueva Carpeta de Apuntes</h3>
+                    </div>
+                    <div class="modal-body">
+                        <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Nombre de la carpeta:</label>
+                        <input type="text" id="newNoteFolderName" placeholder="Ej: Matemáticas, Historia..." 
+                               style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.95em;">
+                    </div>
+                    <div style="display: flex; gap: 10px; padding: 20px;">
+                        <button onclick="createNoteFolder()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer;">Crear</button>
+                        <button onclick="closeNoteFolderModal()" style="padding: 15px 20px; background: #e5e7eb; color: #6b7280; border: none; border-radius: 15px; cursor: pointer;">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            setTimeout(() => document.getElementById('newNoteFolderName').focus(), 100);
+        }
+        
+        function createNoteFolder() {
+            const folderName = document.getElementById('newNoteFolderName').value.trim();
+            if (!folderName) {
+                alert('⚠️ Por favor ingresa un nombre para la carpeta');
+                return;
+            }
+            
+            if (noteFolders.includes(folderName)) {
+                alert('⚠️ Esta carpeta ya existe');
+                return;
+            }
+            
+            noteFolders.push(folderName);
+            saveNotes();
+            closeNoteFolderModal();
+            renderNotesContent();
+            alert(`✅ Carpeta "${folderName}" creada correctamente`);
+        }
+        
+        function closeNoteFolderModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.querySelector('#newNoteFolderName')) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // ===================================
+        // 🤖 GENERACIÓN DE FLASHCARDS CON IA
+        // ===================================
+        
+        // Generar flashcards desde un apunte usando IA
+        async function generateFlashcardsFromNote(noteIndex) {
+            const note = notes[noteIndex];
+            
+            if (!note || !note.content) {
+                alert('⚠️ El apunte no tiene contenido para generar flashcards');
+                return;
+            }
+            
+            // Mostrar loading
+            const loadingModal = document.createElement('div');
+            loadingModal.className = 'modal show';
+            loadingModal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px; text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 15px;">🤖</div>
+                    <h3 style="color: #6b4c9a; margin-bottom: 10px;">Generando Flashcards con IA</h3>
+                    <p style="color: #6b7280; margin-bottom: 20px;">Analizando tu apunte...</p>
+                    <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 10px; overflow: hidden;">
+                        <div style="width: 0%; height: 100%; background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%); animation: loading 2s infinite;"></div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingModal);
+            
+            try {
+                // Simular llamada a API de IA (aquí irá la integración real)
+                const flashcards = await generateFlashcardsWithAI(note.content, note.title);
+                
+                // Cerrar loading
+                loadingModal.remove();
+                
+                if (!flashcards || flashcards.length === 0) {
+                    alert('⚠️ No se pudieron generar flashcards. Intenta con un apunte más largo o detallado.');
+                    return;
+                }
+                
+                // Crear deck
+                const deckName = `${note.title} (Auto)`;
+                const deckId = Date.now();
+                
+                // Agregar flashcards a biblioteca
+                flashcards.forEach(card => {
+                    library.flashcards.push({
+                        id: Date.now() + Math.random(),
+                        folder: note.folder,
+                        deck: deckName,
+                        deckId: deckId,
+                        front: card.front,
+                        back: card.back,
+                        type: card.type || 'qa',
+                        difficulty: card.difficulty || 3,
+                        sourceNoteId: note.id,
+                        nextReview: Date.now(),
+                        interval: 1,
+                        easeFactor: 2.5,
+                        reviews: 0
+                    });
+                });
+                
+                saveLibrary();
+                
+                // Mostrar resultado
+                alert(`✅ Se generaron ${flashcards.length} flashcards automáticamente!\n\nDeck: "${deckName}"\nCarpeta: ${note.folder}`);
+                
+                // Cambiar a pestaña de flashcards
+                openLibraryCategory('flashcards');
+                libraryFilters.folder = note.folder;
+                renderLibraryContent();
+                
+            } catch (error) {
+                loadingModal.remove();
+                console.error('Error al generar flashcards:', error);
+                alert('❌ Error al generar flashcards. Por favor intenta nuevamente.');
+            }
+        }
+        
+        // Función de IA simulada (reemplazar con API real)
+        async function generateFlashcardsWithAI(content, title) {
+            // Simular delay de API
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // AQUÍ IRÁ LA INTEGRACIÓN CON OPENAI/ANTHROPIC
+            // Por ahora, generación básica automática
+            
+            const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20);
+            const flashcards = [];
+            
+            // Generar entre 10-20 tarjetas
+            const numCards = Math.min(20, Math.max(10, Math.floor(sentences.length / 2)));
+            
+            for (let i = 0; i < numCards && i < sentences.length; i++) {
+                const sentence = sentences[i].trim();
+                if (sentence.length < 20) continue;
+                
+                // Detectar conceptos clave (palabras importantes)
+                const words = sentence.split(' ').filter(w => w.length > 5);
+                if (words.length === 0) continue;
+                
+                const keyword = words[Math.floor(Math.random() * words.length)];
+                
+                // Generar pregunta tipo cloze
+                const front = sentence.replace(keyword, '______');
+                const back = keyword;
+                
+                flashcards.push({
+                    front: `¿Qué palabra falta?\n\n${front}`,
+                    back: back,
+                    type: 'cloze',
+                    difficulty: 3
+                });
+            }
+            
+            return flashcards;
+        }
+        
+        // ===================================
+        // 🔄 SINCRONIZACIÓN CON SUPABASE
+        // ===================================
+        
+        let supabaseClient = null;
+        let supabaseUser = null;
+        
+        // Inicializar Supabase
+        function initSupabase() {
+            // CONFIGURACIÓN DE SUPABASE
+            const SUPABASE_URL = 'https://iwfrefqwylvrthfqmaqe.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_NrZ4G5vVt5iLE9QhGWlQEg_NMIirWEh';
+            
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase conectado correctamente');
+            } catch (error) {
+                console.error('❌ Error al conectar Supabase:', error);
+                console.log('💡 Usando localStorage como fallback.');
+            }
+        }
+        
+        // Login con Supabase
+        async function loginSupabase(email, password) {
+            if (!supabaseClient) return false;
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                supabaseUser = data.user;
+                await syncFromSupabase();
+                return true;
+            } catch (error) {
+                console.error('Error al iniciar sesión:', error);
+                return false;
+            }
+        }
+        
+        // Sincronizar desde Supabase
+        async function syncFromSupabase() {
+            if (!supabaseClient || !supabaseUser) return;
+            
+            try {
+                // Cargar apuntes
+                const { data: notesData } = await supabaseClient
+                    .from('notes')
+                    .select('*')
+                    .eq('user_id', supabaseUser.id);
+                
+                if (notesData) {
+                    notes = notesData;
+                }
+                
+                // Cargar flashcards
+                const { data: flashcardsData } = await supabaseClient
+                    .from('flashcards')
+                    .select('*')
+                    .eq('user_id', supabaseUser.id);
+                
+                if (flashcardsData) {
+                    library.flashcards = flashcardsData;
+                }
+                
+                console.log('✅ Datos sincronizados desde Supabase');
+            } catch (error) {
+                console.error('Error al sincronizar desde Supabase:', error);
+            }
+        }
+        
+        // Sincronizar hacia Supabase
+        async function syncToSupabase() {
+            if (!supabaseClient || !supabaseUser) return;
+            
+            try {
+                // Guardar apuntes
+                await supabaseClient
+                    .from('notes')
+                    .upsert(notes.map(note => ({
+                        ...note,
+                        user_id: supabaseUser.id
+                    })));
+                
+                // Guardar flashcards
+                await supabaseClient
+                    .from('flashcards')
+                    .upsert(library.flashcards.map(card => ({
+                        ...card,
+                        user_id: supabaseUser.id
+                    })));
+                
+                console.log('✅ Datos sincronizados hacia Supabase');
+            } catch (error) {
+                console.error('Error al sincronizar hacia Supabase:', error);
+            }
+        }
+        
+        // Cargar apuntes desde Supabase
+        async function loadNotesFromSupabase() {
+            await syncFromSupabase();
+        }
+        
+        // Sincronizar apuntes a Supabase
+        async function syncNotesToSupabase() {
+            await syncToSupabase();
+        }
+
         // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
             // PRIMERO: Cargar todos los datos guardados
             loadLibrary();
             loadIdeas();
+            loadEmotionalData();  // Cargar datos emocionales
+            loadNotes(); // Cargar apuntes
+            
+            // Inicializar Supabase
+            initSupabase();
             
             // Iniciar el reloj INMEDIATAMENTE
             updateClock();
@@ -7281,6 +9366,9 @@
                 showAutoSaveIndicator();
             }, 10000);
             
+            // Inicializar Supabase al cargar
+            initSupabase();
+            
             // Registrar Service Worker para funcionalidad offline
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./service-worker.js')
@@ -7292,7 +9380,32 @@
                     });
             }
         });
+        
+        // Función para activar/desactivar sincronización
+        function toggleSupabaseSync() {
+            if (!supabaseClient) {
+                alert('⚠️ Supabase no está disponible. Verifica tu conexión a internet.');
+                return;
+            }
+            
+            const email = prompt('📧 Email de Supabase:');
+            if (!email) return;
+            
+            const password = prompt('🔑 Contraseña:');
+            if (!password) return;
+            
+            loginSupabase(email, password).then(success => {
+                if (success) {
+                    document.getElementById('syncStatus').textContent = '✅ Sincronizado con Supabase';
+                    document.getElementById('syncStatus').style.color = '#2d5016';
+                    alert('✅ Sincronización activada. Tus datos se guardarán en la nube.');
+                } else {
+                    alert('❌ Error al iniciar sesión. Verifica tus credenciales.');
+                }
+            });
+        }
     </script>
 </body>
 </html>
+
 

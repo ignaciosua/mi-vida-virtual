@@ -4798,54 +4798,77 @@
             renderLibraryContent();
         }
         
-        // Renderizar apuntes (versión simple)
+        // Renderizar apuntes con carpetas
         function renderApuntes() {
             const c = document.getElementById('libraryContent');
             
-            // Asegurar que library y library.apuntes existan
-            if (!window.library) {
-                window.library = {};
-            }
-            if (!library.apuntes) {
-                library.apuntes = [];
-            }
+            if (!window.library) window.library = {};
+            if (!library.apuntes) library.apuntes = [];
+            if (!library.carpetasApuntes) library.carpetasApuntes = ['General'];
+            if (!window.carpetaApuntesActual) window.carpetaApuntesActual = 'General';
             
             let html = `
                 <div style="text-align: center; margin-bottom: 25px;">
                     <h2 style="color: #6b4c9a; margin-bottom: 15px;">📝 Apuntes</h2>
-                    <button onclick="agregarApunte()" style="padding: 12px 25px; background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 167, 81, 0.3);">
-                        ➕ Agregar Apunte
-                    </button>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
+                        <button onclick="agregarApunte()" style="padding: 12px 25px; background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); color: white; border: none; border-radius: 15px; font-size: 1em; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 167, 81, 0.3);">
+                            ➕ Nuevo Apunte
+                        </button>
+                        <button onclick="crearCarpetaApuntes()" style="padding: 12px 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 1em; font-weight: 600; cursor: pointer;">
+                            📁 Nueva Carpeta
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                        ${library.carpetasApuntes.map(carpeta => `
+                            <button onclick="cambiarCarpetaApuntes('${carpeta}')" style="padding: 8px 16px; background: ${carpetaApuntesActual === carpeta ? 'linear-gradient(135deg, #ffa751 0%, #ffe259 100%)' : '#f3f4f6'}; color: ${carpetaApuntesActual === carpeta ? 'white' : '#6b7280'}; border: none; border-radius: 10px; cursor: pointer; font-weight: ${carpetaApuntesActual === carpeta ? '600' : '500'};">
+                                📁 ${carpeta}
+                            </button>
+                        `).join('')}
+                    </div>
                 </div>
             `;
             
-            if (library.apuntes.length === 0) {
+            const apuntesFiltrados = library.apuntes.filter(a => (a.carpeta || 'General') === carpetaApuntesActual);
+            
+            if (apuntesFiltrados.length === 0) {
                 html += `
                     <div style="text-align: center; padding: 60px 20px; color: #9ca3af;">
                         <div style="font-size: 4em; margin-bottom: 20px;">📝</div>
-                        <p style="font-size: 1.2em; font-weight: 600; margin-bottom: 10px; color: #6b7280;">No hay apuntes</p>
+                        <p style="font-size: 1.2em; font-weight: 600; margin-bottom: 10px; color: #6b7280;">No hay apuntes en esta carpeta</p>
                         <p style="font-size: 1em; color: #9ca3af;">Agrega uno para comenzar</p>
                     </div>
                 `;
             } else {
-                html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">';
+                html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">';
                 
                 library.apuntes.forEach((apunte, index) => {
+                    if ((apunte.carpeta || 'General') !== carpetaApuntesActual) return;
+                    
                     const fecha = apunte.fecha ? new Date(apunte.fecha).toLocaleDateString('es-ES') : 'Sin fecha';
-                    const preview = apunte.contenido ? apunte.contenido.substring(0, 100) + '...' : '';
+                    const preview = apunte.contenido ? apunte.contenido.replace(/<[^>]*>/g, '').substring(0, 120) + '...' : '';
+                    const hasImage = apunte.imagen ? `<img src="${apunte.imagen}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 12px;">` : '';
                     
                     html += `
-                        <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s;">
+                        <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s; hover: transform: translateY(-2px);">
+                            ${hasImage}
                             <h3 style="color: #ffa751; margin-bottom: 10px; font-size: 1.2em;">${apunte.titulo || 'Sin título'}</h3>
                             <p style="color: #6b7280; font-size: 0.85em; margin-bottom: 10px;">📅 ${fecha}</p>
                             ${preview ? `<p style="color: #9ca3af; font-size: 0.9em; margin-bottom: 15px; line-height: 1.5;">${preview}</p>` : ''}
-                            <div style="display: flex; gap: 8px;">
-                                <button onclick="editarApunte(${index})" style="flex: 1; padding: 8px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                    ✏️ Editar
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <button onclick="generarFlashcardsDeApunte(${index})" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);">
+                                    🧠 Crear Flashcards con IA
                                 </button>
-                                <button onclick="borrarApunte(${index})" style="flex: 1; padding: 8px; background: #ff6b9d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                    🗑️ Borrar
-                                </button>
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="verApunte(${index})" style="flex: 1; padding: 8px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                        👁️ Ver
+                                    </button>
+                                    <button onclick="editarApunte(${index})" style="flex: 1; padding: 8px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                        ✏️ Editar
+                                    </button>
+                                    <button onclick="borrarApunte(${index})" style="flex: 1; padding: 8px; background: #ff6b9d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                        🗑️ Borrar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -4857,44 +4880,170 @@
             c.innerHTML = html;
         }
         
-        // Agregar nuevo apunte
-        function agregarApunte() {
-            const titulo = prompt('Título del apunte:');
-            if (!titulo) return;
+        // Funciones de carpetas
+        function cambiarCarpetaApuntes(carpeta) {
+            window.carpetaApuntesActual = carpeta;
+            renderApuntes();
+        }
+        
+        function crearCarpetaApuntes() {
+            const nombre = prompt('Nombre de la carpeta:');
+            if (!nombre || nombre.trim() === '') return;
             
-            const contenido = prompt('Contenido del apunte:');
-            if (!contenido) return;
+            if (library.carpetasApuntes.includes(nombre)) {
+                alert('❌ Ya existe una carpeta con ese nombre');
+                return;
+            }
             
-            const nuevoApunte = {
-                id: Date.now(),
-                titulo: titulo,
-                contenido: contenido,
-                fecha: Date.now()
-            };
-            
-            library.apuntes.push(nuevoApunte);
+            library.carpetasApuntes.push(nombre);
             saveLibrary();
             renderApuntes();
-            alert('✅ Apunte agregado correctamente');
+        }
+        
+        // Ver apunte completo
+        function verApunte(index) {
+            const apunte = library.apuntes[index];
+            window.apunteEditandoIndex = index;
+            window.apunteEditandoModo = 'ver';
+            mostrarModalApunte(apunte, 'ver');
+        }
+        
+        // Agregar nuevo apunte
+        function agregarApunte() {
+            window.apunteEditandoIndex = -1;
+            window.apunteEditandoModo = 'nuevo';
+            mostrarModalApunte(null, 'nuevo');
         }
         
         // Editar apunte existente
         function editarApunte(index) {
             const apunte = library.apuntes[index];
+            window.apunteEditandoIndex = index;
+            window.apunteEditandoModo = 'editar';
+            mostrarModalApunte(apunte, 'editar');
+        }
+        
+        // Modal estilo Word para apuntes
+        function mostrarModalApunte(apunte, modo) {
+            const modal = document.createElement('div');
+            modal.id = 'modalApunte';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;';
             
-            const nuevoTitulo = prompt('Editar título:', apunte.titulo);
-            if (nuevoTitulo === null) return;
+            const readOnly = modo === 'ver';
             
-            const nuevoContenido = prompt('Editar contenido:', apunte.contenido);
-            if (nuevoContenido === null) return;
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 20px; max-width: 900px; width: 100%; max-height: 90vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: flex; flex-direction: column;">
+                    <div style="background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="color: white; margin: 0; font-size: 1.5em;">${modo === 'ver' ? '👁️ Ver Apunte' : modo === 'nuevo' ? '➕ Nuevo Apunte' : '✏️ Editar Apunte'}</h2>
+                        <button onclick="cerrarModalApunte()" style="background: rgba(255,255,255,0.3); border: none; color: white; font-size: 1.5em; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">✕</button>
+                    </div>
+                    <div style="padding: 30px; overflow-y: auto; flex: 1;">
+                        <input type="text" id="apunteTitulo" placeholder="Título del apunte..." value="${apunte?.titulo || ''}" ${readOnly ? 'readonly' : ''} style="width: 100%; padding: 15px; border: ${readOnly ? 'none' : '2px solid #e5e7eb'}; border-radius: 10px; font-size: 1.3em; font-weight: 600; margin-bottom: 20px; color: #1f2937; background: ${readOnly ? 'transparent' : 'white'};">
+                        
+                        ${!readOnly ? `
+                        <div style="background: #f9fafb; padding: 12px; border-radius: 10px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="formatoTexto('bold')" style="padding: 8px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; font-weight: bold;">B</button>
+                            <button onclick="formatoTexto('italic')" style="padding: 8px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; font-style: italic;">I</button>
+                            <button onclick="formatoTexto('underline')" style="padding: 8px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; text-decoration: underline;">U</button>
+                            <button onclick="insertarImagenApunte()" style="padding: 8px 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">🖼️ Imagen</button>
+                        </div>
+                        ` : ''}
+                        
+                        <div id="apunteContenido" contenteditable="${!readOnly}" style="min-height: 300px; padding: 20px; border: ${readOnly ? 'none' : '2px solid #e5e7eb'}; border-radius: 10px; font-size: 1.05em; line-height: 1.8; color: #374151; background: white; outline: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">${apunte?.contenido || ''}</div>
+                        
+                        ${!readOnly ? `
+                        <div style="margin-top: 20px;">
+                            <label style="display: block; color: #6b7280; font-size: 0.9em; margin-bottom: 8px; font-weight: 600;">📁 Carpeta:</label>
+                            <select id="apunteCarpeta" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1em;">
+                                ${library.carpetasApuntes.map(c => `<option value="${c}" ${(apunte?.carpeta || 'General') === c ? 'selected' : ''}>${c}</option>`).join('')}
+                            </select>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div style="padding: 20px; background: #f9fafb; display: flex; gap: 10px; justify-content: flex-end;">
+                        ${!readOnly ? `<button onclick="guardarApunte()" style="padding: 12px 30px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">💾 Guardar</button>` : ''}
+                        <button onclick="cerrarModalApunte()" style="padding: 12px 30px; background: #e5e7eb; color: #374151; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer;">${readOnly ? 'Cerrar' : 'Cancelar'}</button>
+                    </div>
+                </div>
+            `;
             
-            library.apuntes[index].titulo = nuevoTitulo;
-            library.apuntes[index].contenido = nuevoContenido;
-            library.apuntes[index].fecha = Date.now();
+            document.body.appendChild(modal);
+            
+            if (!readOnly) {
+                document.getElementById('apunteTitulo').focus();
+            }
+        }
+        
+        function formatoTexto(comando) {
+            document.execCommand(comando, false, null);
+            document.getElementById('apunteContenido').focus();
+        }
+        
+        function insertarImagenApunte() {
+            const url = prompt('URL de la imagen:');
+            if (!url) return;
+            
+            const img = `<img src="${url}" style="max-width: 100%; height: auto; border-radius: 10px; margin: 15px 0;">`;            document.execCommand('insertHTML', false, img);
+        }
+        
+        function guardarApunte() {
+            const titulo = document.getElementById('apunteTitulo').value.trim();
+            const contenido = document.getElementById('apunteContenido').innerHTML;
+            const carpeta = document.getElementById('apunteCarpeta')?.value || carpetaApuntesActual;
+            
+            if (!titulo) {
+                alert('⚠️ El título es obligatorio');
+                return;
+            }
+            
+            const apunteData = {
+                id: apunteEditandoIndex >= 0 ? library.apuntes[apunteEditandoIndex].id : Date.now(),
+                titulo: titulo,
+                contenido: contenido,
+                carpeta: carpeta,
+                fecha: Date.now()
+            };
+            
+            if (apunteEditandoModo === 'nuevo') {
+                library.apuntes.push(apunteData);
+            } else {
+                library.apuntes[apunteEditandoIndex] = apunteData;
+            }
             
             saveLibrary();
+            cerrarModalApunte();
             renderApuntes();
-            alert('✅ Apunte actualizado correctamente');
+        }
+        
+        function cerrarModalApunte() {
+            const modal = document.getElementById('modalApunte');
+            if (modal) modal.remove();
+        }
+        
+        // Generar flashcards con IA de un apunte
+        function generarFlashcardsDeApunte(index) {
+            const apunte = library.apuntes[index];
+            
+            if (!apunte.contenido || apunte.contenido.trim() === '') {
+                alert('⚠️ El apunte está vacío. Agrega contenido primero.');
+                return;
+            }
+            
+            const confirmacion = confirm(`🧠 ¿Generar flashcards del apunte "${apunte.titulo}"?\n\nLa IA creará tarjetas de estudio basadas en el contenido.`);
+            if (!confirmacion) return;
+            
+            // Mostrar indicador de carga
+            alert('⏳ Generando flashcards con IA... (esto puede tardar unos segundos)');
+            
+            // Llamar a la función de generación de flashcards con IA
+            generateFlashcardsWithAI(apunte.contenido.replace(/<[^>]*>/g, ''), apunte.titulo)
+                .then(() => {
+                    alert('✅ Flashcards generadas correctamente. Ve a la sección Flashcards para repasarlas.');
+                })
+                .catch(error => {
+                    console.error('Error generando flashcards:', error);
+                    alert('❌ Error al generar flashcards. Verifica tu configuración de IA en AI_SETUP.md');
+                });
         }
         
         // Borrar apunte
