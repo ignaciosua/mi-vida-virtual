@@ -4777,16 +4777,122 @@
             currentLibraryCategory = category;
             libraryFilters = { search: '', letter: '', rating: 0 };
             
-            // Si es apuntes, renderizar con función específica
+            // Si es apuntes, renderizar con función simple
             if (category === 'apuntes') {
-                const container = document.getElementById('libraryContent');
-                container.innerHTML = '<div id="notesContainer"></div>';
-                loadNotes();
-                renderNotesContent();
+                renderApuntes();
                 return;
             }
             
             renderLibraryContent();
+        }
+        
+        // Renderizar apuntes (versión simple)
+        function renderApuntes() {
+            const c = document.getElementById('libraryContent');
+            
+            // Asegurar que library y library.apuntes existan
+            if (!window.library) {
+                window.library = {};
+            }
+            if (!library.apuntes) {
+                library.apuntes = [];
+            }
+            
+            let html = `
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h2 style="color: #6b4c9a; margin-bottom: 15px;">📝 Apuntes</h2>
+                    <button onclick="agregarApunte()" style="padding: 12px 25px; background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 167, 81, 0.3);">
+                        ➕ Agregar Apunte
+                    </button>
+                </div>
+            `;
+            
+            if (library.apuntes.length === 0) {
+                html += `
+                    <div style="text-align: center; padding: 60px 20px; color: #9ca3af;">
+                        <div style="font-size: 4em; margin-bottom: 20px;">📝</div>
+                        <p style="font-size: 1.2em; font-weight: 600; margin-bottom: 10px; color: #6b7280;">No hay apuntes</p>
+                        <p style="font-size: 1em; color: #9ca3af;">Agrega uno para comenzar</p>
+                    </div>
+                `;
+            } else {
+                html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">';
+                
+                library.apuntes.forEach((apunte, index) => {
+                    const fecha = apunte.fecha ? new Date(apunte.fecha).toLocaleDateString('es-ES') : 'Sin fecha';
+                    const preview = apunte.contenido ? apunte.contenido.substring(0, 100) + '...' : '';
+                    
+                    html += `
+                        <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s;">
+                            <h3 style="color: #ffa751; margin-bottom: 10px; font-size: 1.2em;">${apunte.titulo || 'Sin título'}</h3>
+                            <p style="color: #6b7280; font-size: 0.85em; margin-bottom: 10px;">📅 ${fecha}</p>
+                            ${preview ? `<p style="color: #9ca3af; font-size: 0.9em; margin-bottom: 15px; line-height: 1.5;">${preview}</p>` : ''}
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="editarApunte(${index})" style="flex: 1; padding: 8px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                    ✏️ Editar
+                                </button>
+                                <button onclick="borrarApunte(${index})" style="flex: 1; padding: 8px; background: #ff6b9d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                    🗑️ Borrar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            c.innerHTML = html;
+        }
+        
+        // Agregar nuevo apunte
+        function agregarApunte() {
+            const titulo = prompt('Título del apunte:');
+            if (!titulo) return;
+            
+            const contenido = prompt('Contenido del apunte:');
+            if (!contenido) return;
+            
+            const nuevoApunte = {
+                id: Date.now(),
+                titulo: titulo,
+                contenido: contenido,
+                fecha: Date.now()
+            };
+            
+            library.apuntes.push(nuevoApunte);
+            saveLibrary();
+            renderApuntes();
+            alert('✅ Apunte agregado correctamente');
+        }
+        
+        // Editar apunte existente
+        function editarApunte(index) {
+            const apunte = library.apuntes[index];
+            
+            const nuevoTitulo = prompt('Editar título:', apunte.titulo);
+            if (nuevoTitulo === null) return;
+            
+            const nuevoContenido = prompt('Editar contenido:', apunte.contenido);
+            if (nuevoContenido === null) return;
+            
+            library.apuntes[index].titulo = nuevoTitulo;
+            library.apuntes[index].contenido = nuevoContenido;
+            library.apuntes[index].fecha = Date.now();
+            
+            saveLibrary();
+            renderApuntes();
+            alert('✅ Apunte actualizado correctamente');
+        }
+        
+        // Borrar apunte
+        function borrarApunte(index) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este apunte?')) return;
+            
+            library.apuntes.splice(index, 1);
+            saveLibrary();
+            renderApuntes();
+            alert('✅ Apunte eliminado correctamente');
         }
         
         // Renderizar contenido de biblioteca
