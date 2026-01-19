@@ -1609,8 +1609,11 @@
             <div style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(150, 230, 161, 0.3);">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px;">
                     <div style="flex: 1; text-align: left;">
-                        <h4 style="color: #2d5016; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;"><span>🔄</span> Sincronización</h4>
+                        <h4 style="color: #2d5016; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+                            <span id="syncIcon">🔄</span> Sincronización
+                        </h4>
                         <p id="syncStatus" style="color: #4a7c59; font-size: 0.85em; margin: 0;">localStorage activo</p>
+                        <p id="syncInfo" style="color: #6b8e23; font-size: 0.75em; margin: 5px 0 0 0; display: none;">Sincronizando cada 5 segundos</p>
                     </div>
                     <button onclick="toggleSupabaseSync()" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); border: none; border-radius: 12px; padding: 10px 20px; color: white; font-size: 0.9em; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);">⚙️ Configurar</button>
                 </div>
@@ -4780,6 +4783,11 @@
                 // Guardar nueva versión
                 localStorage.setItem('library', JSON.stringify(library));
                 console.log('💾 Biblioteca guardada correctamente');
+                
+                // Marcar cambio pendiente para sincronización
+                if (typeof marcarCambioPendiente === 'function') {
+                    marcarCambioPendiente();
+                }
                 
                 // Mostrar indicador visual
                 showSaveIndicator('Biblioteca guardada ✓');
@@ -8512,6 +8520,12 @@
             saveState();
             saveSelfcareCooldowns();
             saveLibrary();
+            
+            // Marcar cambio pendiente para sincronización
+            if (typeof marcarCambioPendiente === 'function') {
+                marcarCambioPendiente();
+            }
+            
             console.log('💾 Datos guardados automáticamente');
         }
         
@@ -9407,6 +9421,9 @@
                             document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + supabaseUser.email;
                             document.getElementById('syncStatus').style.color = '#2d5016';
                         }
+                        if (document.getElementById('syncInfo')) {
+                            document.getElementById('syncInfo').style.display = 'block';
+                        }
                         if (document.getElementById('syncButtons')) {
                             document.getElementById('syncButtons').style.display = 'flex';
                         }
@@ -9418,6 +9435,9 @@
                         if (document.getElementById('syncStatus')) {
                             document.getElementById('syncStatus').textContent = 'localStorage activo';
                             document.getElementById('syncStatus').style.color = '#4a7c59';
+                        }
+                        if (document.getElementById('syncInfo')) {
+                            document.getElementById('syncInfo').style.display = 'none';
                         }
                         if (document.getElementById('syncButtons')) {
                             document.getElementById('syncButtons').style.display = 'none';
@@ -9561,6 +9581,8 @@
         async function subirTodoALaNube() {
             if (!supabaseClient || !supabaseUser) return;
             
+            const timestamp = new Date().toISOString();
+            
             const todosLosDatos = {
                 user_id: supabaseUser.id,
                 data: {
@@ -9571,12 +9593,17 @@
                     notes: window.notes || [],
                     profile: JSON.parse(localStorage.getItem('userProfile') || '{}')
                 },
-                updated_at: new Date().toISOString()
+                updated_at: timestamp
             };
             
             await supabaseClient
                 .from('user_data')
                 .upsert(todosLosDatos);
+            
+            // Actualizar timestamp local
+            localStorage.setItem('lastSyncTimestamp', timestamp);
+            
+            console.log('✅ Todos los datos subidos a la nube');
             
             console.log('✅ Todos los datos subidos a la nube');
         }
@@ -9585,44 +9612,160 @@
         async function descargarTodoDeNube() {
             if (!supabaseClient || !supabaseUser) return;
             
-            const { data } = await supabaseClient
-                .from('user_data')
-                .select('*')
-                .eq('user_id', supabaseUser.id)
-                .single();
-            
-            if (data && data.data) {
-                window.stats = data.data.stats || {};
-                window.library = data.data.library || {};
-                window.notes = data.data.notes || [];
+            try {
+                const { data, error } = await supabaseClient
+                    .from('user_data')
+                    .select('*')
+                    .eq('user_id', supabaseUser.id)
+                    .single();
                 
-                localStorage.setItem('stats', JSON.stringify(data.data.stats || {}));
-                localStorage.setItem('library', JSON.stringify(data.data.library || {}));
-                localStorage.setItem('ideas', JSON.stringify(data.data.ideas || []));
-                localStorage.setItem('emotionalData', JSON.stringify(data.data.emotionalData || {}));
-                localStorage.setItem('userProfile', JSON.stringify(data.data.profile || {}));
+                if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+                    console.error('Error al descargar:', error);
+                    return;
+                }
                 
-                // Recargar la interfaz
-                if (typeof renderApuntes === 'function') renderApuntes();
-                if (typeof renderIdeas === 'function') renderIdeas();
-                if (typeof updateStatsDisplay === 'function') updateStatsDisplay();
-                
-                console.log('✅ Todos los datos descargados de la nube');
+                if (data && data.data) {
+                    // Actualizar variables globales
+                    window.stats = data.data.stats || {};
+                    window.library = data.data.library || {};
+                    window.notes = data.data.notes || [];
+                    
+                    // Guardar en localStorage
+                    localStorage.setItem('stats', JSON.stringify(data.data.stats || {}));
+                    localStorage.setItem('library', JSON.stringify(data.data.library || {}));
+                    localStorage.setItem('ideas', JSON.stringify(data.data.ideas || []));
+                    localStorage.setItem('emotionalData', JSON.stringify(data.data.emotionalData || {}));
+                    localStorage.setItem('userProfile', JSON.stringify(data.data.profile || {}));
+                    
+                    // Actualizar timestamp de última sincronización
+                    localStorage.setItem('lastSyncTimestamp', data.updated_at || new Date().toISOString());
+                    
+                    // Recargar TODA la interfaz
+                    actualizarInterfazCompleta();
+                    
+                    console.log('✅ Todos los datos descargados de la nube');
+                }
+            } catch (error) {
+                console.error('Error en descargarTodoDeNube:', error);
             }
         }
         
-        // Sincronización automática cada 30 segundos
+        // Actualizar toda la interfaz después de sincronizar
+        function actualizarInterfazCompleta() {
+            try {
+                // Recargar apuntes si estamos en esa vista
+                if (typeof renderApuntes === 'function' && currentLibraryCategory === 'apuntes') {
+                    renderApuntes();
+                }
+                
+                // Recargar ideas
+                if (typeof renderIdeas === 'function') {
+                    renderIdeas();
+                }
+                
+                // Recargar stats
+                if (typeof updateStatsDisplay === 'function') {
+                    updateStatsDisplay();
+                }
+                
+                // Recargar biblioteca si está abierta
+                if (typeof renderLibraryContent === 'function' && currentLibraryCategory) {
+                    renderLibraryContent();
+                }
+                
+                console.log('🔄 Interfaz actualizada');
+            } catch (error) {
+                console.error('Error al actualizar interfaz:', error);
+            }
+            }
+        }
+        
+        // Sincronización automática BIDIRECCIONAL en tiempo real
         let syncInterval = null;
+        let isOnline = navigator.onLine;
+        let pendingChanges = false;
+        
         function iniciarSyncAutomatico() {
             if (syncInterval) clearInterval(syncInterval);
             
+            // Sincronización cada 5 segundos (en tiempo real)
             syncInterval = setInterval(async () => {
-                if (supabaseClient && supabaseUser) {
-                    await subirTodoALaNube();
-                    console.log('🔄 Sync automático completado');
+                if (supabaseClient && supabaseUser && isOnline) {
+                    await sincronizacionBidireccional();
                 }
-            }, 30000); // Cada 30 segundos
+            }, 5000); // Cada 5 segundos
+            
+            console.log('✅ Sincronización automática iniciada (cada 5 segundos)');
         }
+        
+        // Sincronización bidireccional inteligente
+        async function sincronizacionBidireccional() {
+            if (!supabaseClient || !supabaseUser) return;
+            
+            try {
+                // Indicador visual de sincronización
+                const syncIcon = document.getElementById('syncIcon');
+                if (syncIcon) syncIcon.textContent = '🔄';
+                
+                // 1. Obtener datos de la nube
+                const { data: datosNube } = await supabaseClient
+                    .from('user_data')
+                    .select('*')
+                    .eq('user_id', supabaseUser.id)
+                    .single();
+                
+                // 2. Obtener timestamp local
+                const timestampLocal = localStorage.getItem('lastSyncTimestamp') || new Date(0).toISOString();
+                const timestampNube = datosNube?.updated_at || new Date(0).toISOString();
+                
+                // 3. Comparar timestamps para determinar qué hacer
+                if (new Date(timestampNube) > new Date(timestampLocal)) {
+                    // La nube tiene datos más recientes - DESCARGAR
+                    console.log('☁️ Descargando cambios de la nube...');
+                    await descargarTodoDeNube();
+                    pendingChanges = false;
+                    if (syncIcon) syncIcon.textContent = '📥';
+                    setTimeout(() => { if (syncIcon) syncIcon.textContent = '✅'; }, 500);
+                } else if (pendingChanges) {
+                    // Hay cambios locales pendientes - SUBIR
+                    console.log('📤 Subiendo cambios locales...');
+                    await subirTodoALaNube();
+                    pendingChanges = false;
+                    if (syncIcon) syncIcon.textContent = '📤';
+                    setTimeout(() => { if (syncIcon) syncIcon.textContent = '✅'; }, 500);
+                } else {
+                    // Todo sincronizado
+                    if (syncIcon) syncIcon.textContent = '✅';
+                }
+                
+            } catch (error) {
+                const syncIcon = document.getElementById('syncIcon');
+                if (syncIcon) syncIcon.textContent = '⚠️';
+                if (error.code !== 'PGRST116') { // Ignorar "no rows"
+                    console.error('Error en sincronización:', error);
+                }
+            }
+        }
+        
+        // Marcar que hay cambios pendientes cada vez que se modifica algo
+        function marcarCambioPendiente() {
+            pendingChanges = true;
+            localStorage.setItem('lastSyncTimestamp', new Date().toISOString());
+        }
+        
+        // Detectar conexión/desconexión
+        window.addEventListener('online', () => {
+            isOnline = true;
+            console.log('✅ Conexión restaurada - Sincronizando...');
+            if (supabaseClient && supabaseUser && pendingChanges) {
+                sincronizacionBidireccional();
+            }
+        });
+        
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            console.log('⚠️ Sin conexión - Los cambios se guardarán localmente');
+        });
         
         // Sincronizar hacia Supabase
         async function syncToSupabase() {
