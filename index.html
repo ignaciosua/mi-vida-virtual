@@ -9391,7 +9391,7 @@
                 });
                 
                 // Escuchar cambios de autenticación
-                supabaseClient.auth.onAuthStateChange((event, session) => {
+                supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     if (event === 'SIGNED_IN' && session) {
                         supabaseUser = session.user;
                         console.log('✅ Sesión iniciada:', supabaseUser.email);
@@ -9399,6 +9399,9 @@
                             document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + supabaseUser.email;
                             document.getElementById('syncStatus').style.color = '#2d5016';
                         }
+                        
+                        // Sincronizar datos al iniciar sesión
+                        await resolverConflictosDatos();
                     } else if (event === 'SIGNED_OUT') {
                         supabaseUser = null;
                         if (document.getElementById('syncStatus')) {
@@ -9463,6 +9466,146 @@
             } catch (error) {
                 console.error('Error al sincronizar desde Supabase:', error);
             }
+        }
+        
+        // Resolver conflictos entre localStorage y Supabase
+        async function resolverConflictosDatos() {
+            if (!supabaseClient || !supabaseUser) return;
+            
+            try {
+                // Obtener datos de Supabase
+                const { data: datosNube } = await supabaseClient
+                    .from('user_data')
+                    .select('*')
+                    .eq('user_id', supabaseUser.id)
+                    .single();
+                
+                // Obtener datos locales
+                const datosLocales = {
+                    stats: window.stats || {},
+                    library: window.library || {},
+                    ideas: JSON.parse(localStorage.getItem('ideas') || '[]'),
+                    emotionalData: JSON.parse(localStorage.getItem('emotionalData') || '{}'),
+                    notes: window.notes || []
+                };
+                
+                const hayDatosLocales = Object.keys(datosLocales.stats).length > 0 || 
+                                       datosLocales.library.apuntes?.length > 0 ||
+                                       datosLocales.ideas.length > 0;
+                
+                const hayDatosNube = datosNube && datosNube.data;
+                
+                if (hayDatosLocales && hayDatosNube) {
+                    // HAY CONFLICTO - Preguntar al usuario
+                    const respuesta = confirm(
+                        '🔄 CONFLICTO DE DATOS DETECTADO\n\n' +
+                        'Se encontraron datos diferentes:\n\n' +
+                        '📱 ESTE DISPOSITIVO:\n' +
+                        `- ${datosLocales.library.apuntes?.length || 0} apuntes\n` +
+                        `- ${datosLocales.ideas.length || 0} ideas\n` +
+                        `- ${datosLocales.library.libros?.length || 0} libros\n\n` +
+                        '☁️ EN LA NUBE:\n' +
+                        `- ${datosNube.data?.library?.apuntes?.length || 0} apuntes\n` +
+                        `- ${datosNube.data?.ideas?.length || 0} ideas\n` +
+                        `- ${datosNube.data?.library?.libros?.length || 0} libros\n\n` +
+                        '¿Qué datos quieres mantener?\n\n' +
+                        '✅ OK = Usar datos de ESTE DISPOSITIVO (sobreescribir nube)\n' +
+                        '❌ CANCELAR = Usar datos de LA NUBE (sobreescribir este dispositivo)'
+                    );
+                    
+                    if (respuesta) {
+                        // Usuario eligió datos locales - Subir a la nube
+                        await subirTodoALaNube();
+                        alert('✅ Datos de este dispositivo subidos a la nube');
+                    } else {
+                        // Usuario eligió datos de la nube - Descargar
+                        await descargarTodoDeNube();
+                        alert('✅ Datos de la nube descargados a este dispositivo');
+                    }
+                } else if (hayDatosNube) {
+                    // Solo hay datos en la nube - Descargar
+                    await descargarTodoDeNube();
+                    console.log('✅ Datos descargados de la nube');
+                } else if (hayDatosLocales) {
+                    // Solo hay datos locales - Subir
+                    await subirTodoALaNube();
+                    console.log('✅ Datos locales subidos a la nube');
+                }
+                
+                // Activar sincronización automática
+                iniciarSyncAutomatico();
+                
+            } catch (error) {
+                console.error('Error al resolver conflictos:', error);
+                console.log('💡 Continuando con datos locales');
+            }
+        }
+        
+        // Subir todos los datos a la nube
+        async function subirTodoALaNube() {
+            if (!supabaseClient || !supabaseUser) return;
+            
+            const todosLosDatos = {
+                user_id: supabaseUser.id,
+                data: {
+                    stats: window.stats,
+                    library: window.library,
+                    ideas: JSON.parse(localStorage.getItem('ideas') || '[]'),
+                    emotionalData: JSON.parse(localStorage.getItem('emotionalData') || '{}'),
+                    notes: window.notes || [],
+                    profile: JSON.parse(localStorage.getItem('userProfile') || '{}')
+                },
+                updated_at: new Date().toISOString()
+            };
+            
+            await supabaseClient
+                .from('user_data')
+                .upsert(todosLosDatos);
+            
+            console.log('✅ Todos los datos subidos a la nube');
+        }
+        
+        // Descargar todos los datos de la nube
+        async function descargarTodoDeNube() {
+            if (!supabaseClient || !supabaseUser) return;
+            
+            const { data } = await supabaseClient
+                .from('user_data')
+                .select('*')
+                .eq('user_id', supabaseUser.id)
+                .single();
+            
+            if (data && data.data) {
+                window.stats = data.data.stats || {};
+                window.library = data.data.library || {};
+                window.notes = data.data.notes || [];
+                
+                localStorage.setItem('stats', JSON.stringify(data.data.stats || {}));
+                localStorage.setItem('library', JSON.stringify(data.data.library || {}));
+                localStorage.setItem('ideas', JSON.stringify(data.data.ideas || []));
+                localStorage.setItem('emotionalData', JSON.stringify(data.data.emotionalData || {}));
+                localStorage.setItem('userProfile', JSON.stringify(data.data.profile || {}));
+                
+                // Recargar la interfaz
+                if (typeof renderApuntes === 'function') renderApuntes();
+                if (typeof renderIdeas === 'function') renderIdeas();
+                if (typeof updateStatsDisplay === 'function') updateStatsDisplay();
+                
+                console.log('✅ Todos los datos descargados de la nube');
+            }
+        }
+        
+        // Sincronización automática cada 30 segundos
+        let syncInterval = null;
+        function iniciarSyncAutomatico() {
+            if (syncInterval) clearInterval(syncInterval);
+            
+            syncInterval = setInterval(async () => {
+                if (supabaseClient && supabaseUser) {
+                    await subirTodoALaNube();
+                    console.log('🔄 Sync automático completado');
+                }
+            }, 30000); // Cada 30 segundos
         }
         
         // Sincronizar hacia Supabase

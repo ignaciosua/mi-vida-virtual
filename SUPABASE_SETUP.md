@@ -45,9 +45,48 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
 ---
 
-### Paso 4: Crear las Tablas
+### Paso 4: Crear la Tabla Principal
 
-Ve al **SQL Editor** en Supabase y ejecuta el siguiente script:
+Ve al **SQL Editor** en Supabase y ejecuta este script PRIMERO:
+
+```sql
+-- Crear tabla principal para todos los datos del usuario
+CREATE TABLE user_data (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    data JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+
+-- Habilitar Row Level Security
+ALTER TABLE user_data ENABLE ROW LEVEL SECURITY;
+
+-- Políticas: Los usuarios solo pueden ver/editar sus propios datos
+CREATE POLICY "Users can view own data"
+    ON user_data FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own data"
+    ON user_data FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own data"
+    ON user_data FOR UPDATE
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own data"
+    ON user_data FOR DELETE
+    USING (auth.uid() = user_id);
+
+-- Crear índice para búsquedas rápidas
+CREATE INDEX idx_user_data_user_id ON user_data(user_id);
+```
+
+---
+
+### Paso 5: Configurar Autenticación (OPCIONAL - Tablas antiguas)
 
 ```sql
 -- ========================================
