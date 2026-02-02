@@ -5500,11 +5500,19 @@
         
         // Eliminar item
         function deleteLibraryItem(index) {
-            if (confirm('¿Estás seguro de eliminar este elemento?')) {
-                library[currentLibraryCategory].splice(index, 1);
-                saveLibrary();
-                renderLibraryContent();
-            }
+            const item = library[currentLibraryCategory][index];
+            const firstConfirm = confirm(`⚠️ ¿Eliminar \"${item.title}\"?\n\nEsta acción NO se puede deshacer.\n\nClick OK para confirmar`);
+            
+            if (!firstConfirm) return;
+            
+            const secondConfirm = confirm('🚨 SEGUNDA CONFIRMACIÓN\n\n¿Estás COMPLETAMENTE SEGURO de que quieres eliminar esto?');
+            
+            if (!secondConfirm) return;
+            
+            library[currentLibraryCategory].splice(index, 1);
+            saveLibrary();
+            renderLibraryContent();
+            alert('✅ Elemento eliminado correctamente');
         }
         
         // Cerrar modal de biblioteca
@@ -6645,9 +6653,14 @@
         
         // Eliminar idea
         function deleteIdea(section, index, percentage) {
-            if (!confirm('⚠️ ¿Estás seguro de eliminar esta idea?')) {
-                return;
-            }
+            const idea = gameState.ideas[section][index];
+            const firstConfirm = confirm(`⚠️ ¿Eliminar idea \"${idea.titulo}\"?\n\nEsta acción NO se puede deshacer.\n\nClick OK para confirmar`);
+            
+            if (!firstConfirm) return;
+            
+            const secondConfirm = confirm('🚨 SEGUNDA CONFIRMACIÓN\n\n¿Estás COMPLETAMENTE SEGURO de que quieres eliminar esta idea?\n\nPerderás el -' + percentage + '% de Contenido');
+            
+            if (!secondConfirm) return;
             
             gameState.ideas[section].splice(index, 1);
             
@@ -9304,12 +9317,19 @@
         
         // Eliminar apunte
         function deleteNote(index) {
-            if (confirm('¿Estás seguro de que deseas eliminar este apunte?')) {
-                notes.splice(index, 1);
-                saveNotes();
-                renderNotesContent();
-                alert('✅ Apunte eliminado');
-            }
+            const note = notes[index];
+            const firstConfirm = confirm(`⚠️ ¿Eliminar apunte \"${note.title}\"?\n\nEsta acción NO se puede deshacer.\n\nClick OK para confirmar`);
+            
+            if (!firstConfirm) return;
+            
+            const secondConfirm = confirm('🚨 SEGUNDA CONFIRMACIÓN\n\n¿Estás COMPLETAMENTE SEGURO de que quieres eliminar este apunte?');
+            
+            if (!secondConfirm) return;
+            
+            notes.splice(index, 1);
+            saveNotes();
+            renderNotesContent();
+            alert('✅ Apunte eliminado correctamente');
         }
         
         // Cerrar modal de apunte
@@ -9500,86 +9520,18 @@
         
         // Inicializar Supabase
         function initSupabase() {
-            // CONFIGURACIÓN DE SUPABASE
-            const SUPABASE_URL = 'https://viqvznakyrwvhxnmzmyt.supabase.co';
-            const SUPABASE_KEY = 'sb_publishable_y_xdR7tqCSviwBKlHO3x_g_yIQ7RrQJ';
-            
-            try {
-                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                console.log('✅ Supabase conectado correctamente');
-                
-                // Verificar si hay una sesión activa
-                supabaseClient.auth.getSession().then(({ data: { session } }) => {
-                    if (session) {
-                        supabaseUser = session.user;
-                        console.log('✅ Usuario autenticado:', supabaseUser.email);
-                        if (document.getElementById('syncStatus')) {
-                            document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + supabaseUser.email;
-                            document.getElementById('syncStatus').style.color = '#2d5016';
-                        }
-                        if (document.getElementById('syncButtons')) {
-                            document.getElementById('syncButtons').style.display = 'flex';
-                        }
-                    }
-                });
-                
-                // Escuchar cambios de autenticación
-                supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    if (event === 'SIGNED_IN' && session) {
-                        supabaseUser = session.user;
-                        console.log('✅ Sesión iniciada:', supabaseUser.email);
-                        if (document.getElementById('syncStatus')) {
-                            document.getElementById('syncStatus').textContent = '✅ Sincronizado: ' + supabaseUser.email;
-                            document.getElementById('syncStatus').style.color = '#2d5016';
-                        }
-                        if (document.getElementById('syncInfo')) {
-                            document.getElementById('syncInfo').style.display = 'block';
-                        }
-                        if (document.getElementById('syncButtons')) {
-                            document.getElementById('syncButtons').style.display = 'flex';
-                        }
-                        
-                        // Sincronizar datos al iniciar sesión
-                        await resolverConflictosDatos();
-                    } else if (event === 'SIGNED_OUT') {
-                        supabaseUser = null;
-                        if (document.getElementById('syncStatus')) {
-                            document.getElementById('syncStatus').textContent = 'localStorage activo';
-                            document.getElementById('syncStatus').style.color = '#4a7c59';
-                        }
-                        if (document.getElementById('syncInfo')) {
-                            document.getElementById('syncInfo').style.display = 'none';
-                        }
-                        if (document.getElementById('syncButtons')) {
-                            document.getElementById('syncButtons').style.display = 'none';
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('❌ Error al conectar Supabase:', error);
-                console.log('💡 Usando localStorage como fallback.');
-            }
+            // ❌ SUPABASE DESACTIVADO
+            // Supabase requiere pago y tiene problemas de sincronización.
+            // La app usa localStorage + backup manual en su lugar.
+            console.log('💾 Modo local: localStorage solamente (Supabase desactivado)');
+            console.log('📱 Para sincronizar entre dispositivos: usa Descargar Backup e Importar en otro dispositivo');
         }
         
         // Login con Supabase
         async function loginSupabase(email, password) {
-            if (!supabaseClient) return false;
-            
-            try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (error) throw error;
-                
-                supabaseUser = data.user;
-                await syncFromSupabase();
-                return true;
-            } catch (error) {
-                console.error('Error al iniciar sesión:', error);
-                return false;
-            }
+            // ❌ SUPABASE DESACTIVADO
+            alert('❌ Supabase está desactivado.\n\nPara sincronizar entre dispositivos:\n1. Descargar Backup en este dispositivo\n2. Importar el archivo en otro dispositivo');
+            return false;
         }
         
         // Sincronizar desde Supabase
