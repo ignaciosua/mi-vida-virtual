@@ -3494,8 +3494,8 @@
         // Resetear estadísticas a 0 (solo Existir y Ejercicio, NO Crecimiento)
         function resetStats() {
             if (confirm('¿Estás seguro de que quieres reiniciar las estadísticas de Existir y Ejercicio a 0%?')) {
-                // Lista de estadísticas a reiniciar (excluir crecimiento)
-                const statsToReset = ['hambre', 'hidratacion', 'sueno', 'autoestima', 'ejercicio', 'social'];
+                // Solo reiniciar estadísticas de Existir y Ejercicio (NO Crecimiento)
+                const statsToReset = ['hambre', 'hidratacion', 'sueño', 'autoestima', 'ejercicio', 'vidaSocial'];
                 
                 statsToReset.forEach(key => {
                     if (gameState.stats[key]) {
@@ -5325,36 +5325,43 @@
         
         // Abrir modal para agregar item
         function openAddItemModal(editIndex = null) {
+            // Limpiar modal anterior si existe
+            const existingModal = document.querySelector('.modal.show');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
             const isEditing = editIndex !== null;
             const item = isEditing ? library[currentLibraryCategory][editIndex] : null;
             const categoryName = currentLibraryCategory === 'libros' ? 'Libro' : currentLibraryCategory === 'peliculas' ? 'Película' : currentLibraryCategory === 'series' ? 'Serie' : 'Flashcard';
             
             const modal = document.createElement('div');
             modal.className = 'modal show';
+            modal.id = 'libraryEditModal';
             modal.innerHTML = `
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
                         <h3>${isEditing ? '✏️ Editar' : '➕ Agregar'} ${categoryName}</h3>
                     </div>
                     <div class="modal-body">
-                        <input type="text" id="itemTitle" placeholder="${currentLibraryCategory === 'flashcards' ? 'Pregunta *' : 'Título *'}" value="${isEditing ? item.title : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
-                        ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing ? item.author || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'flashcards' ? `<textarea id="flashcardAnswer" placeholder="Respuesta *" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.answer || '' : ''}</textarea>` : ''}
+                        <input type="text" id="itemTitle" placeholder="${currentLibraryCategory === 'flashcards' ? 'Pregunta *' : 'Título *'}" value="${isEditing && item ? (item.title || '') : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">
+                        ${currentLibraryCategory === 'libros' ? `<input type="text" id="itemAuthor" placeholder="Autor *" value="${isEditing && item ? (item.author || '') : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'flashcards' ? `<textarea id="flashcardAnswer" placeholder="Respuesta *" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing && item ? (item.answer || '') : ''}</textarea>` : ''}
                         ${currentLibraryCategory === 'flashcards' ? `
                             <select id="flashcardFolder" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; background: white;">
-                                ${getFlashcardFolders().length === 0 ? '<option value="General">General</option>' : getFlashcardFolders().map(folder => `<option value="${folder}" ${(isEditing ? (item.folder || 'General') : (libraryFilters.folder || 'General')) === folder ? 'selected' : ''}>${folder}</option>`).join('')}
+                                ${getFlashcardFolders().length === 0 ? '<option value="General">General</option>' : getFlashcardFolders().map(folder => `<option value="${folder}" ${isEditing && item && (item.folder || 'General') === folder ? 'selected' : ''}>${folder}</option>`).join('')}
                             </select>
                         ` : ''}
-                        ${currentLibraryCategory === 'flashcards' ? `<input type="url" id="flashcardImage" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'peliculas' || currentLibraryCategory === 'series' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'series' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'series' ? `<input type="number" id="seriesSeasons" placeholder="Temporada" value="${isEditing ? item.seasons || 1 : 1}" min="1" max="20" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'series' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'libros' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory === 'libros' ? `<input type="number" id="bookPages" placeholder="Número de páginas" value="${isEditing ? item.pages || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
-                        ${currentLibraryCategory !== 'flashcards' ? `<textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing ? item.description || '' : ''}</textarea>` : ''}
+                        ${currentLibraryCategory === 'flashcards' ? `<input type="url" id="flashcardImage" placeholder="URL de imagen (opcional)" value="${isEditing && item ? (item.imageUrl || '') : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'peliculas' || currentLibraryCategory === 'series' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing && item ? (item.imageUrl || '') : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing && item ? (item.duration || '') : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing && item ? (item.timesWatched || 1) : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'series' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing && item ? (item.duration || '') : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'series' ? `<input type="number" id="seriesSeasons" placeholder="Temporada" value="${isEditing && item ? (item.seasons || 1) : 1}" min="1" max="20" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'series' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing && item ? (item.timesWatched || 1) : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'libros' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing && item ? (item.imageUrl || '') : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'libros' ? `<input type="number" id="bookPages" placeholder="Número de páginas" value="${isEditing && item ? (item.pages || '') : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory !== 'flashcards' ? `<textarea id="itemDescription" placeholder="Descripción breve" rows="4" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em; resize: vertical;">${isEditing && item ? (item.description || '') : ''}</textarea>` : ''}
                         ${currentLibraryCategory !== 'flashcards' ? `<div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; color: #667eea; font-weight: bold;">Rating:</label>
                             <div id="ratingSelector" style="font-size: 2em; cursor: pointer;">
@@ -5369,10 +5376,10 @@
                 </div>
             `;
             document.body.appendChild(modal);
-            window.currentItemRating = isEditing ? item.rating : 0;
+            window.currentItemRating = isEditing && item ? (item.rating || 0) : 0;
             
             // Si estamos editando, mostrar las estrellas correctamente
-            if (isEditing && item.rating) {
+            if (isEditing && item && item.rating) {
                 setTimeout(() => selectRating(item.rating), 50);
             }
         }
