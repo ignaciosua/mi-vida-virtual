@@ -8288,7 +8288,7 @@
             console.log('✅ Actividades encontradas:', selectedActivities.length);
             console.log('🔧 Ordenamiento actual:', activitiesSortOrder || 'time');
             
-            // Función auxiliar para convertir hora a minutos
+            // Función auxiliar para convertir hora a minutos (con 3 AM como inicio del día)
             const timeToMinutes = (time) => {
                 if (!time) return 0;
                 const cleaned = String(time).trim();
@@ -8296,7 +8296,17 @@
                 if (parts.length < 2) return 0;
                 const hours = parseInt(parts[0], 10) || 0;
                 const minutes = parseInt(parts[1], 10) || 0;
-                const total = hours * 60 + minutes;
+                
+                // Si la hora está entre 00:00 y 02:59, agregarle 24 horas
+                // para que aparezca al final (después de las 23:59)
+                // Si la hora es de 03:00 en adelante, es normal
+                let adjustedHours = hours;
+                if (hours >= 0 && hours < 3) {
+                    adjustedHours = hours + 24; // Mover al final del día
+                }
+                
+                const total = adjustedHours * 60 + minutes;
+                console.log(`⏰ Hora ${time} -> ${hours}h ${minutes}m -> ajustada: ${adjustedHours}h -> total: ${total} minutos`);
                 return total;
             };
             
