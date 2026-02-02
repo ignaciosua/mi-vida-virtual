@@ -8286,6 +8286,19 @@
             });
             
             console.log('✅ Actividades encontradas:', selectedActivities.length);
+            console.log('🔧 Ordenamiento actual:', activitiesSortOrder || 'time');
+            
+            // Función auxiliar para convertir hora a minutos
+            const timeToMinutes = (time) => {
+                if (!time) return 0;
+                const cleaned = String(time).trim();
+                const parts = cleaned.split(':');
+                if (parts.length < 2) return 0;
+                const hours = parseInt(parts[0], 10) || 0;
+                const minutes = parseInt(parts[1], 10) || 0;
+                const total = hours * 60 + minutes;
+                return total;
+            };
             
             // Ordenar por completadas (al final) y luego según la opción seleccionada
             const sortedPending = [...selectedActivities].sort((a, b) => {
@@ -8298,29 +8311,28 @@
                     return aCompleted ? 1 : -1;
                 }
                 
-                // Función auxiliar para convertir hora a minutos (más robusta)
-                const timeToMinutes = (time) => {
-                    if (!time) return 0;
-                    // Limpiar espacios y convertir
-                    const cleaned = String(time).trim();
-                    const parts = cleaned.split(':');
-                    if (parts.length < 2) return 0;
-                    const hours = parseInt(parts[0]) || 0;
-                    const minutes = parseInt(parts[1]) || 0;
-                    return hours * 60 + minutes;
-                };
-                
                 // Ordenar según la opción seleccionada
-                if (activitiesSortOrder === 'importance') {
+                const sortOrder = activitiesSortOrder || 'time';
+                
+                if (sortOrder === 'importance') {
                     // Por importancia (descendente) y luego por hora
                     const importanceDiff = (b.importance || 2) - (a.importance || 2);
                     if (importanceDiff !== 0) return importanceDiff;
-                    return timeToMinutes(a.time || '00:00') - timeToMinutes(b.time || '00:00');
+                    const timeA = timeToMinutes(a.time);
+                    const timeB = timeToMinutes(b.time);
+                    return timeA - timeB;
                 } else {
                     // Por hora (ordenar por horario) - OPCIÓN POR DEFECTO
-                    const timeA = timeToMinutes(a.time || '00:00');
-                    const timeB = timeToMinutes(b.time || '00:00');
-                    return timeA - timeB;
+                    const timeA = timeToMinutes(a.time);
+                    const timeB = timeToMinutes(b.time);
+                    const result = timeA - timeB;
+                    
+                    // Debug log para ver comparaciones
+                    if (a.time && b.time) {
+                        console.log(`⏰ Comparando: ${a.time} (${timeA} min) vs ${b.time} (${timeB} min) = ${result}`);
+                    }
+                    
+                    return result;
                 }
             });
             
