@@ -3435,18 +3435,22 @@
             }
         }
 
-        // Resetear estadísticas a 0
+        // Resetear estadísticas a 0 (solo Existir y Ejercicio, NO Crecimiento)
         function resetStats() {
-            if (confirm('¿Estás seguro de que quieres reiniciar todas las estadísticas a 0%?')) {
-                Object.keys(STATS_CONFIG).forEach(key => {
+            if (confirm('¿Estás seguro de que quieres reiniciar las estadísticas de Existir y Ejercicio a 0%?')) {
+                // Lista de estadísticas a reiniciar (excluir crecimiento)
+                const statsToReset = ['hambre', 'hidratacion', 'sueno', 'autoestima', 'ejercicio', 'social'];
+                
+                statsToReset.forEach(key => {
                     if (gameState.stats[key]) {
                         gameState.stats[key].value = 0;
                     }
                 });
+                
                 gameState.lastUpdate = Date.now();
                 saveState();
                 renderStats();
-                alert('✅ Todas las estadísticas se han reiniciado a 0%');
+                alert('✅ Las estadísticas de Existir y Ejercicio se han reiniciado a 0%. Las de Crecimiento no fueron afectadas.');
             }
         }
 
@@ -8294,10 +8298,15 @@
                     return aCompleted ? 1 : -1;
                 }
                 
-                // Función auxiliar para convertir hora a minutos
+                // Función auxiliar para convertir hora a minutos (más robusta)
                 const timeToMinutes = (time) => {
                     if (!time) return 0;
-                    const [hours, minutes] = time.split(':').map(Number);
+                    // Limpiar espacios y convertir
+                    const cleaned = String(time).trim();
+                    const parts = cleaned.split(':');
+                    if (parts.length < 2) return 0;
+                    const hours = parseInt(parts[0]) || 0;
+                    const minutes = parseInt(parts[1]) || 0;
                     return hours * 60 + minutes;
                 };
                 
@@ -8309,7 +8318,9 @@
                     return timeToMinutes(a.time || '00:00') - timeToMinutes(b.time || '00:00');
                 } else {
                     // Por hora (ordenar por horario) - OPCIÓN POR DEFECTO
-                    return timeToMinutes(a.time || '00:00') - timeToMinutes(b.time || '00:00');
+                    const timeA = timeToMinutes(a.time || '00:00');
+                    const timeB = timeToMinutes(b.time || '00:00');
+                    return timeA - timeB;
                 }
             });
             
