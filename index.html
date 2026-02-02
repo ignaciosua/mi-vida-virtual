@@ -1712,6 +1712,9 @@
             <button onclick="recoverFromAutoBackup()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);">
                 🔄 Recuperar Últimos Datos
             </button>
+            <button onclick="resetStats()" style="flex: 1; min-width: 140px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; border-radius: 15px; padding: 12px; font-size: 0.9em; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                🔄 Reiniciar Stats a 0
+            </button>
         </div>
         
         <!-- Herramienta de diagnóstico -->
@@ -3407,13 +3410,8 @@
                     const decayAmount = STATS_CONFIG[key].decayRate * hoursElapsed;
                     let newValue = gameState.stats[key].value - decayAmount;
                     
-                    // Ejercicio tiene un mínimo de -100%
-                    if (key === 'ejercicio') {
-                        gameState.stats[key].value = Math.max(-100, newValue);
-                    } else {
-                        // Otras estadísticas pueden ser negativas sin límite
-                        gameState.stats[key].value = newValue;
-                    }
+                    // TODAS las estadísticas tienen un mínimo de -100%
+                    gameState.stats[key].value = Math.max(-100, newValue);
                 });
                 
                 // Resetear desglose de hidratación si cambió el día
@@ -3437,15 +3435,18 @@
             }
         }
 
-        // Resetear estadísticas
+        // Resetear estadísticas a 0
         function resetStats() {
-            if (confirm('¿Estás seguro de que quieres resetear todas las estadísticas a 100%?')) {
+            if (confirm('¿Estás seguro de que quieres reiniciar todas las estadísticas a 0%?')) {
                 Object.keys(STATS_CONFIG).forEach(key => {
-                    gameState.stats[key] = { ...STATS_CONFIG[key] };
+                    if (gameState.stats[key]) {
+                        gameState.stats[key].value = 0;
+                    }
                 });
                 gameState.lastUpdate = Date.now();
                 saveState();
                 renderStats();
+                alert('✅ Todas las estadísticas se han reiniciado a 0%');
             }
         }
 
@@ -7404,12 +7405,15 @@
         // Exportar backup como archivo descargable
         function exportBackup() {
             const backup = {
-                version: '1.0',
+                version: '2.0',
                 date: new Date().toISOString(),
                 userProfile: localStorage.getItem('userProfile'),
                 gameState: localStorage.getItem('gameState'),
                 selfcareCooldowns: localStorage.getItem('selfcareCooldowns'),
-                library: localStorage.getItem('library')
+                library: localStorage.getItem('library'),
+                exercisePlan: localStorage.getItem('exercisePlan'),
+                workoutHistory: localStorage.getItem('workoutHistory'),
+                emotionalData: localStorage.getItem('emotionalData')
             };
             
             const dataStr = JSON.stringify(backup, null, 2);
@@ -7456,8 +7460,11 @@
                         if (backup.gameState) localStorage.setItem('gameState', backup.gameState);
                         if (backup.selfcareCooldowns) localStorage.setItem('selfcareCooldowns', backup.selfcareCooldowns);
                         if (backup.library) localStorage.setItem('library', backup.library);
+                        if (backup.exercisePlan) localStorage.setItem('exercisePlan', backup.exercisePlan);
+                        if (backup.workoutHistory) localStorage.setItem('workoutHistory', backup.workoutHistory);
+                        if (backup.emotionalData) localStorage.setItem('emotionalData', backup.emotionalData);
                         
-                        alert('✅ Backup restaurado exitosamente. La página se recargará.');
+                        alert('✅ Backup restaurado exitosamente (incluye ejercicios y emociones). La página se recargará.');
                         location.reload();
                         
                     } catch (error) {
@@ -8287,15 +8294,22 @@
                     return aCompleted ? 1 : -1;
                 }
                 
+                // Función auxiliar para convertir hora a minutos
+                const timeToMinutes = (time) => {
+                    if (!time) return 0;
+                    const [hours, minutes] = time.split(':').map(Number);
+                    return hours * 60 + minutes;
+                };
+                
                 // Ordenar según la opción seleccionada
                 if (activitiesSortOrder === 'importance') {
                     // Por importancia (descendente) y luego por hora
                     const importanceDiff = (b.importance || 2) - (a.importance || 2);
                     if (importanceDiff !== 0) return importanceDiff;
-                    return (a.time || '00:00').localeCompare(b.time || '00:00');
+                    return timeToMinutes(a.time || '00:00') - timeToMinutes(b.time || '00:00');
                 } else {
                     // Por hora (ordenar por horario) - OPCIÓN POR DEFECTO
-                    return (a.time || '00:00').localeCompare(b.time || '00:00');
+                    return timeToMinutes(a.time || '00:00') - timeToMinutes(b.time || '00:00');
                 }
             });
             
