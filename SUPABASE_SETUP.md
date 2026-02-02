@@ -1,4 +1,4 @@
-# 🔧 Guía de Configuración - Supabase
+      # 🔧 Guía de Configuración - Supabase
 
 ## Configuración Rápida de Supabase para Sincronización
 

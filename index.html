@@ -1529,8 +1529,52 @@
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
                         <div>
-                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⏰ Hora</label>
-                            <input type="time" id="activityTime" style="width: 100%; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                            <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">⏰ Hora (HH:MM)</label>
+                            <div style="display: flex; gap: 5px; align-items: center;">
+                                <select id="activityHours" style="flex: 1; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                                    <option value="">HH</option>
+                                    <option value="00">00</option>
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                    <option value="13">13</option>
+                                    <option value="14">14</option>
+                                    <option value="15">15</option>
+                                    <option value="16">16</option>
+                                    <option value="17">17</option>
+                                    <option value="18">18</option>
+                                    <option value="19">19</option>
+                                    <option value="20">20</option>
+                                    <option value="21">21</option>
+                                    <option value="22">22</option>
+                                    <option value="23">23</option>
+                                </select>
+                                <span style="color: #7c3aed; font-weight: bold; font-size: 1.2em;">:</span>
+                                <select id="activityMinutes" style="flex: 1; padding: 12px; border: 2px solid #c7d2fe; border-radius: 12px; font-size: 0.95em; background: white;">
+                                    <option value="">MM</option>
+                                    <option value="00">00</option>
+                                    <option value="05">05</option>
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                    <option value="20">20</option>
+                                    <option value="25">25</option>
+                                    <option value="30">30</option>
+                                    <option value="35">35</option>
+                                    <option value="40">40</option>
+                                    <option value="45">45</option>
+                                    <option value="50">50</option>
+                                    <option value="55">55</option>
+                                </select>
+                            </div>
                         </div>
                         <div>
                             <label style="font-size: 0.85em; color: #7c3aed; font-weight: 600; margin-bottom: 5px; display: block;">🎯 Categoría</label>
@@ -2691,6 +2735,10 @@
             wrongActivities: {
                 list: [],
                 lastReset: new Date().toDateString()
+            },
+            activities: {
+                pending: [],
+                completed: []
             }
         };
 
@@ -2742,6 +2790,14 @@
                     gameState.wrongActivities = {
                         list: [],
                         lastReset: new Date().toDateString()
+                    };
+                }
+                
+                // Migrar estructura de activities
+                if (!gameState.activities) {
+                    gameState.activities = {
+                        pending: [],
+                        completed: []
                     };
                 }
                 
@@ -5210,7 +5266,7 @@
                     ${currentLibraryCategory === 'flashcards' ? `<button onclick="startFlashcardReview()" style="flex: 1; padding: 15px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);">🧠 Repasar</button>` : ''}
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
             `;
             
             if (filteredItems.length === 0) {
@@ -5218,36 +5274,27 @@
             } else {
                 filteredItems.forEach((item, index) => {
                     html += `
-                        <div style="background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                            ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">` : ''}
-                            <h4 style="color: #667eea; margin-bottom: 5px;">${item.title}</h4>
-                            ${item.author ? `<p style="color: #a78bfa; font-size: 0.9em; margin-bottom: 10px;">por ${item.author}</p>` : ''}
-                            ${currentLibraryCategory !== 'flashcards' ? `<div style="color: #fbbf24; margin-bottom: 10px;">${'⭐'.repeat(item.rating || 0)}${'☆'.repeat(5 - (item.rating || 0))}</div>` : ''}
-                            ${item.description ? `<p style="color: #6b7280; font-size: 0.85em; line-height: 1.4; margin-bottom: 10px;">${item.description.substring(0, 100)}${item.description.length > 100 ? '...' : ''}</p>` : ''}
-                            ${currentLibraryCategory === 'peliculas' && item.duration ? `
-                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
-                                    <div style="color: #6b4c9a;">⏱️ ${item.duration} min | 👁️ ${item.timesWatched || 1}x</div>
-                                    <div style="color: #ff6b9d; font-weight: 600;">Total: ${((item.duration || 0) * (item.timesWatched || 1))} min (${Math.floor(((item.duration || 0) * (item.timesWatched || 1)) / 60)}h ${((item.duration || 0) * (item.timesWatched || 1)) % 60}m)</div>
+                        <div style="background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 100%;">
+                            ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">` : '<div style="width: 100%; height: 140px; background: linear-gradient(135deg, #e0e7ff, #f3e8ff); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; color: #a78bfa;">No hay imagen</div>'}
+                            <h4 style="color: #667eea; margin-bottom: 4px; font-size: 0.85em; line-height: 1.2; flex-grow: 1;">${item.title}</h4>
+                            ${item.author ? `<p style="color: #a78bfa; font-size: 0.75em; margin-bottom: 6px;">por ${item.author}</p>` : ''}
+                            ${currentLibraryCategory !== 'flashcards' ? `<div style="color: #fbbf24; font-size: 0.8em; margin-bottom: 6px;">${'⭐'.repeat(item.rating || 0)}${'☆'.repeat(5 - (item.rating || 0))}</div>` : ''}
+                            ${currentLibraryCategory === 'peliculas' && item.duration ? `<p style="color: #6b4c9a; font-size: 0.75em; margin-bottom: 6px;">⏱️ ${item.duration}m | 👁️ ${item.timesWatched || 1}x</p>` : ''}
+                            ${currentLibraryCategory === 'series' ? `
+                                <div style="color: #6b4c9a; font-size: 0.75em; margin-bottom: 6px;">
+                                    ${item.seasons ? `📺 S${item.seasons}` : ''}
+                                    ${item.duration ? `⏱️ ${item.duration}m` : ''}
+                                    ${item.timesWatched ? `👁️ ${item.timesWatched}x` : ''}
                                 </div>
                             ` : ''}
-                            ${currentLibraryCategory === 'series' && item.duration ? `
-                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
-                                    <div style="color: #6b4c9a;">⏱️ ${item.duration} min | 👁️ ${item.timesWatched || 1}x</div>
-                                    <div style="color: #ff6b9d; font-weight: 600;">Total: ${((item.duration || 0) * (item.timesWatched || 1))} min (${Math.floor(((item.duration || 0) * (item.timesWatched || 1)) / 60)}h ${((item.duration || 0) * (item.timesWatched || 1)) % 60}m)</div>
-                                </div>
-                            ` : ''}
-                            ${currentLibraryCategory === 'libros' && item.pages ? `
-                                <div style="background: linear-gradient(135deg, #fef3ff 0%, #ffe5f3 100%); padding: 8px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85em;">
-                                    <div style="color: #6b4c9a;">📄 ${item.pages} páginas</div>
-                                    <div style="color: #ff6b9d; font-weight: 600;">Tiempo estimado: ${Math.floor((item.pages * 1.5) / 60)}h ${Math.round((item.pages * 1.5) % 60)}m</div>
-                                </div>
-                            ` : ''}
-                            ${currentLibraryCategory === 'flashcards' && item.folder ? `<p style="color: #ff6b9d; font-size: 0.85em; margin-bottom: 10px;">📁 ${item.folder}</p>` : ''}
-                            <div style="display: flex; gap: 10px;">${currentLibraryCategory === 'flashcards' ? `
-                                    <button onclick="reviewSingleFlashcard(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">🧠 Repasar</button>
-                                ` : `<button onclick="viewLibraryItem(${index})" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">Ver</button>`}
-                                <button onclick="editLibraryItem(${index})" style="padding: 8px 12px; background: #a78bfa; color: white; border: none; border-radius: 8px; cursor: pointer;">✏️</button>
-                                <button onclick="deleteLibraryItem(${index})" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">🗑️</button>
+                            ${currentLibraryCategory === 'libros' && item.pages ? `<p style="color: #6b4c9a; font-size: 0.75em; margin-bottom: 6px;">📄 ${item.pages}p</p>` : ''}
+                            ${currentLibraryCategory === 'flashcards' && item.folder ? `<p style="color: #ff6b9d; font-size: 0.75em; margin-bottom: 6px;">📁 ${item.folder}</p>` : ''}
+                            <div style="display: flex; gap: 6px; margin-top: auto;">
+                                ${currentLibraryCategory === 'flashcards' ? `
+                                    <button onclick="reviewSingleFlashcard(${index})" style="flex: 1; padding: 6px; background: linear-gradient(135deg, #ff6b9d 0%, #ffa8c5 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75em;">🧠</button>
+                                ` : `<button onclick="viewLibraryItem(${index})" style="flex: 1; padding: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75em;">👁️</button>`}
+                                <button onclick="editLibraryItem(${index})" style="padding: 6px 8px; background: #a78bfa; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75em;">✏️</button>
+                                <button onclick="deleteLibraryItem(${index})" style="padding: 6px 8px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75em;">🗑️</button>
                             </div>
                         </div>
                     `;
@@ -5303,6 +5350,7 @@
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'peliculas' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'series' ? `<input type="number" id="movieDuration" placeholder="Duración en minutos" value="${isEditing ? item.duration || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
+                        ${currentLibraryCategory === 'series' ? `<input type="number" id="seriesSeasons" placeholder="Temporada" value="${isEditing ? item.seasons || 1 : 1}" min="1" max="20" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'series' ? `<input type="number" id="movieTimesWatched" placeholder="Veces vista" value="${isEditing ? item.timesWatched || 1 : 1}" min="1" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'libros' ? `<input type="url" id="itemImageUrl" placeholder="URL de imagen (opcional)" value="${isEditing ? item.imageUrl || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
                         ${currentLibraryCategory === 'libros' ? `<input type="number" id="bookPages" placeholder="Número de páginas" value="${isEditing ? item.pages || '' : ''}" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; margin-bottom: 15px; font-size: 0.95em;">` : ''}
@@ -5350,6 +5398,7 @@
             const duration = document.getElementById('movieDuration')?.value || 0;
             const timesWatched = document.getElementById('movieTimesWatched')?.value || 1;
             const pages = document.getElementById('bookPages')?.value || 0;
+            const seasons = document.getElementById('seriesSeasons')?.value || 1;
             const rating = window.currentItemRating || 0;
             
             console.log('💾 Guardando item en categoría:', currentLibraryCategory);
@@ -5388,6 +5437,7 @@
                 duration: parseInt(duration) || 0,
                 timesWatched: parseInt(timesWatched) || 1,
                 pages: parseInt(pages) || 0,
+                seasons: parseInt(seasons) || 1,
                 rating,
                 dateAdded: editIndex !== null ? library[currentLibraryCategory][editIndex].dateAdded : new Date().toISOString(),
                 // Sistema de repetición espaciada para flashcards
@@ -7656,7 +7706,8 @@
         
         function addActivity() {
             const input = document.getElementById('newActivityInput');
-            const timeInput = document.getElementById('activityTime');
+            const hoursInput = document.getElementById('activityHours');
+            const minutesInput = document.getElementById('activityMinutes');
             const categoryInput = document.getElementById('activityCategory');
             const dateFromInput = document.getElementById('activityDateFrom');
             const dateToInput = document.getElementById('activityDateTo');
@@ -7665,7 +7716,9 @@
             const statPercentageInput = document.getElementById('activityStatPercentage');
             const recurrenceInput = document.getElementById('activityRecurrence');
             const activity = input.value.trim();
-            const time = timeInput.value;
+            const hours = hoursInput.value || '20';
+            const minutes = minutesInput.value || '00';
+            const time = `${hours}:${minutes}`;
             const category = categoryInput.value;
             const dateFrom = dateFromInput.value;
             const dateTo = dateToInput.value;
@@ -7726,7 +7779,8 @@
             input.value = '';
             dateFromInput.value = '';
             dateToInput.value = '';
-            timeInput.value = '';
+            hoursInput.value = '';
+            minutesInput.value = '';
             categoryInput.value = 'personal';
             importanceInput.value = '2';
             statEffectInput.value = 'none';
@@ -8288,64 +8342,66 @@
             console.log('✅ Actividades encontradas:', selectedActivities.length);
             console.log('🔧 Ordenamiento actual:', activitiesSortOrder || 'time');
             
-            // Función auxiliar para convertir hora a minutos (con 3 AM como inicio del día)
-            const timeToMinutes = (time) => {
-                if (!time) return 99999; // Sin hora definida va al final
-                const cleaned = String(time).trim();
-                const parts = cleaned.split(':');
-                if (parts.length < 2) return 99999;
+            // FUNCIÓN SIMPLE Y DIRECTA PARA CONVERTIR HORA A NÚMERO COMPARABLE
+            function horaANumero(horaStr) {
+                if (!horaStr || typeof horaStr !== 'string') return 99999;
                 
-                let hours = parseInt(parts[0], 10);
-                let minutes = parseInt(parts[1], 10);
-                
-                // Validar que sean números válidos
-                if (isNaN(hours) || isNaN(minutes)) return 99999;
-                
-                // Si la hora está entre 00:00 y 02:59, agregarle 24 horas
-                // para que aparezca al final (después de las 23:59)
-                if (hours >= 0 && hours < 3) {
-                    hours = hours + 24; // Mover al final del día
+                const match = horaStr.match(/^(\d{1,2}):(\d{2})$/);
+                if (!match) {
+                    console.error(`❌ Formato de hora inválido: "${horaStr}" - debería ser HH:MM`);
+                    return 99999;
                 }
                 
-                const total = hours * 60 + minutes;
-                return total;
-            };
+                let h = parseInt(match[1], 10);
+                let m = parseInt(match[2], 10);
+                
+                // 3 AM es el inicio, así que 0-2 AM van al final
+                if (h < 3) h += 24;
+                
+                const valor = h * 100 + m;
+                console.log(`  📍 horaANumero("${horaStr}") = ${valor}`);
+                return valor;
+            }
             
-            // PRE-CALCULAR todos los valores de tiempo para evitar recalcular durante sort
-            const activitiesWithTime = selectedActivities.map(activity => {
-                const timeValue = timeToMinutes(activity.time);
-                console.log(`⏰ Actividad: "${activity.text}" | Hora: ${activity.time} | Minutos: ${timeValue}`);
-                return {
-                    ...activity,
-                    _timeValue: timeValue,
-                    _isCompleted: activity.completedDates && activity.completedDates.includes(selectedStr)
-                };
+            // Crear array con pre-cálculo de valores
+            const activitiesConHora = selectedActivities.map(act => ({
+                ...act,
+                _hora: horaANumero(act.time),
+                _completada: act.completedDates && act.completedDates.includes(selectedStr)
+            }));
+            
+            console.log('🎯 Array de actividades ANTES de ordenar:');
+            activitiesConHora.forEach((act, idx) => {
+                console.log(`  ${idx}. "${act.text}" - ${act.time}`);
             });
             
-            // Ordenar por completadas (al final) y luego según la opción seleccionada
-            const sortedPending = activitiesWithTime.sort((a, b) => {
-                // Primero las no completadas
-                if (a._isCompleted !== b._isCompleted) {
-                    return a._isCompleted ? 1 : -1;
+            // ORDENAR DE FORMA SIMPLE Y CLARA
+            const sortedPending = activitiesConHora.sort((a, b) => {
+                // Incompletas primero
+                const aCompleted = a._completada ? 1 : 0;
+                const bCompleted = b._completada ? 1 : 0;
+                if (aCompleted !== bCompleted) {
+                    return aCompleted - bCompleted;
                 }
                 
-                // Ordenar según la opción seleccionada
-                const sortOrder = activitiesSortOrder || 'time';
-                
-                if (sortOrder === 'importance') {
-                    // Por importancia (descendente) y luego por hora
-                    const importanceDiff = (b.importance || 2) - (a.importance || 2);
-                    if (importanceDiff !== 0) return importanceDiff;
-                    return a._timeValue - b._timeValue;
-                } else {
-                    // Por hora (ordenar por horario) - OPCIÓN POR DEFECTO
-                    return a._timeValue - b._timeValue;
+                // Luego por hora
+                if (activitiesSortOrder === 'importance') {
+                    const aImportance = b.importance || 2;
+                    const bImportance = a.importance || 2;
+                    if (aImportance !== bImportance) {
+                        return aImportance - bImportance;
+                    }
                 }
+                
+                // Por horario
+                const horaComparison = a._hora - b._hora;
+                console.log(`🔍 Comparando "${a.text}" (${a.time} = ${a._hora}) vs "${b.text}" (${b.time} = ${b._hora}) = ${horaComparison}`);
+                return horaComparison;
             });
             
-            console.log('📋 Orden final de actividades:');
+            console.log('📊 Actividades ordenadas:');
             sortedPending.forEach((act, idx) => {
-                console.log(`${idx + 1}. ${act.time} - "${act.text}" (${act._timeValue} min)`);
+                console.log(`  ${idx + 1}. ${act.text} - ${act.time} (valor: ${act._hora})`);
             });
             
             if (sortedPending.length === 0) {
@@ -8361,8 +8417,7 @@
                     const cat = categoryColors[activity.category || 'personal'];
                     const importance = activity.importance || 2;
                     const stars = '⭐'.repeat(importance);
-                    // Usar el valor pre-calculado
-                    const isCompleted = activity._isCompleted;
+                    const isCompleted = activity._completada;
                     
                     return `
                         <div style="background: ${isCompleted ? '#f3f4f6' : cat.bg}; padding: 15px; border-radius: 15px; border-left: 4px solid ${isCompleted ? '#9ca3af' : cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,${isCompleted ? '0.05' : '0.1'}); display: flex; gap: 12px; align-items: center; transition: all 0.3s;">
