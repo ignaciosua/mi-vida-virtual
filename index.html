@@ -8290,23 +8290,24 @@
             
             // Función auxiliar para convertir hora a minutos (con 3 AM como inicio del día)
             const timeToMinutes = (time) => {
-                if (!time) return 0;
+                if (!time) return 99999; // Sin hora definida va al final
                 const cleaned = String(time).trim();
                 const parts = cleaned.split(':');
-                if (parts.length < 2) return 0;
-                const hours = parseInt(parts[0], 10) || 0;
-                const minutes = parseInt(parts[1], 10) || 0;
+                if (parts.length < 2) return 99999;
+                
+                let hours = parseInt(parts[0], 10);
+                let minutes = parseInt(parts[1], 10);
+                
+                // Validar que sean números válidos
+                if (isNaN(hours) || isNaN(minutes)) return 99999;
                 
                 // Si la hora está entre 00:00 y 02:59, agregarle 24 horas
                 // para que aparezca al final (después de las 23:59)
-                // Si la hora es de 03:00 en adelante, es normal
-                let adjustedHours = hours;
                 if (hours >= 0 && hours < 3) {
-                    adjustedHours = hours + 24; // Mover al final del día
+                    hours = hours + 24; // Mover al final del día
                 }
                 
-                const total = adjustedHours * 60 + minutes;
-                console.log(`⏰ Hora ${time} -> ${hours}h ${minutes}m -> ajustada: ${adjustedHours}h -> total: ${total} minutos`);
+                const total = hours * 60 + minutes;
                 return total;
             };
             
@@ -8335,14 +8336,11 @@
                     // Por hora (ordenar por horario) - OPCIÓN POR DEFECTO
                     const timeA = timeToMinutes(a.time);
                     const timeB = timeToMinutes(b.time);
-                    const result = timeA - timeB;
                     
-                    // Debug log para ver comparaciones
-                    if (a.time && b.time) {
-                        console.log(`⏰ Comparando: ${a.time} (${timeA} min) vs ${b.time} (${timeB} min) = ${result}`);
-                    }
+                    // Debug: mostrar comparación con textos de actividades
+                    console.log(`🔍 Comparando: "${a.text}" (${a.time} = ${timeA}min) vs "${b.text}" (${b.time} = ${timeB}min) → diferencia: ${timeA - timeB}`);
                     
-                    return result;
+                    return timeA - timeB;
                 }
             });
             
