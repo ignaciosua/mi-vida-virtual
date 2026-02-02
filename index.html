@@ -8311,15 +8311,22 @@
                 return total;
             };
             
+            // PRE-CALCULAR todos los valores de tiempo para evitar recalcular durante sort
+            const activitiesWithTime = selectedActivities.map(activity => {
+                const timeValue = timeToMinutes(activity.time);
+                console.log(`⏰ Actividad: "${activity.text}" | Hora: ${activity.time} | Minutos: ${timeValue}`);
+                return {
+                    ...activity,
+                    _timeValue: timeValue,
+                    _isCompleted: activity.completedDates && activity.completedDates.includes(selectedStr)
+                };
+            });
+            
             // Ordenar por completadas (al final) y luego según la opción seleccionada
-            const sortedPending = [...selectedActivities].sort((a, b) => {
-                // Verificar si están completadas en la fecha seleccionada
-                const aCompleted = a.completedDates && a.completedDates.includes(selectedStr);
-                const bCompleted = b.completedDates && b.completedDates.includes(selectedStr);
-                
+            const sortedPending = activitiesWithTime.sort((a, b) => {
                 // Primero las no completadas
-                if (aCompleted !== bCompleted) {
-                    return aCompleted ? 1 : -1;
+                if (a._isCompleted !== b._isCompleted) {
+                    return a._isCompleted ? 1 : -1;
                 }
                 
                 // Ordenar según la opción seleccionada
@@ -8329,19 +8336,16 @@
                     // Por importancia (descendente) y luego por hora
                     const importanceDiff = (b.importance || 2) - (a.importance || 2);
                     if (importanceDiff !== 0) return importanceDiff;
-                    const timeA = timeToMinutes(a.time);
-                    const timeB = timeToMinutes(b.time);
-                    return timeA - timeB;
+                    return a._timeValue - b._timeValue;
                 } else {
                     // Por hora (ordenar por horario) - OPCIÓN POR DEFECTO
-                    const timeA = timeToMinutes(a.time);
-                    const timeB = timeToMinutes(b.time);
-                    
-                    // Debug: mostrar comparación con textos de actividades
-                    console.log(`🔍 Comparando: "${a.text}" (${a.time} = ${timeA}min) vs "${b.text}" (${b.time} = ${timeB}min) → diferencia: ${timeA - timeB}`);
-                    
-                    return timeA - timeB;
+                    return a._timeValue - b._timeValue;
                 }
+            });
+            
+            console.log('📋 Orden final de actividades:');
+            sortedPending.forEach((act, idx) => {
+                console.log(`${idx + 1}. ${act.time} - "${act.text}" (${act._timeValue} min)`);
             });
             
             if (sortedPending.length === 0) {
@@ -8357,8 +8361,8 @@
                     const cat = categoryColors[activity.category || 'personal'];
                     const importance = activity.importance || 2;
                     const stars = '⭐'.repeat(importance);
-                    // Verificar si está completada en la fecha seleccionada
-                    const isCompleted = activity.completedDates && activity.completedDates.includes(selectedStr);
+                    // Usar el valor pre-calculado
+                    const isCompleted = activity._isCompleted;
                     
                     return `
                         <div style="background: ${isCompleted ? '#f3f4f6' : cat.bg}; padding: 15px; border-radius: 15px; border-left: 4px solid ${isCompleted ? '#9ca3af' : cat.border}; box-shadow: 0 2px 8px rgba(0,0,0,${isCompleted ? '0.05' : '0.1'}); display: flex; gap: 12px; align-items: center; transition: all 0.3s;">
